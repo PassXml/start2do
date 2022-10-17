@@ -1,0 +1,106 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+//    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'java-library'
+    id "io.ebean" version "13.6.4" apply(false)
+}
+group 'org.start2do'
+repositories {
+    mavenCentral()
+}
+version '2.0.1-SNAPSHOT'
+allprojects {
+    apply {
+        plugin 'java'
+        plugin 'java-library'
+        plugin 'maven-publish'
+//        plugin 'com.github.johnrengelman.shadow'
+        plugin 'io.ebean'
+    }
+    ext {
+        pushMavenUrl = "http://192.168.30.110:8081/repository/zte-releases/"
+        SNAPSHOTpushMavenUrl = "http://192.168.30.110:8081/repository/zte-snapshots/"
+        lombokVersion = '1.18.22'
+        jasperreportsVersion = '6.19.1'
+        mapstructVersion = "1.4.2.Final"
+        ebeanVersion = "13.6.4"
+        curVersion = project.version == 'unspecified' ? this.rootProject.version : project.version
+        jdkVersion = ["ebean-common" : JavaVersion.VERSION_11,
+                      "spring-common": JavaVersion.VERSION_11,
+                      "common-util": JavaVersion.VERSION_11,
+                      "spring-security-api": JavaVersion.VERSION_11,
+                      "spring-security-core": JavaVersion.VERSION_11,
+                      "spring-business": JavaVersion.VERSION_11,
+                      "code-gen": JavaVersion.VERSION_11,
+
+        ]
+    }
+    compileJava {
+        def curJdkVersion = JavaVersion.VERSION_1_8
+        for (final def j in jdkVersion) {
+            if (j.key == project.name) {
+                curJdkVersion = j.value
+            }
+        }
+        sourceCompatibility = curJdkVersion
+        targetCompatibility = curJdkVersion
+    }
+    repositories {
+        mavenCentral()
+        maven {
+            allowInsecureProtocol true
+            url pushMavenUrl
+        }
+    }
+    dependencies {
+        testCompileOnly("org.projectlombok:lombok:$lombokVersion")
+        compileOnly("org.projectlombok:lombok:$lombokVersion")
+        annotationProcessor("org.projectlombok:lombok:$lombokVersion")
+        compileOnly("org.mapstruct:mapstruct:$mapstructVersion")
+        annotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")
+        annotationProcessor("io.ebean:querybean-generator:$ebeanVersion")
+    }
+    task sourcesJar(type: Jar) {
+        from sourceSets.main.allJava
+        archiveClassifier = 'sources'
+    }
+
+    publishing {
+        repositories {
+            publications {
+                maven(MavenPublication) {
+                    groupId = "org.start2do"
+                    artifactId = project.name
+                    version = curVersion
+                    from components.java
+                    artifact sourcesJar
+                    versionMapping {
+                        usage('java-api') {
+                            fromResolutionOf('runtimeClasspath')
+                        }
+                        usage('java-runtime') {
+                            fromResolutionResult()
+                        }
+                    }
+                }
+            }
+            maven {
+                if (curVersion.endsWith('-SNAPSHOT')) {
+                    url SNAPSHOTpushMavenUrl
+                } else {
+                    url pushMavenUrl
+                }
+                allowInsecureProtocol true
+                credentials {
+                    username = System.getenv("user")
+                    password = System.getenv("password")
+                }
+            }
+        }
+    }
+    [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
+
+}
+
+

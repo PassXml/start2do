@@ -1,0 +1,33 @@
+plugins {
+    id 'java'
+}
+
+group 'org.start2do'
+version '2.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    implementation(project(":spring-common"))
+    implementation(project(":bean-valiate"))
+    implementation(project(":ebean-common"))
+    implementation(project(":kaptcha"))
+    implementation(project(":spring-security-api"))
+    implementation(project(":spring-security-core"))
+    implementation(project(":spring-util"))
+    compileOnly("org.springframework.boot:spring-boot:2.6.7")
+    compileOnly("org.springframework.boot:spring-boot-autoconfigure:2.6.7")
+    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
+    compileOnly("org.springframework:spring-webmvc:5.2.3.RELEASE")
+    compileOnly 'com.fasterxml.jackson.core:jackson-annotations:2.13.3'
+    compileOnly("org.aspectj:aspectjrt:1.9.7")
+    compileOnly("org.aspectj:aspectjweaver:1.9.7")
+}
+
+test {
+    useJUnitPlatform()
+}

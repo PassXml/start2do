@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+}
+
+group 'org.start2do'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+def vertxVersion = '4.3.0'
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    compileOnly("org.springframework:spring-webmvc:5.2.3.RELEASE")
+    compileOnly("org.slf4j:slf4j-api:1.7.32")
+    compileOnly("org.aspectj:aspectjrt:1.9.7")
+    compileOnly("org.aspectj:aspectjweaver:1.9.7")
+    compileOnly("javax.servlet:javax.servlet-api:4.0.1")
+    compileOnly("io.vertx:vertx-web-client:$vertxVersion")
+    compileOnly("io.vertx:vertx-core:$vertxVersion")
+}
+
+
+test {
+    useJUnitPlatform()
+}

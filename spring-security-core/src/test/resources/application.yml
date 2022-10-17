@@ -1,0 +1,37 @@
+server:
+  port: ${PORT:0}
+  max-http-header-size: 512KB
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  application:
+    name: admin-service
+  profiles:
+    active: ${ENV:dev}
+  cloud:
+  #    nacos:
+  #      config:
+  #        server-addr: ${NACOS_HOST}
+  #        group: ${GROUP:DEFAULT_GROUP}
+  #        file-extension: yaml
+  #      discovery:
+  #        server-addr: ${NACOS_HOST}
+  #        group: ${GROUP:DEFAULT_GROUP}
+  #  config:
+  #    import:
+  #      - optional:nacos:${spring.application.name}-${spring.profiles.active}.yml?group=${GROUP:DEFAULT_GROUP}
+  #      - optional:nacos:${spring.application.name}-${spring.profiles.active}?group=${GROUP:DEFAULT_GROUP}
+  #      - optional:nacos:${spring.application.name}.yml?group=${GROUP:DEFAULT_GROUP}
+  #      - optional:nacos:${spring.application.name}?group=${GROUP:DEFAULT_GROUP}
+  #      - optional:nacos:application-${spring.profiles.active}.yml?group=${GROUP:DEFAULT_GROUP}
+  #      - optional:nacos:application.yml?group=${GROUP:DEFAULT_GROUP}
+  webflux:
+    multipart:
+      max-headers-size: 512KB
+
+#mybatis:
+#  config-location: classpath:mybatis/mybatis-config.xml
+#  mapper-locations: classpath*:mybatis/mapper/*.xml
+
+

@@ -1,0 +1,36 @@
+plugins {
+    id 'java'
+    id 'java-library'
+    id 'org.jetbrains.kotlin.plugin.lombok' version '1.6.10'
+    id "io.freefair.lombok" version "6.4.1"
+}
+
+group 'org.start2do'
+version '2.0.1-SNAPSHOT'
+
+lombok {
+    version = "1.18.24"
+}
+kotlinLombok {
+    lombokConfigurationFile file("lombok.config")
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    //jdk11
+    api 'jakarta.validation:jakarta.validation-api:2.0.2'
+//    api 'javax.validation:validation-api:2.0.1.Final'
+//    api 'jakarta.el:jakarta.el-api:5.0.0'
+    // https://mvnrepository.com/artifact/jakarta.el/jakarta.el-api
+//    api 'jakarta.el:jakarta.el-api:4.0.0'
+//    api 'org.glassfish:jakarta.el:4.0.2'
+    api 'org.glassfish:javax.el:3.0.0'
+    api("org.hibernate.validator:hibernate-validator:6.0.23.Final")
+
+
+}
+
+test {
+    useJUnitPlatform()
+}

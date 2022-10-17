@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createTable name="sys_dept" identityStart="10" pkName="pk_sys_dept">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="name" type="varchar(128)"/>
+            <column name="sort" type="integer"/>
+            <column name="parent_id" type="integer" uniqueOneToOne="uq_sys_dept_parent_id" references="sys_dept.id" foreignKeyName="fk_sys_dept_parent_id"/>
+            <column name="create_time" type="localdatetime" notnull="true"/>
+            <column name="create_person" type="varchar" notnull="true"/>
+            <column name="update_time" type="localdatetime" notnull="true"/>
+            <column name="update_person" type="varchar" notnull="true"/>
+            <column name="version" type="bigint" notnull="true"/>
+        </createTable>
+        <createTable name="sys_menu" identityStart="100" pkName="pk_sys_menu">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="name" type="varchar(128)"/>
+            <column name="path" type="varchar"/>
+            <column name="permission" type="varchar(128)"/>
+            <column name="icon" type="varchar"/>
+            <column name="sort" type="varchar"/>
+            <column name="parent_id" type="integer" references="sys_menu.id" foreignKeyName="fk_sys_menu_parent_id" foreignKeyIndex="ix_sys_menu_parent_id"/>
+            <column name="type" type="varchar(2)" checkConstraint="check ( type in ('0','1','2'))" checkConstraintName="ck_sys_menu_type" comment="类型"/>
+            <column name="create_time" type="localdatetime" notnull="true"/>
+            <column name="create_person" type="varchar" notnull="true"/>
+            <column name="update_time" type="localdatetime" notnull="true"/>
+            <column name="update_person" type="varchar" notnull="true"/>
+            <column name="version" type="bigint" notnull="true"/>
+        </createTable>
+        <createTable name="sys_role" identityStart="100" pkName="pk_sys_role">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="name" type="varchar(128)"/>
+            <column name="role_code" type="varchar"/>
+            <column name="descs" type="varchar"/>
+            <column name="create_time" type="localdatetime" notnull="true"/>
+            <column name="create_person" type="varchar" notnull="true"/>
+            <column name="update_time" type="localdatetime" notnull="true"/>
+            <column name="update_person" type="varchar" notnull="true"/>
+            <column name="version" type="bigint" notnull="true"/>
+        </createTable>
+        <createTable name="sys_role_menu" pkName="pk_sys_role_menu">
+            <column name="role_id" type="integer" primaryKey="true" references="sys_role.id" foreignKeyName="fk_sys_role_menu_role_id" foreignKeyIndex="ix_sys_role_menu_role_id"/>
+            <column name="menu_id" type="integer" primaryKey="true" references="sys_menu.id" foreignKeyName="fk_sys_role_menu_menu_id" foreignKeyIndex="ix_sys_role_menu_menu_id"/>
+        </createTable>
+        <createTable name="sys_setting" identityType="identity" pkName="pk_sys_setting" comment="字典值表">
+            <column name="id" type="bigint" primaryKey="true"/>
+            <column name="enable" type="varchar(2)" checkConstraint="check ( enable in ('1','0'))" checkConstraintName="ck_sys_setting_enable"/>
+            <column name="remark" type="varchar(512)"/>
+            <column name="type" type="varchar(128)"/>
+            <column name="kkey" type="varchar(128)"/>
+            <column name="vvalue" type="varchar(2048)"/>
+            <column name="sort" type="integer"/>
+            <column name="create_time" type="localdatetime" notnull="true"/>
+            <column name="create_person" type="varchar" notnull="true"/>
+            <column name="update_time" type="localdatetime" notnull="true"/>
+            <column name="update_person" type="varchar" notnull="true"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <uniqueConstraint name="IDX_ST_TYPE" columnNames="type" oneToOne="false" nullableColumns="type"/>
+        </createTable>
+        <createTable name="sys_user" identityStart="100" pkName="pk_sys_user">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="username" type="varchar(128)"/>
+            <column name="real_name" type="varchar(32)"/>
+            <column name="password" type="varchar(128)"/>
+            <column name="status" type="varchar(1)" defaultValue="'1'" checkConstraint="check ( status in ('1','0'))" checkConstraintName="ck_sys_user_status"/>
+            <column name="email" type="varchar(128)"/>
+            <column name="avatar" type="varchar(2048)"/>
+            <column name="phone" type="varchar(32)"/>
+            <column name="dept_id" type="integer" references="sys_dept.id" foreignKeyName="fk_sys_user_dept_id" foreignKeyIndex="ix_sys_user_dept_id"/>
+            <column name="create_time" type="localdatetime" notnull="true"/>
+            <column name="create_person" type="varchar" notnull="true"/>
+            <column name="update_time" type="localdatetime" notnull="true"/>
+            <column name="update_person" type="varchar" notnull="true"/>
+            <column name="version" type="bigint" notnull="true"/>
+        </createTable>
+        <createTable name="sys_user_permission" pkName="pk_sys_user_permission">
+            <column name="menu_id" type="integer"/>
+            <column name="user_id" type="integer" primaryKey="true"/>
+            <column name="menuId" type="integer" primaryKey="true"/>
+        </createTable>
+        <createTable name="sys_user_role" pkName="pk_sys_user_role">
+            <column name="user_id" type="integer" primaryKey="true" references="sys_user.id" foreignKeyName="fk_sys_user_role_user_id" foreignKeyIndex="ix_sys_user_role_user_id"/>
+            <column name="role_id" type="integer" primaryKey="true" references="sys_role.id" foreignKeyName="fk_sys_user_role_role_id" foreignKeyIndex="ix_sys_user_role_role_id"/>
+        </createTable>
+    </changeSet>
+</migration>

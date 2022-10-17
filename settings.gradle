@@ -1,0 +1,13 @@
+rootProject.name = 'start2do-util'
+include 'bean-valiate'
+include 'spring-util'
+include 'pdf-util'
+include 'ebean-common'
+include 'spring-common'
+include 'spring-security-api'
+include 'common-util'
+include 'spring-security-core'
+include 'kaptcha'
+include 'spring-business'
+include 'code-gen'
+
