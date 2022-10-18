@@ -39,12 +39,13 @@ public class ListUtil {
         int end = list.size();
         while (cur < end) {
             log.debug("拆分运行,{},{}", maxSize, cur);
-            List<T> subList = list.subList(cur, Math.min(cur + maxSize, end));
+            int step = Math.min(maxSize, end - cur);
+            List<T> subList = list.subList(cur, cur + step);
             if (streamFunction != null) {
                 subList = streamFunction.apply(subList.stream()).collect(Collectors.toList());
             }
             spFunction.run(subList);
-            cur += maxSize;
+            cur += step;
         }
     }
 
@@ -108,8 +109,7 @@ public class ListUtil {
         }
     }
 
-    public static <T, R> R getValue(List<T> list, Predicate<T> predicate, Function<T, R> get,
-        R defaultValue) {
+    public static <T, R> R getValue(List<T> list, Predicate<T> predicate, Function<T, R> get, R defaultValue) {
         if (list != null) {
             for (T t : list) {
                 if (predicate.test(t)) {

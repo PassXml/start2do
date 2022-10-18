@@ -1,6 +1,5 @@
 package org.start2do.dto;
 
-import java.awt.Menu;
 import java.util.Collection;
 import java.util.List;
 import lombok.Getter;
@@ -9,6 +8,7 @@ import lombok.experimental.Accessors;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.start2do.entity.security.SysDept;
+import org.start2do.entity.security.SysMenu;
 
 @Setter
 @Getter
@@ -17,7 +17,7 @@ public class UserCredentials extends User {
 
     private Integer id;
     private List<UserRole> roles;
-    private List<Menu> menus;
+    private List<SysMenu> menus;
     private SysDept dept;
 
     public UserCredentials(Integer id, String username, String password,
