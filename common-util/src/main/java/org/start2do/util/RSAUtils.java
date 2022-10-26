@@ -9,9 +9,9 @@ import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import javax.crypto.Cipher;
-import org.springframework.util.Base64Utils;
 
 @SuppressWarnings("all")
 public class RSAUtils {
@@ -28,7 +28,7 @@ public class RSAUtils {
         byte[] encryptBytes = null;
         try {
             byte[] bytes = content.getBytes(CHARSET_NAME);
-            encryptBytes = encryptByPublicKey(bytes, Base64Utils.decodeFromString(PUBLIC_KEY));
+            encryptBytes = encryptByPublicKey(bytes, Base64.getDecoder().decode(PUBLIC_KEY));
         } catch (Exception e) {
             e.printStackTrace();
         }

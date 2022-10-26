@@ -1,4 +1,4 @@
-package org.start2do;
+package org.start2do.util;
 
 import java.io.File;
 import java.util.ArrayList;

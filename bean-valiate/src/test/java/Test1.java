@@ -3,7 +3,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.Test;
-import org.start2do.util.BeanValidatorUtil;
 import org.start2do.util.validator.notPattern.NotHasEmoji;
 
 public class Test1 {
@@ -32,9 +31,16 @@ public class Test1 {
     @Test
     public void test2() {
 //        System.out.println("111");
-        TestPojo pojo = new TestPojo();
-        pojo.setName("\uD83D\uDE19");
-        BeanValidatorUtil.validate(pojo);
+//        TestPojo pojo = new TestPojo();
+//        pojo.setName("\uD83D\uDE19");
+//        try {
+//            BeanValidatorUtil.validate(pojo);
+//        } catch (ValidateException e) {
+//            Assertions.assertTrue(false);
+//            return;
+//        }
+//        Assertions.assertTrue(true);
+
 //        String reviewerName = "😀😁😂😃😄😅😆8888";
 //        String replaceAll = reviewerName.replaceAll("[\\ud800\\udc00-\\udbff\\udfff\\ud800-\\udfff]", "");
 //        System.out.println("repalceAll"+replaceAll);

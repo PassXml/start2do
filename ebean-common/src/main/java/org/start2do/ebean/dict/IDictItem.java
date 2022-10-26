@@ -31,5 +31,4 @@ public interface IDictItem {
         return StringUtils.isNotBlank(value) && value.endsWith(value());
     }
 
-
 }

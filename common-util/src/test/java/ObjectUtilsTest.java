@@ -21,6 +21,14 @@ public class ObjectUtilsTest {
         public C1(Integer integer) {
             this.integer = integer;
         }
+
+        public Integer getInteger() {
+            return integer;
+        }
+
+        public void setInteger(Integer integer) {
+            this.integer = integer;
+        }
     }
 
     @Setter
@@ -32,6 +40,14 @@ public class ObjectUtilsTest {
         private String string;
 
         public C2(String string) {
+            this.string = string;
+        }
+
+        public String getString() {
+            return string;
+        }
+
+        public void setString(String string) {
             this.string = string;
         }
     }

@@ -10,4 +10,5 @@ include 'spring-security-core'
 include 'kaptcha'
 include 'spring-business'
 include 'code-gen'
+include 'email'
 

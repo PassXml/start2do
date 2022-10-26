@@ -6,7 +6,7 @@ import org.jboss.forge.roaster.Roaster
 import org.jboss.forge.roaster.model.impl.JavaEnumImpl
 import org.jboss.forge.roaster.model.source.JavaClassSource
 import org.jboss.forge.roaster.model.source.JavaDocSource
-import org.start2do.FileUtil
+import org.start2do.util.FileUtil
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths

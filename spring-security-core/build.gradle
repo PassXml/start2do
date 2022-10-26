@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'org.start2do'
-version '2.0.1-SNAPSHOT'
+version '2.0.2-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -24,6 +24,7 @@ dependencies {
     implementation(project(":bean-valiate"))
     implementation(project(":kaptcha"))
     api(project(":spring-security-api"))
+    api(project(":common-util"))
     implementation(project(":spring-util"))
     compileOnly("org.springframework.boot:spring-boot:2.6.7")
     compileOnly("org.springframework.boot:spring-boot-autoconfigure:2.6.7")

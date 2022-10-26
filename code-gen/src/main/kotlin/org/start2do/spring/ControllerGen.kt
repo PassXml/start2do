@@ -3,7 +3,7 @@ package org.start2do.spring
 import lombok.SneakyThrows
 import org.jboss.forge.roaster.Roaster
 import org.jboss.forge.roaster.model.source.JavaClassSource
-import org.start2do.FileUtil
+import org.start2do.util.FileUtil
 import java.io.FileInputStream
 import java.nio.file.Paths
 
