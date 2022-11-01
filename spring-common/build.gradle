@@ -18,7 +18,7 @@ dependencies {
 //    compileOnly("org.start2do:bean-valiate:2.0.1-SNAPSHOT")
     compileOnly(project(":bean-valiate"))
     compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
-
+    api(project(":api"))
 }
 
 test {

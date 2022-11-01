@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'java-library'
+
 }
 
 group 'org.start2do'
@@ -9,11 +11,10 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.apache.groovy:groovy:4.0.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-    implementation 'io.vertx:vertx-core:4.3.4'
-    implementation 'io.vertx:vertx-mail-client:4.3.4'
+    api "io.vertx:vertx-core:$vertxVersion"
+    api "io.vertx:vertx-mail-client:$vertxVersion"
     implementation(project(":bean-valiate"))
     implementation(project(":common-util"))
     compileOnly("org.springframework.boot:spring-boot:2.6.7")

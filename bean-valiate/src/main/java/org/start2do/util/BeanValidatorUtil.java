@@ -16,6 +16,10 @@ public final class BeanValidatorUtil {
         validate(false, obj, groups);
     }
 
+    public static void validateEchoPath(Object obj, Class<?>... groups) {
+        validate(true, obj, groups);
+    }
+
     public static void validate(Boolean echoPath, Object obj, Class<?>... groups) {
         String s = _validate(echoPath, obj, groups);
         if (s != null && s.length() > 0) {

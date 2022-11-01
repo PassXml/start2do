@@ -23,17 +23,13 @@ allprojects {
         jasperreportsVersion = '6.19.1'
         mapstructVersion = "1.4.2.Final"
         ebeanVersion = "13.6.4"
+        vertxVersion = '4.3.4'
         curVersion = project.version == 'unspecified' ? this.rootProject.version : project.version
         jdkVersion = ["ebean-common"        : JavaVersion.VERSION_11,
                       "spring-common"       : JavaVersion.VERSION_11,
-                      "common-util"         : JavaVersion.VERSION_1_8,
                       "spring-security-api" : JavaVersion.VERSION_11,
                       "spring-security-core": JavaVersion.VERSION_11,
                       "spring-business"     : JavaVersion.VERSION_11,
-                      "code-gen"            : JavaVersion.VERSION_11,
-                      "email"               : JavaVersion.VERSION_1_8,
-                      "bean-valiate"        : JavaVersion.VERSION_1_8,
-
         ]
     }
     compileJava {
@@ -65,10 +61,10 @@ allprojects {
         annotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")
         annotationProcessor("io.ebean:querybean-generator:$ebeanVersion")
     }
-    task sourcesJar(type: Jar) {
-        from sourceSets.main.allJava
-        archiveClassifier = 'sources'
-    }
+//    task sourcesJar(type: Jar) {
+//        from sourceSets.main.allJava
+//        archiveClassifier = 'sources'
+//    }
 
     publishing {
         repositories {
@@ -78,7 +74,7 @@ allprojects {
                     artifactId = project.name
                     version = curVersion
                     from components.java
-                    artifact sourcesJar
+//                    artifact sourcesJar
                     versionMapping {
                         usage('java-api') {
                             fromResolutionOf('runtimeClasspath')

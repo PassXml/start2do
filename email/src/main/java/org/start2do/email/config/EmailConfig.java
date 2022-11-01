@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 @Accessors(chain = true)
 @NoArgsConstructor
 @Configuration
-@ConditionalOnProperty(prefix = "email", value = "enable", havingValue = "true")
+@ConditionalOnProperty(prefix = "email", name = "enable", havingValue = "true")
 @ConfigurationProperties(prefix = "email")
 public class EmailConfig {
 

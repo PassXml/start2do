@@ -27,6 +27,11 @@ dependencies {
     compileOnly("org.mapstruct:mapstruct:$mapstructVersion")
     annotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")
     compileOnly 'jakarta.validation:jakarta.validation-api:2.0.2'
+//
+    testImplementation("org.slf4j:slf4j-api:1.7.36")
+    testImplementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.3"
+    testImplementation "org.glassfish.jaxb:jaxb-runtime:2.3.6"
+    testAnnotationProcessor("io.ebean:querybean-generator:$ebeanVersion")
 
 }
 
