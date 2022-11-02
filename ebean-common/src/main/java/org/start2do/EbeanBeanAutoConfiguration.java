@@ -20,7 +20,7 @@ public class EbeanBeanAutoConfiguration {
 
     @Configuration
     @ConditionalOnProperty(name = "spring.datasource.username")
-    @AutoConfigureAfter(Order2.class)
+    @AutoConfigureAfter(Order1_5.class)
     public static class Order1 {
 
         @Bean
@@ -38,15 +38,31 @@ public class EbeanBeanAutoConfiguration {
         @Bean
         @ConditionalOnMissingBean(CurrentUserProvider.class)
         public CurrentUserProvider currentUserProvider() {
-            return () -> {
-                return "not set";
-            };
+            return () -> "not set";
         }
     }
 
     @Configuration
     @ConditionalOnProperty(name = "spring.datasource.username")
     @AutoConfigureAfter(Order2.class)
+    public static class Order1_5 {
+
+        @Bean
+        @ConditionalOnMissingBean(Database.class)
+        public Database database(DataSource dataSource, CurrentUserProvider currentUserProvider) {
+            DatabaseConfig config = new DatabaseConfig();
+            config.loadFromProperties();
+            config.setCurrentUserProvider(currentUserProvider);
+            config.setRunMigration(migration);
+            config.setDataSource(dataSource);
+            Database database = DatabaseFactory.create(config);
+            return database;
+        }
+
+    }
+
+    @Configuration
+    @ConditionalOnProperty(name = "spring.datasource.username")
     public static class Order2 {
 
         @Bean
