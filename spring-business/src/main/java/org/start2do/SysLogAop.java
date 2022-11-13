@@ -1,5 +1,7 @@
 package org.start2do;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
 import javax.servlet.http.HttpServletRequest;
@@ -18,6 +20,8 @@ import org.start2do.entity.business.SysLog.Type;
 import org.start2do.service.SysLogService;
 import org.start2do.util.JwtTokenUtil;
 import org.start2do.util.StringUtils;
+import org.start2do.util.spring.LogAop;
+import org.start2do.util.spring.LogAopConfig;
 
 @Aspect
 @Component
@@ -25,6 +29,8 @@ import org.start2do.util.StringUtils;
 public class SysLogAop {
 
     private final SysLogService sysLogService;
+    private final LogAopConfig aopConfig;
+    public final LogAop.JSON json;
 
     private String getIP(HttpServletRequest request) {
         String[] headers = new String[]{"X-Forwarded-For", "X-Real-IP", "Proxy-Client-IP", "WL-Proxy-Client-IP",
@@ -99,8 +105,17 @@ public class SysLogAop {
         // 发送异步日志事件
         Long startTime = System.currentTimeMillis();
         Object obj;
-
         try {
+            if (json != null) {
+                Object[] args = point.getArgs();
+                Map<String, String> map = new HashMap<>(args.length);
+                for (Object arg : args) {
+                    if (aopConfig.getSkinClazz().contains(arg.getClass())) {
+                        continue;
+                    }
+                    map.put(arg.getClass().getSimpleName(), this.json.toJson(arg));
+                }
+            }
             obj = point.proceed();
         } catch (Exception e) {
             logVo.setType(Type.Error);

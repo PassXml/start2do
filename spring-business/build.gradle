@@ -3,22 +3,18 @@ plugins {
 }
 
 group 'org.start2do'
-version '2.0.2-SNAPSHOT'
 
-repositories {
-    mavenCentral()
-}
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-    implementation(project(":spring-common"))
-    implementation(project(":bean-valiate"))
-    implementation(project(":ebean-common"))
-    implementation(project(":kaptcha"))
-    implementation(project(":spring-security-api"))
-    implementation(project(":spring-security-core"))
-    implementation(project(":spring-util"))
+    api(project(":spring-common"))
+    api(project(":bean-valiate"))
+    api(project(":ebean-common"))
+    api(project(":kaptcha"))
+    api(project(":spring-security-api"))
+    api(project(":spring-security-core"))
+    api(project(":spring-util"))
     compileOnly("org.springframework.boot:spring-boot:2.6.7")
     compileOnly("org.springframework.boot:spring-boot-autoconfigure:2.6.7")
     compileOnly 'javax.servlet:javax.servlet-api:4.0.1'

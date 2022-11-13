@@ -1,22 +1,16 @@
 package org.start2do.util.spring;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.StringJoiner;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.StringJoiner;
 
 /**
  * @author ：chicunxiang
@@ -32,14 +26,8 @@ public abstract class LogAop {
     public abstract String getName();
 
     protected JSON jsonUtils;
-    protected static List<Class> skinClass = new ArrayList<>(
-        Arrays.asList(
-            HttpServletRequest.class, HttpServletResponse.class,
-            ServletResponse.class, ServletRequest.class, OutputStream.class,
-            ByteArrayOutputStream.class
-        )
-    );
 
+    public abstract List<Class> skinClass();
 //    @Pointcut("within(@org.springframework.web.bind.annotation.RestController *) || within(@org.springframework.stereotype.Controller *)")
 //    public void controller() {
 //
@@ -64,7 +52,7 @@ public abstract class LogAop {
             Object[] args = point.getArgs();
             for (Object arg : args) {
                 Boolean skin = false;
-                for (Class aClass : skinClass) {
+                for (Class aClass : skinClass()) {
                     if (arg == null || aClass.equals(arg.getClass())) {
                         skin = true;
                         break;

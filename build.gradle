@@ -61,6 +61,11 @@ allprojects {
         annotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")
         annotationProcessor("io.ebean:querybean-generator:$ebeanVersion")
     }
+
+    test {
+        useJUnitPlatform()
+    }
+
 //    task sourcesJar(type: Jar) {
 //        from sourceSets.main.allJava
 //        archiveClassifier = 'sources'

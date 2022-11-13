@@ -64,4 +64,12 @@ public abstract class CreateSql {
         }
         return (int) crc32.getValue();
     }
+
+    public static void main(String[] args) {
+        String name = System.getenv("name");
+        String path = System.getenv("path");
+        String version = System.getenv("version");
+        String platform = System.getenv("platform");
+        run(path, name, version, Platform.valueOf(platform));
+    }
 }

@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.start2do.ebean.id_generators.UUIDStrIdGenerator;
 
 @Configuration
 public class EbeanBeanAutoConfiguration {
@@ -28,6 +29,7 @@ public class EbeanBeanAutoConfiguration {
         public Database database(DataSource dataSource, CurrentUserProvider currentUserProvider) {
             DatabaseConfig config = new DatabaseConfig();
             config.loadFromProperties();
+            config.add(new UUIDStrIdGenerator());
             config.setCurrentUserProvider(currentUserProvider);
             config.setRunMigration(migration);
             config.setDataSource(dataSource);
@@ -52,6 +54,7 @@ public class EbeanBeanAutoConfiguration {
         public Database database(DataSource dataSource, CurrentUserProvider currentUserProvider) {
             DatabaseConfig config = new DatabaseConfig();
             config.loadFromProperties();
+            config.add(new UUIDStrIdGenerator());
             config.setCurrentUserProvider(currentUserProvider);
             config.setRunMigration(migration);
             config.setDataSource(dataSource);

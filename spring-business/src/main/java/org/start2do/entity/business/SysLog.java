@@ -1,27 +1,17 @@
 package org.start2do.entity.business;
 
 import io.ebean.Model;
-import io.ebean.annotation.Cache;
-import io.ebean.annotation.DbComment;
-import io.ebean.annotation.DbEnumValue;
-import io.ebean.annotation.Identity;
-import io.ebean.annotation.IdentityType;
-import io.ebean.annotation.WhenCreated;
-import io.ebean.annotation.WhenModified;
-import java.time.LocalDateTime;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Lob;
-import javax.persistence.Table;
-import javax.persistence.Version;
-import javax.validation.constraints.NotBlank;
+import io.ebean.annotation.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.start2do.dto.BusinessException;
 import org.start2do.util.ExcelUtil.ExcelSetting;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
