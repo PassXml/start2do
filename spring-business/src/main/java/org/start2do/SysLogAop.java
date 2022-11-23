@@ -11,20 +11,17 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.http.HttpHeaders;
-import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.start2do.dto.annotation.SysLogSetting;
 import org.start2do.entity.business.SysLog;
 import org.start2do.entity.business.SysLog.Type;
 import org.start2do.service.SysLogService;
-import org.start2do.util.JwtTokenUtil;
 import org.start2do.util.StringUtils;
 import org.start2do.util.spring.LogAop;
 import org.start2do.util.spring.LogAopConfig;
 
 @Aspect
-@Component
 @RequiredArgsConstructor
 public class SysLogAop {
 
@@ -80,8 +77,6 @@ public class SysLogAop {
         HttpServletRequest request = ((ServletRequestAttributes) Objects
             .requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
         SysLog sysLog = new SysLog();
-        sysLog.setCreatePerson(Objects.requireNonNull(JwtTokenUtil.getUserName()));
-        sysLog.setUpdatePerson(Objects.requireNonNull(JwtTokenUtil.getUserName()));
         sysLog.setType(Type.Info);
         sysLog.setRemoteAddr(getIP(request));
         sysLog.setRequestUri(request.getRequestURI());
