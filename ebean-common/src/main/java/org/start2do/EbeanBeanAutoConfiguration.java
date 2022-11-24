@@ -7,6 +7,8 @@ import io.ebean.config.DatabaseConfig;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -21,8 +23,8 @@ public class EbeanBeanAutoConfiguration {
 
     @Configuration
     @ConditionalOnProperty(name = "spring.datasource.username")
-    @AutoConfigureAfter(Order1_5.class)
-    public static class Order1 {
+    @AutoConfigureAfter(Order2.class)
+    public static class Order3 {
 
         @Bean
         @ConditionalOnMissingBean(Database.class)
@@ -46,11 +48,13 @@ public class EbeanBeanAutoConfiguration {
 
     @Configuration
     @ConditionalOnProperty(name = "spring.datasource.username")
-    @AutoConfigureAfter(Order2.class)
-    public static class Order1_5 {
+    @AutoConfigureBefore(Order3.class)
+    @AutoConfigureAfter(Order1.class)
+    public static class Order2 {
 
         @Bean
         @ConditionalOnMissingBean(Database.class)
+        @ConditionalOnBean(value = {DataSource.class, CurrentUserProvider.class})
         public Database database(DataSource dataSource, CurrentUserProvider currentUserProvider) {
             DatabaseConfig config = new DatabaseConfig();
             config.loadFromProperties();
@@ -65,10 +69,12 @@ public class EbeanBeanAutoConfiguration {
     }
 
     @Configuration
+    @AutoConfigureBefore({Order2.class, Order3.class})
     @ConditionalOnProperty(name = "spring.datasource.username")
-    public static class Order2 {
+    public static class Order1 {
 
         @Bean
+        @ConditionalOnBean(value = DatabaseConfig.class)
         @ConditionalOnMissingBean(value = io.ebean.Database.class)
         public Database database(DatabaseConfig config) {
             Database database = DatabaseFactory.create(config);
