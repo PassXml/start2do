@@ -7,7 +7,7 @@ plugins {
 }
 group 'org.start2do'
 
-version '2.0.3-SNAPSHOT'
+version '2.0.4-SNAPSHOT'
 allprojects {
     apply {
         plugin 'java'

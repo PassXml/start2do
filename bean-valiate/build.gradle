@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'org.start2do'
-version '2.0.2-SNAPSHOT'
+version '2.0.4-SNAPSHOT'
 
 lombok {
     version = "1.18.24"

@@ -94,6 +94,18 @@ public class SysLog extends Model {
     @ExcelSetting("操作提交的数据")
     @DbComment("数据")
     private String params;
+    @Lob
+    @ExcelSetting(("请求头"))
+    private String requestHeader;
+    @Lob
+    @ExcelSetting(("请求体"))
+    private String requestBody;
+    @Lob
+    @ExcelSetting("返回体")
+    private String responseBody;
+    @Lob
+    @ExcelSetting("Resp头")
+    private String responseHeader;
 
     /**
      * 执行时间

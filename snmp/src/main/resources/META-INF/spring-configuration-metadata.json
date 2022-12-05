@@ -1,0 +1,66 @@
+{
+  "groups": [
+    {
+      "name": "snmp.enable",
+      "type": "org.start2do.config.SNMPConfig",
+      "sourceType": "org.start2do.config.SNMPConfig"
+    },
+    {
+      "name": "snmp.version",
+      "type": "org.start2do.config.SNMPConfig",
+      "sourceType": "org.start2do.config.SNMPConfig"
+    },
+    {
+      "name": "snmp.listen",
+      "type": "org.start2do.config.SNMPConfig",
+      "sourceType": "org.start2do.config.SNMPConfig"
+    }
+  ],
+  "properties": [
+    {
+      "name": "snmp.enable",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.start2do.config.SNMPConfig"
+    }
+  ],
+  "hints": [
+    {
+      "name": "snmp.enable",
+      "values": [
+        {
+          "value": "true",
+          "description": "true"
+        },
+        {
+          "value": "false"
+        }
+      ]
+    },
+    {
+      "name": "snmp.version",
+      "values": [
+        {
+          "value": 0,
+          "description": "v1"
+        },
+        {
+          "value": 1,
+          "description": "v2"
+        },
+        {
+          "value": 3,
+          "description": "v3"
+        }
+      ]
+    },
+    {
+      "name": "snmp.listen",
+      "values": [
+        {
+          "value": "udp:127.0.0.1/123",
+          "description": "监听地址"
+        }
+      ]
+    }
+  ]
+}

@@ -12,4 +12,5 @@ include 'spring-business'
 include 'code-gen'
 include 'email'
 include 'api'
+include 'snmp'
 

@@ -1,0 +1,6 @@
+snmp:
+  enable: true
+  version: 0
+  listen: "udp:127.0.0.1/161"
+server:
+  port: 9028

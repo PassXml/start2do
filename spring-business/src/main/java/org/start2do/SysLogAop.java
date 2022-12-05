@@ -1,15 +1,16 @@
 package org.start2do;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 import java.util.Objects;
 import java.util.StringJoiner;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -23,6 +24,7 @@ import org.start2do.util.spring.LogAopConfig;
 
 @Aspect
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "start2do", value = "syslog.enable", havingValue = "true")
 public class SysLogAop {
 
     private final SysLogService sysLogService;
@@ -73,9 +75,9 @@ public class SysLogAop {
         return getMultistageReverseProxyIp(ip);
     }
 
-    private SysLog getSysLog() {
-        HttpServletRequest request = ((ServletRequestAttributes) Objects
-            .requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
+    private SysLog getSysLog() throws IOException {
+        HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(
+            RequestContextHolder.getRequestAttributes())).getRequest();
         SysLog sysLog = new SysLog();
         sysLog.setType(Type.Info);
         sysLog.setRemoteAddr(getIP(request));
@@ -89,6 +91,13 @@ public class SysLogAop {
             }
         });
         sysLog.setParams(params.toString());
+        StringJoiner joiner = new StringJoiner("");
+        while (request.getHeaderNames().hasMoreElements()) {
+            String s = request.getHeaderNames().nextElement();
+            joiner.add(s).add("=").add(request.getHeader(s));
+        }
+        sysLog.setRequestHeader(joiner.toString());
+        sysLog.setRequestBody(new String(request.getInputStream().readAllBytes()));
         return sysLog;
     }
 
@@ -97,21 +106,18 @@ public class SysLogAop {
     public Object around(ProceedingJoinPoint point, SysLogSetting sysLog) {
         SysLog logVo = getSysLog();
         logVo.setTitle(sysLog.value());
+
+        logVo.setRequestHeader("");
+        logVo.setRequestBody("");
+        logVo.setResponseHeader("");
+        logVo.setResponseBody("");
+
         // 发送异步日志事件
         Long startTime = System.currentTimeMillis();
-        Object obj;
+        Object obj = null;
         try {
-            if (json != null) {
-                Object[] args = point.getArgs();
-                Map<String, String> map = new HashMap<>(args.length);
-                for (Object arg : args) {
-                    if (aopConfig.getSkinClazz().contains(arg.getClass())) {
-                        continue;
-                    }
-                    map.put(arg.getClass().getSimpleName(), this.json.toJson(arg));
-                }
-            }
             obj = point.proceed();
+            logVo.setResponseBody(json.toJson(obj));
         } catch (Exception e) {
             logVo.setType(Type.Error);
             logVo.setExceptionInfo(e.getMessage());
@@ -119,6 +125,15 @@ public class SysLogAop {
         } finally {
             Long endTime = System.currentTimeMillis();
             logVo.setUseTime(endTime - startTime);
+            HttpServletResponse response = ((ServletRequestAttributes) Objects.requireNonNull(
+                RequestContextHolder.getRequestAttributes())).getResponse();
+            if (response != null) {
+                StringJoiner joiner = new StringJoiner("");
+                for (String headerName : response.getHeaderNames()) {
+                    joiner.add(headerName).add("=").add(response.getHeader(headerName));
+                }
+                logVo.setResponseHeader(joiner.toString());
+            }
             sysLogService.save(logVo);
         }
         return obj;
