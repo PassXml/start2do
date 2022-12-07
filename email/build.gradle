@@ -13,6 +13,7 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.6.7'
     api "io.vertx:vertx-core:$vertxVersion"
     api "io.vertx:vertx-mail-client:$vertxVersion"
     implementation(project(":bean-valiate"))

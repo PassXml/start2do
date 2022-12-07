@@ -17,10 +17,15 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "email")
 public class EmailConfig {
 
+    private Boolean enable;
+    private Type type;
     private String host;
     private Integer port;
     private String username;
     private String password;
     private String from;
 
+    public enum Type {
+        JavaxMail, Vertx
+    }
 }

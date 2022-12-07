@@ -21,13 +21,13 @@ public class EmailStater {
 
 
     @ConditionalOnMissingBean(value = EmailUtils.class)
-    @ConditionalOnProperty(prefix = "email", name = "type", havingValue = "javax-mail")
+    @ConditionalOnProperty(prefix = "email", name = "type", havingValue = "JavaxMail")
     public EmailUtils JavaMailSendImpl() {
         return new JavaMailSendImpl(config);
     }
 
     @ConditionalOnMissingBean(value = EmailUtils.class)
-    @ConditionalOnProperty(prefix = "email", name = "type", havingValue = "vertx")
+    @ConditionalOnProperty(prefix = "email", name = "type", havingValue = "Vertx")
     public EmailUtils VertxMailImpl() {
         return new VertxMailImpl(config);
     }
