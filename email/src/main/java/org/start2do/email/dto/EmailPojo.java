@@ -1,6 +1,5 @@
 package org.start2do.email.dto;
 
-import io.vertx.ext.mail.MailAttachment;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import lombok.Getter;
@@ -20,7 +19,7 @@ public class EmailPojo {
     @NotNull
     private String subject;
     private String html;
-    private MailAttachment attachment;
+    private EmailAttachmentPojo attachment;
 
     public EmailPojo(List<String> to, String subject) {
         this.to = to;

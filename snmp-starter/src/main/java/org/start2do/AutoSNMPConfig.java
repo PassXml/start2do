@@ -48,7 +48,7 @@ public class AutoSNMPConfig {
     public static class V3Class {
 
         @Bean
-        public Snmp createCommunityTarget(SNMPConfig config, UsmUser user, CommandResponder responder)
+        public Snmp createSNMP(SNMPConfig config, UsmUser user, CommandResponder responder)
             throws IOException {
             Address address = GenericAddress.parse(config.getListen());
             Snmp snmp;
@@ -83,7 +83,7 @@ public class AutoSNMPConfig {
     public static class V1V2Class {
 
         @Bean
-        public Snmp createCommunityTarget(SNMPConfig config, CommandResponder responder) throws IOException {
+        public Snmp createSNMP(SNMPConfig config, CommandResponder responder) throws IOException {
             Address address = GenericAddress.parse(config.getListen());
             Snmp snmp;
             if (address instanceof UdpAddress) {

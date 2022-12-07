@@ -22,8 +22,8 @@ public class CustomCommandResponder implements CommandResponder {
         PDU pdu = event.getPDU();
         if (pdu != null) {
             for (VariableBinding binding : pdu.getVariableBindings()) {
-                log.debug(binding.getOid().format());
-                log.debug(binding.getVariable().toString());
+                String format = binding.getOid().format();
+                log.info("oid:{},msg:{}", format, binding.getVariable().toString());
             }
         }
     }
