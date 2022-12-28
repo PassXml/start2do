@@ -20,7 +20,7 @@ import org.start2do.util.StringUtils;
 public abstract class CreateSql {
 
     @SneakyThrows
-    public static void run(String path, String name, String version, Platform platform) {
+    public static void run(String path, String name, String version, Platform platform, Boolean strictMode) {
         if (StringUtils.isEmpty(path)) {
             String root = Paths.get("").toFile().getAbsolutePath();
             Path path1 = Paths.get(root + "/sql");
@@ -32,6 +32,7 @@ public abstract class CreateSql {
         dbMigration.setName(name);
         dbMigration.setPathToResources(path);
         dbMigration.setPlatform(platform);
+        dbMigration.setStrictMode(strictMode);
         dbMigration.generateMigration();
     }
 
@@ -47,7 +48,7 @@ public abstract class CreateSql {
                 }
             });
         }
-        run(pathStr, "init", "1.0", platform);
+        run(pathStr, "init", "1.0", platform, true);
     }
 
     public static int calculate(String str) {
@@ -70,6 +71,7 @@ public abstract class CreateSql {
         String path = System.getenv("path");
         String version = System.getenv("version");
         String platform = System.getenv("platform");
-        run(path, name, version, Platform.valueOf(platform));
+        Boolean strict_mode = Boolean.valueOf(System.getenv("strict_mode"));
+        run(path, name, version, Platform.valueOf(platform), strict_mode);
     }
 }

@@ -36,8 +36,6 @@ public class AutoSNMPConfig {
 
 
     public static void main(String[] args) {
-//        CommunityTarget
-
         PDU pdu = new PDU();
         //GET 用来得到一条管理信息
         pdu.setType(PDU.GETNEXT);
