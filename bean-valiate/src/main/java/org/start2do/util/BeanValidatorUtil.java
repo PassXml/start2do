@@ -11,7 +11,15 @@ public final class BeanValidatorUtil {
 
     protected static ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     protected static Validator validator = factory.getValidator();
-    public static Boolean echoPath = false;
+    private static Boolean echoPath = false;
+
+    public static void setEchoPath() {
+        BeanValidatorUtil.echoPath = true;
+    }
+
+    public static void setHidePath() {
+        BeanValidatorUtil.echoPath = false;
+    }
 
     public static void validate(Object obj, Class<?>... groups) {
         validate(echoPath, obj, groups);

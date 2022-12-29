@@ -1,12 +1,13 @@
 package org.start2do;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.StringJoiner;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -14,6 +15,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.start2do.dto.BusinessException;
 import org.start2do.dto.annotation.SysLogSetting;
 import org.start2do.entity.business.SysLog;
 import org.start2do.entity.business.SysLog.Type;
@@ -22,6 +24,7 @@ import org.start2do.util.StringUtils;
 import org.start2do.util.spring.LogAop;
 import org.start2do.util.spring.LogAopConfig;
 
+@Slf4j
 @Aspect
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "start2do", value = "syslog.enable", havingValue = "true")
@@ -75,7 +78,7 @@ public class SysLogAop {
         return getMultistageReverseProxyIp(ip);
     }
 
-    private SysLog getSysLog() throws IOException {
+    private SysLog getSysLog() {
         HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(
             RequestContextHolder.getRequestAttributes())).getRequest();
         SysLog sysLog = new SysLog();
@@ -92,36 +95,44 @@ public class SysLogAop {
         });
         sysLog.setParams(params.toString());
         StringJoiner joiner = new StringJoiner("");
-        while (request.getHeaderNames().hasMoreElements()) {
-            String s = request.getHeaderNames().nextElement();
-            joiner.add(s).add("=").add(request.getHeader(s));
+        Iterator<String> iterator = request.getHeaderNames().asIterator();
+        String s = null;
+        try {
+            while ((s = iterator.next()) != null) {
+                joiner.add(s).add("=").add(request.getHeader(s));
+
+            }
+        } catch (Exception e) {
+            log.error("{},{}", s, e.getMessage(), e);
         }
         sysLog.setRequestHeader(joiner.toString());
-        sysLog.setRequestBody(new String(request.getInputStream().readAllBytes()));
+        try {
+            sysLog.setRequestBody(new String(request.getInputStream().readAllBytes()));
+        } catch (IOException e) {
+            sysLog.setResponseBody(e.getMessage());
+        }
         return sysLog;
     }
 
     @Around("@annotation(sysLog)")
-    @SneakyThrows
     public Object around(ProceedingJoinPoint point, SysLogSetting sysLog) {
         SysLog logVo = getSysLog();
         logVo.setTitle(sysLog.value());
-
         logVo.setRequestHeader("");
         logVo.setRequestBody("");
         logVo.setResponseHeader("");
         logVo.setResponseBody("");
-
         // 发送异步日志事件
         Long startTime = System.currentTimeMillis();
         Object obj = null;
         try {
             obj = point.proceed();
             logVo.setResponseBody(json.toJson(obj));
-        } catch (Exception e) {
+            return obj;
+        } catch (Throwable e) {
             logVo.setType(Type.Error);
             logVo.setExceptionInfo(e.getMessage());
-            throw e;
+            throw new BusinessException(e.getMessage());
         } finally {
             Long endTime = System.currentTimeMillis();
             logVo.setUseTime(endTime - startTime);
@@ -136,7 +147,6 @@ public class SysLogAop {
             }
             sysLogService.save(logVo);
         }
-        return obj;
     }
 
 
