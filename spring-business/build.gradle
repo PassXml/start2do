@@ -22,6 +22,10 @@ dependencies {
     compileOnly 'com.fasterxml.jackson.core:jackson-annotations:2.13.3'
     compileOnly("org.aspectj:aspectjrt:1.9.7")
     compileOnly("org.aspectj:aspectjweaver:1.9.7")
+    //
+    compileOnly("org.springframework.boot:spring-boot-autoconfigure:2.6.7")
+    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.6.7'
+    compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.1'
 }
 
 test {

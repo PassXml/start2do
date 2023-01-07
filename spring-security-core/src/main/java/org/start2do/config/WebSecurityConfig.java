@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -19,15 +18,13 @@ import org.springframework.security.config.annotation.web.configurers.Expression
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.start2do.filter.JwtRequestFilter;
 import org.start2do.util.JwtTokenUtil;
 
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-@ConfigurationProperties(prefix = "jwt")
 @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
@@ -42,10 +39,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Getter
     private Boolean checkExpired;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
     @Resource
     @Lazy

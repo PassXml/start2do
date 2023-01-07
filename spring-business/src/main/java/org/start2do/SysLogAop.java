@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.StringJoiner;
+import java.util.concurrent.ExecutorService;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -31,8 +32,9 @@ import org.start2do.util.spring.LogAopConfig;
 public class SysLogAop {
 
     private final SysLogService sysLogService;
-    private final LogAopConfig aopConfig;
+    private final LogAopConfig config;
     public final LogAop.JSON json;
+    private final ExecutorService executorService;
 
     private String getIP(HttpServletRequest request) {
         String[] headers = new String[]{"X-Forwarded-For", "X-Real-IP", "Proxy-Client-IP", "WL-Proxy-Client-IP",
@@ -115,38 +117,34 @@ public class SysLogAop {
     }
 
     @Around("@annotation(sysLog)")
-    public Object around(ProceedingJoinPoint point, SysLogSetting sysLog) {
-        SysLog logVo = getSysLog();
-        logVo.setTitle(sysLog.value());
-        logVo.setRequestHeader("");
-        logVo.setRequestBody("");
-        logVo.setResponseHeader("");
-        logVo.setResponseBody("");
-        // 发送异步日志事件
+    public Object around(ProceedingJoinPoint point, SysLogSetting sysLog) throws Throwable {
         Long startTime = System.currentTimeMillis();
-        Object obj = null;
-        try {
-            obj = point.proceed();
-            logVo.setResponseBody(json.toJson(obj));
-            return obj;
-        } catch (Throwable e) {
-            logVo.setType(Type.Error);
-            logVo.setExceptionInfo(e.getMessage());
-            throw new BusinessException(e.getMessage());
-        } finally {
-            Long endTime = System.currentTimeMillis();
-            logVo.setUseTime(endTime - startTime);
-            HttpServletResponse response = ((ServletRequestAttributes) Objects.requireNonNull(
-                RequestContextHolder.getRequestAttributes())).getResponse();
-            if (response != null) {
-                StringJoiner joiner = new StringJoiner("");
-                for (String headerName : response.getHeaderNames()) {
-                    joiner.add(headerName).add("=").add(response.getHeader(headerName));
+        Object obj = point.proceed();
+        executorService.submit(() -> {
+            SysLog logVo = getSysLog();
+            logVo.setTitle(sysLog.value());
+            try {
+                logVo.setResponseBody(json.toJson(obj));
+            } catch (Throwable e) {
+                logVo.setType(Type.Error);
+                logVo.setExceptionInfo(e.getMessage());
+                throw new BusinessException(e.getMessage());
+            } finally {
+                Long endTime = System.currentTimeMillis();
+                logVo.setUseTime(endTime - startTime);
+                HttpServletResponse response = ((ServletRequestAttributes) Objects.requireNonNull(
+                    RequestContextHolder.getRequestAttributes())).getResponse();
+                if (response != null) {
+                    StringJoiner joiner = new StringJoiner("");
+                    for (String headerName : response.getHeaderNames()) {
+                        joiner.add(headerName).add("=").add(response.getHeader(headerName));
+                    }
+                    logVo.setResponseHeader(joiner.toString());
                 }
-                logVo.setResponseHeader(joiner.toString());
+                sysLogService.save(logVo);
             }
-            sysLogService.save(logVo);
-        }
+        });
+        return obj;
     }
 
 

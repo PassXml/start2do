@@ -11,40 +11,36 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 
-@Configuration
-@ConfigurationProperties(prefix = "start2do")
+@Setter
+@Getter
+@Accessors(chain = true)
+@NoArgsConstructor
+@Configuration(proxyBeanMethods = false)
+@ConfigurationProperties(prefix = "start2do.log")
 public class LogAopConfig {
 
-    @Setter
-    private List<String> skinClass;
-    @Getter
+    private boolean enable;
+
     private List<Class> skinClazz;
+    private String name;
 
     @PostConstruct
     public void init() {
         if (skinClazz == null) {
-            skinClazz = new ArrayList<>(
-                Arrays.asList(
-                    HttpServletRequest.class, HttpServletResponse.class,
-                    ServletResponse.class, ServletRequest.class, OutputStream.class,
-                    ByteArrayOutputStream.class
-                )
-            );
+            skinClazz = new ArrayList<>();
         }
-        if (skinClass == null) {
-            return;
-        }
-        for (String aClass : skinClass) {
-            try {
-                skinClazz.add(Class.forName(aClass));
-            } catch (ClassNotFoundException e) {
-
-            }
-        }
+        skinClazz.addAll(Arrays.asList(
+            HttpServletRequest.class, HttpServletResponse.class,
+            ServletResponse.class, ServletRequest.class, OutputStream.class,
+            ByteArrayOutputStream.class
+        ));
     }
+
 }

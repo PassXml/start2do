@@ -23,12 +23,13 @@ import org.start2do.service.SysLoginUserService;
 @Service
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
-public class SysLoginUserServiceImpl extends AbsService<SysUser> implements SysLoginUserService<SysUser>, UserDetailsService {
+public class SysLoginUserServiceImpl extends AbsService<SysUser> implements SysLoginUserService<SysUser>,
+    UserDetailsService {
 
 
     @Override
     public UserCredentials loadUserByUsername(String username) throws UsernameNotFoundException {
-        QSysUser sysUser = new QSysUser().menus.fetch().roles.menus.fetch().roles.fetch();
+        QSysUser sysUser = new QSysUser().setUseCache(true).menus.fetch().roles.menus.fetch().roles.fetch();
         SysUser user = findOne(sysUser.username.eq(username));
         if (user == null) {
             throw new UsernameNotFoundException("用户名不存在");
