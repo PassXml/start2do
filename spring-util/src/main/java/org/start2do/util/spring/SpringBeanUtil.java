@@ -1,5 +1,6 @@
 package org.start2do.util.spring;
 
+import lombok.Getter;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -8,7 +9,9 @@ import org.springframework.stereotype.Component;
 @Component
 public final class SpringBeanUtil implements ApplicationContextAware {
 
+    @Getter
     private static ApplicationContext context;
+
 
     public static <T> T getBean(Class<T> tClass) {
         return context.getBean(tClass);

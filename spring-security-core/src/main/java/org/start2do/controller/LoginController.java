@@ -85,7 +85,7 @@ public class LoginController {
                 throw new BusinessException("验证码不能为空");
             }
             String kaptcha = Optional.ofNullable(ops.get(Key + req.getKaptchaKey())).map(Object::toString)
-                .orElseThrow(() -> new BusinessException("验证码不能为空"));
+                .orElseThrow(() -> new BusinessException("验证码已超时,请重新刷新验证码"));
             if (!req.getKaptchaCode().equals(kaptcha)) {
                 throw new BusinessException("验证码不正确");
             }
@@ -137,7 +137,7 @@ public class LoginController {
         ImageIO.write(bi, "jpg", outputStream);
         String key = StringUtils.randomString(12);
         String redisKey = Key + key;
-        ops.set(redisKey, text, 1, TimeUnit.MINUTES);
+        ops.set(redisKey, text, 2, TimeUnit.MINUTES);
         return R.ok(new CodeResp(key, Base64.getEncoder().encodeToString(outputStream.toByteArray())));
     }
 

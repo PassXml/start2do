@@ -48,6 +48,14 @@ public class LogPageResp {
      */
     private String params;
     /**
+     * 请求的Body
+     */
+    private String requestBody;
+    /**
+      *
+     */
+    private String responseBody;
+    /**
      * time
      */
     private Long useTime;

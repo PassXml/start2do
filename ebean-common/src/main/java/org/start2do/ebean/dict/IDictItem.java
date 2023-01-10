@@ -27,6 +27,10 @@ public interface IDictItem {
         return getItemBean().getValue();
     }
 
+    default String getLabel() {
+        return getItemBean().getLabel();
+    }
+
     default boolean isValue(String value) {
         return StringUtils.isNotBlank(value) && value.endsWith(value());
     }
