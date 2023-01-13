@@ -1,5 +1,6 @@
 package org.start2do.util.spring;
 
+import java.util.Map;
 import lombok.Getter;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -17,6 +18,10 @@ public final class SpringBeanUtil implements ApplicationContextAware {
         return context.getBean(tClass);
     }
 
+    public static <T> Map<String, T> getBeans(Class<T> tClass) {
+        return context.getBeansOfType(tClass);
+    }
+
     public static <T> T getBean(String className, Class<T> tClass) {
         return context.getBean(className, tClass);
     }
@@ -25,6 +30,5 @@ public final class SpringBeanUtil implements ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext context) throws BeansException {
         SpringBeanUtil.context = context;
-
     }
 }

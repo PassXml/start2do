@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.start2do.dto.BusinessException;
@@ -27,14 +30,16 @@ import org.start2do.util.spring.LogAopConfig;
 
 @Slf4j
 @Aspect
+@Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "start2do", value = "syslog.enable", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.sys-log", value = "enable", havingValue = "true")
 public class SysLogAop {
 
     private final SysLogService sysLogService;
     private final LogAopConfig config;
     public final LogAop.JSON json;
-    private final ExecutorService executorService;
+
+    private ExecutorService executorService = Executors.newFixedThreadPool(5);
 
     private String getIP(HttpServletRequest request) {
         String[] headers = new String[]{"X-Forwarded-For", "X-Real-IP", "Proxy-Client-IP", "WL-Proxy-Client-IP",
@@ -64,6 +69,12 @@ public class SysLogAop {
         return ip;
     }
 
+    @PostConstruct
+    public void init() {
+        log.info("启用SysLogAOP");
+
+    }
+
     private String getClientIPByHeader(HttpServletRequest request, String... headerNames) {
         String[] var3 = headerNames;
         int var4 = headerNames.length;
@@ -80,9 +91,7 @@ public class SysLogAop {
         return getMultistageReverseProxyIp(ip);
     }
 
-    private SysLog getSysLog() {
-        HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(
-            RequestContextHolder.getRequestAttributes())).getRequest();
+    private SysLog getSysLog(HttpServletRequest request) {
         SysLog sysLog = new SysLog();
         sysLog.setType(Type.Info);
         sysLog.setRemoteAddr(getIP(request));
@@ -105,7 +114,6 @@ public class SysLogAop {
 
             }
         } catch (Exception e) {
-            log.error("{},{}", s, e.getMessage(), e);
         }
         sysLog.setRequestHeader(joiner.toString());
         try {
@@ -120,8 +128,12 @@ public class SysLogAop {
     public Object around(ProceedingJoinPoint point, SysLogSetting sysLog) throws Throwable {
         Long startTime = System.currentTimeMillis();
         Object obj = point.proceed();
+        HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(
+            RequestContextHolder.getRequestAttributes())).getRequest();
+        HttpServletResponse response = ((ServletRequestAttributes) Objects.requireNonNull(
+            RequestContextHolder.getRequestAttributes())).getResponse();
         executorService.submit(() -> {
-            SysLog logVo = getSysLog();
+            SysLog logVo = getSysLog(request);
             logVo.setTitle(sysLog.value());
             try {
                 logVo.setResponseBody(json.toJson(obj));
@@ -132,8 +144,6 @@ public class SysLogAop {
             } finally {
                 Long endTime = System.currentTimeMillis();
                 logVo.setUseTime(endTime - startTime);
-                HttpServletResponse response = ((ServletRequestAttributes) Objects.requireNonNull(
-                    RequestContextHolder.getRequestAttributes())).getResponse();
                 if (response != null) {
                     StringJoiner joiner = new StringJoiner("");
                     for (String headerName : response.getHeaderNames()) {

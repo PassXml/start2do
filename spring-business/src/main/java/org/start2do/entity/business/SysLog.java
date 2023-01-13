@@ -150,7 +150,7 @@ public class SysLog extends Model {
      */
     @WhoModified
     @ExcelSetting("更新人")
-    @Column(name = "update_person", nullable = true)
+    @Column(name = "update_person")
     private String updatePerson;
 
     @Version

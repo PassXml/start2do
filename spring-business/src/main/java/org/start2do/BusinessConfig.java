@@ -13,6 +13,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @NoArgsConstructor
 public class BusinessConfig {
 
+    private Boolean enable;
     private SysLogConfig sysLog;
 
     @Setter

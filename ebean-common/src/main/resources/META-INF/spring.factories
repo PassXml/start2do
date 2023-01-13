@@ -1,2 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   org.start2do.EbeanBeanAutoConfiguration
+org.springframework.context.ApplicationListener=\
+  org.start2do.EbeanSpringInitListener

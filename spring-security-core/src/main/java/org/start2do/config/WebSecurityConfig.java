@@ -1,9 +1,7 @@
 package org.start2do.config;
 
-import java.util.List;
 import javax.annotation.Resource;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +17,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.start2do.Start2doSecurityConfig;
 import org.start2do.filter.JwtRequestFilter;
 import org.start2do.util.JwtTokenUtil;
 
@@ -26,20 +25,10 @@ import org.start2do.util.JwtTokenUtil;
 @Configuration(proxyBeanMethods = false)
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
+@RequiredArgsConstructor
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Setter
-    @Getter
-    private Boolean enable = true;
-    @Setter
-    @Getter
-    private List<String> whiteList;
-
-    @Setter
-    @Getter
-    private Boolean checkExpired;
-
-
+    private final Start2doSecurityConfig config;
     @Resource
     @Lazy
 
@@ -67,16 +56,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
-        if (enable) {
+        if (config.getEnable()) {
             ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry security = httpSecurity.csrf()
                 .disable().authorizeRequests().antMatchers("/auth/login", "/auth/code").permitAll();
-            if (this.checkExpired != null) {
-                JwtTokenUtil.CheckExpired = this.checkExpired;
+            if (config.getCheckExpired() != null) {
+                JwtTokenUtil.CheckExpired = config.getCheckExpired();
             }
-            if (whiteList != null) {
-                security.antMatchers(
-                    whiteList.toArray(new String[]{})
-                ).permitAll();
+            if (config.getWhiteList() != null) {
+                security.antMatchers(config.getWhiteList().toArray(new String[]{})).permitAll();
             }
             security.anyRequest().authenticated().and().exceptionHandling()
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint).and().sessionManagement()

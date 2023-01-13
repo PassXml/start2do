@@ -15,14 +15,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
 
 @Setter
 @Getter
 @Accessors(chain = true)
 @NoArgsConstructor
-@Configuration(proxyBeanMethods = false)
 @ConfigurationProperties(prefix = "start2do.log")
 public class LogAopConfig {
 

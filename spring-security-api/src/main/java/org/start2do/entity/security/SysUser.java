@@ -1,5 +1,6 @@
 package org.start2do.entity.security;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.DbEnumValue;
@@ -55,6 +56,7 @@ public class SysUser extends BaseModel2 implements Serializable {
     private Integer deptId;
     @JoinColumn(name = "dept_id", insertable = false, updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     private SysDept dept;
     @JoinTable(
         name = "sys_user_role",
@@ -62,6 +64,7 @@ public class SysUser extends BaseModel2 implements Serializable {
         inverseJoinColumns = {@JoinColumn(name = "role_id", referencedColumnName = "id")}
     )
     @ManyToMany(fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<SysRole> roles;
     @JoinTable(
         name = "sys_user_permission",
@@ -69,6 +72,7 @@ public class SysUser extends BaseModel2 implements Serializable {
         inverseJoinColumns = {@JoinColumn(name = "menu_id", referencedColumnName = "id")}
     )
     @ManyToMany(fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<SysMenu> menus;
 
     public SysUser(String username, String realName, String password, String email, String phone, Integer deptId,
