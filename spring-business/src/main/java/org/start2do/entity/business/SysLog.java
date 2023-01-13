@@ -1,8 +1,8 @@
 package org.start2do.entity.business;
 
 import io.ebean.Model;
-import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbComment;
+import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.DbEnumValue;
 import io.ebean.annotation.Identity;
 import io.ebean.annotation.IdentityType;
@@ -31,7 +31,6 @@ import org.start2do.util.ExcelUtil.ExcelSetting;
 @NoArgsConstructor
 @Entity
 @Table(name = "sys_log")
-@Cache(enableQueryCache = true)
 public class SysLog extends Model {
 
     /**
@@ -123,7 +122,6 @@ public class SysLog extends Model {
     @Column(name = "exception_info")
     private String exceptionInfo;
 
-
     /**
      * 创建时间
      */
@@ -132,6 +130,7 @@ public class SysLog extends Model {
     @Column(name = "create_time")
     private LocalDateTime createTime;
     @WhoCreated
+    @DbDefault("NO SET")
     @ExcelSetting("创建人")
     @Column(name = "create_person")
     private String createPerson;
@@ -150,6 +149,7 @@ public class SysLog extends Model {
      */
     @WhoModified
     @ExcelSetting("更新人")
+    @DbDefault("NO SET")
     @Column(name = "update_person")
     private String updatePerson;
 
@@ -157,6 +157,7 @@ public class SysLog extends Model {
     @ExcelSetting("版本号")
     @Column(name = "version")
     private Long version;
+
 
     public enum Type {
         Error("9", "异常"), Info("0", "正常");

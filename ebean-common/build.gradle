@@ -13,7 +13,7 @@ dependencies {
     api "io.ebean:ebean-platform-oracle:$ebeanVersion"
     api("io.ebean:ebean-querybean:$ebeanVersion")
     compileOnly("io.ebean:ebean-redis:$ebeanVersion")
-    implementation("io.ebean:ebean-migration:13.6.0")
+    implementation("io.ebean:ebean-migration:13.6.2")
     implementation "io.ebean:ebean-ddl-generator:$ebeanVersion"
     api(project(":spring-common"))
     api(project(":common-util"))
