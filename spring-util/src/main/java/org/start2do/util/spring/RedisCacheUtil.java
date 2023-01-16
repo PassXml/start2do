@@ -1,7 +1,6 @@
 package org.start2do.util.spring;
 
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -37,12 +36,10 @@ public class RedisCacheUtil {
         } else {
             T result = function.get();
             if (result != null) {
-                redisCacheUtil.redisTemplate.opsForValue.set(key, result);
+                redisCacheUtil.redisTemplate.opsForValue().set(key, result);
             }
             return result;
         }
-
-        return null;
     }
 
     public static void set(String key, Object obj) {
