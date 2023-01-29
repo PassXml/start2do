@@ -3,6 +3,7 @@ package org.start2do.ebean;
 
 import io.ebean.annotation.Platform;
 import io.ebean.dbmigration.DbMigration;
+import io.ebean.ddlrunner.ScriptTransform;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -49,6 +50,14 @@ public abstract class CreateSql {
             });
         }
         run(pathStr, "init", "1.0", platform, true);
+    }
+
+    public static int calculateByFilePath(String filePath) {
+        try {
+            return calculate(ScriptTransform.build(null, null).transform(Files.readString(Paths.get(filePath))));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static int calculate(String str) {
