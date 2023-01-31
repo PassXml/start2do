@@ -37,7 +37,7 @@ public class SysLogController {
      */
     @GetMapping("page")
     public R<Page<LogPageResp>> page(Page page, LogPageReq req) {
-        QSysLog qClass = new QSysLog();
+        QSysLog qClass = new QSysLog().createTime.desc();
         Where.ready().notEmpty(req.getType(), s -> qClass.type.eq(Type.find(s)))
             .notNull(req.getStartTime(), qClass.createTime::ge)
             .notNull(req.getEndTime(), qClass.createTime::lt);

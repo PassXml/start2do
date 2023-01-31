@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,19 +17,17 @@ import org.springframework.context.annotation.Configuration;
 @Accessors(chain = true)
 @NoArgsConstructor
 @ConfigurationProperties(prefix = "jwt.kaptcha")
+@ConditionalOnProperty(prefix = "jwt.kaptcha", name = "enable", havingValue = "true")
 @Configuration
 public class KaptchaConfig {
 
-    @Value("${jwt.kaptcha:true}")
     private Boolean enable;
-    @Value("${jwt.width:400}")
     private String width = "400";
-    @Value("${jwt.height:125}")
     private String height = "125";
-    @Value("${jwt.font-size:100}")
     private String fontSize = "100";
 
     @Bean
+    @ConditionalOnProperty(prefix = "jwt.kaptcha", name = "enable", havingValue = "true")
     public DefaultKaptcha DefaultKaptcha() {
         DefaultKaptcha defaultKaptcha = new DefaultKaptcha();
         Properties properties = new Properties();

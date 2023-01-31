@@ -16,7 +16,7 @@ import org.start2do.util.JwtTokenUtil;
 @ConfigurationProperties(prefix = "jwt")
 public class Start2doSecurityConfig {
 
-    private Boolean enable = true;
+    private Boolean enable;
     private List<String> whiteList;
 
     private Boolean checkExpired;
