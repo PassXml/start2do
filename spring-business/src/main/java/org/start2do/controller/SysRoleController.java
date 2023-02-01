@@ -42,7 +42,7 @@ public class SysRoleController {
     public R<Page<RolePageResp>> page(Page page, RolePageReq req) {
         QSysRole qClass = new QSysRole();
         Where.ready().like(req.getRoleName(), qClass.name::like)
-            .like(req.getRoleCode(), qClass.roleCode::eq);
+            .like(req.getRoleCode(), qClass.roleCode::like);
         return R.ok(sysRoleService.page(qClass, page, RoleDtoMapper.INSTANCE::toRolePageResp));
     }
 

@@ -6,10 +6,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.start2do.config.KaptchaConfig;
 
 @Configuration(proxyBeanMethods = false)
 @ComponentScan("org.start2do")
-@Import(Start2doSecurityConfig.class)
+@Import({Start2doSecurityConfig.class, KaptchaConfig.class})
 public class AutoScanConfig {
 
     @Bean

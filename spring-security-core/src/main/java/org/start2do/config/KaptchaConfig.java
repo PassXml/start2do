@@ -10,7 +10,6 @@ import lombok.experimental.Accessors;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 @Setter
 @Getter
@@ -18,7 +17,6 @@ import org.springframework.context.annotation.Configuration;
 @NoArgsConstructor
 @ConfigurationProperties(prefix = "jwt.kaptcha")
 @ConditionalOnProperty(prefix = "jwt.kaptcha", name = "enable", havingValue = "true")
-@Configuration
 public class KaptchaConfig {
 
     private Boolean enable;

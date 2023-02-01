@@ -26,6 +26,9 @@ dependencies {
     compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.1'
     compileOnly("org.springframework.boot:spring-boot-starter-data-redis:2.6.7")
     compileOnly group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.13.2'
+    //okhttp
+    compileOnly 'com.squareup.okhttp3:okhttp:4.10.0'
+    compileOnly("com.squareup.okhttp3:logging-interceptor:4.10.0")
 
 }
 
