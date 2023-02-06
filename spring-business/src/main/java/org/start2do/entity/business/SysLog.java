@@ -9,8 +9,6 @@ import io.ebean.annotation.Identity;
 import io.ebean.annotation.IdentityType;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
-import io.ebean.annotation.WhoCreated;
-import io.ebean.annotation.WhoModified;
 import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -129,7 +127,6 @@ public class SysLog extends Model {
     @ExcelProperty("创建时间")
     @Column(name = "create_time")
     private LocalDateTime createTime;
-    @WhoCreated
     @DbDefault("NO SET")
     @ExcelProperty("创建人")
     @Column(name = "create_person")
@@ -147,7 +144,6 @@ public class SysLog extends Model {
     /**
      * 更新人员
      */
-    @WhoModified
     @ExcelProperty("更新人")
     @DbDefault("NO SET")
     @Column(name = "update_person")

@@ -1,5 +1,6 @@
 package org.start2do;
 
+import io.ebean.config.CurrentUserProvider;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Objects;
@@ -38,6 +39,7 @@ public class SysLogAop {
     private final SysLogService sysLogService;
     private final LogAopConfig config;
     public final LogAop.JSON json;
+    private final CurrentUserProvider currentUserProvider;
 
     private ExecutorService executorService = Executors.newFixedThreadPool(5);
 
@@ -72,8 +74,8 @@ public class SysLogAop {
     @PostConstruct
     public void init() {
         log.info("启用SysLogAOP");
-
     }
+
 
     private String getClientIPByHeader(HttpServletRequest request, String... headerNames) {
         String[] var3 = headerNames;
@@ -132,9 +134,12 @@ public class SysLogAop {
             RequestContextHolder.getRequestAttributes())).getRequest();
         HttpServletResponse response = ((ServletRequestAttributes) Objects.requireNonNull(
             RequestContextHolder.getRequestAttributes())).getResponse();
+        String username = String.valueOf(currentUserProvider.currentUser());
         executorService.submit(() -> {
             SysLog logVo = getSysLog(request);
             logVo.setTitle(sysLog.value());
+            logVo.setCreatePerson(username);
+            logVo.setUpdatePerson(username);
             try {
                 logVo.setResponseBody(json.toJson(obj));
             } catch (Throwable e) {
