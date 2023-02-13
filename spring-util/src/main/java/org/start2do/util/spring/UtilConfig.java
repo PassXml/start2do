@@ -14,5 +14,15 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class UtilConfig {
 
     private boolean enable;
-    private boolean redis;
+    private RedisConfig redis;
+
+
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    public static class RedisConfig {
+
+        private String enable;
+    }
 }
