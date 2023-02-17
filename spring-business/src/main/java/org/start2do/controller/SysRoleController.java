@@ -1,6 +1,9 @@
 package org.start2do.controller;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,10 +22,17 @@ import org.start2do.dto.req.role.RolePageReq;
 import org.start2do.dto.req.role.RoleUpdateReq;
 import org.start2do.dto.resp.role.RoleDetailResp;
 import org.start2do.dto.resp.role.RolePageResp;
+import org.start2do.dto.resp.role.RoleUsersResp;
 import org.start2do.ebean.util.Where;
 import org.start2do.entity.security.SysRole;
+import org.start2do.entity.security.SysUser;
+import org.start2do.entity.security.SysUserRole;
 import org.start2do.entity.security.query.QSysRole;
+import org.start2do.entity.security.query.QSysUser;
+import org.start2do.entity.security.query.QSysUserRole;
 import org.start2do.service.SysRoleService;
+import org.start2do.service.SysUserRoleService;
+import org.start2do.service.SysUserService;
 import org.start2do.util.BeanValidatorUtil;
 
 /**
@@ -34,6 +44,8 @@ import org.start2do.util.BeanValidatorUtil;
 public class SysRoleController {
 
     private final SysRoleService sysRoleService;
+    private final SysUserRoleService userRoleService;
+    private final SysUserService userService;
 
     /**
      * 分页
@@ -41,8 +53,7 @@ public class SysRoleController {
     @GetMapping("page")
     public R<Page<RolePageResp>> page(Page page, RolePageReq req) {
         QSysRole qClass = new QSysRole();
-        Where.ready().like(req.getRoleName(), qClass.name::like)
-            .like(req.getRoleCode(), qClass.roleCode::like);
+        Where.ready().like(req.getRoleName(), qClass.name::like).like(req.getRoleCode(), qClass.roleCode::like);
         return R.ok(sysRoleService.page(qClass, page, RoleDtoMapper.INSTANCE::toRolePageResp));
     }
 
@@ -111,4 +122,22 @@ public class SysRoleController {
     }
 
 
+    @GetMapping("users")
+    public R<List<RoleUsersResp>> users(Integer roleId) {
+        List<SysUserRole> all = userRoleService.findAll(new QSysUserRole().roleId.eq(roleId));
+        if (all.isEmpty()) {
+            return R.ok(new ArrayList<>());
+        }
+        Map<Integer, SysUser> map = userService.findAll(
+                new QSysUser().id.in(all.stream().map(SysUserRole::getUserId).collect(Collectors.toSet()))).stream()
+            .collect(Collectors.toMap(SysUser::getId, e -> e));
+        return R.ok(all.stream().map(t -> {
+            SysUser user = map.get(t.getUserId());
+            RoleUsersResp resp = new RoleUsersResp(t.getUserId(),
+                Optional.ofNullable(user).map(SysUser::getUsername).orElse(null),
+                Optional.ofNullable(user).map(SysUser::getRealName).orElse(null)
+            );
+            return resp;
+        }).collect(Collectors.toList()));
+    }
 }

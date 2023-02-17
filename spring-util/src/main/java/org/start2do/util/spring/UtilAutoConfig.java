@@ -34,8 +34,8 @@ public class UtilAutoConfig {
 
     @Bean
     @ConditionalOnProperty(prefix = "start2do.util.redis", value = "enable", havingValue = "true")
-    public <T> RedisTemplate<String, T> objectRedisTemplate(RedisConnectionFactory factory) {
-        RedisTemplate<String, T> redisTemplate = new RedisTemplate<>();
+    public RedisTemplate<String, Object> objectRedisTemplate(RedisConnectionFactory factory) {
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
         redisTemplate.setKeySerializer(stringRedisSerializer);
         Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(
