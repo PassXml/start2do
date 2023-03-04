@@ -1,6 +1,7 @@
 package org.start2do.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,7 @@ import org.start2do.dto.req.dept.DeptPageReq;
 import org.start2do.dto.req.dept.DeptUpdateReq;
 import org.start2do.dto.resp.dept.DeptDetailResp;
 import org.start2do.dto.resp.dept.DeptPageResp;
+import org.start2do.dto.resp.dept.DeptTreeResp;
 import org.start2do.ebean.util.Where;
 import org.start2do.entity.security.SysDept;
 import org.start2do.entity.security.query.QSysDept;
@@ -93,6 +95,20 @@ public class SysDeptController {
     public R<DeptDetailResp> detail(IdReq req) {
         BeanValidatorUtil.validate(req);
         return R.ok(DeptDtoMapper.INSTANCE.toDeptDetailResp(sysDeptService.getById(req.getId())));
+    }
+
+    @GetMapping("tree")
+    public R<List<DeptTreeResp>> tree() {
+        List<SysDept> depts = sysDeptService.findAll();
+        List<DeptTreeResp> objects = depts.stream().map(DeptDtoMapper.INSTANCE::toDeptTreeResp)
+            .collect(Collectors.toList());
+        Map<Integer, List<DeptTreeResp>> map = objects.stream().filter(t -> t.getParentId() != null)
+            .collect(Collectors.groupingBy(DeptTreeResp::getParentId));
+        for (DeptTreeResp object : objects) {
+            object.setChildren(map.get(object.getId()));
+        }
+        return R.ok(
+            objects.stream().filter(t -> t.getParentId() == null).collect(Collectors.toList()));
     }
 
 }

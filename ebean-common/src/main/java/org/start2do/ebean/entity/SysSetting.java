@@ -25,7 +25,6 @@ import org.start2do.ebean.dto.EnableType;
 @NoArgsConstructor
 @Entity
 @Table(name = "sys_setting")
-@Index(name = "IDX_ST_TYPE", columnNames = "type", unique = true)
 @DbComment("字典值表")
 @Cache(enableQueryCache = true)
 public class SysSetting extends BaseModel2 implements Serializable {
@@ -35,14 +34,16 @@ public class SysSetting extends BaseModel2 implements Serializable {
     private Long id;
 
     @Column(name = "enable", length = 2)
+    @Index
     private EnableType enable;
 
     @Column(name = "remark", length = 512)
     private String remark;
-
+    @Index
     @Column(name = "type", length = 128)
     private String type;
     @Column(name = "kkey", length = 128)
+    @Index
     private String key;
     @Column(name = "vvalue", length = 2048)
     private String value;

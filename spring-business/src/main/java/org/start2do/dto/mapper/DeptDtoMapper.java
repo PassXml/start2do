@@ -8,6 +8,7 @@ import org.start2do.dto.req.dept.DeptAddReq;
 import org.start2do.dto.req.dept.DeptUpdateReq;
 import org.start2do.dto.resp.dept.DeptDetailResp;
 import org.start2do.dto.resp.dept.DeptPageResp;
+import org.start2do.dto.resp.dept.DeptTreeResp;
 import org.start2do.ebean.pojo.IgnoreBaseModel2;
 import org.start2do.ebean.pojo.IgnoreId;
 import org.start2do.entity.security.SysDept;
@@ -32,4 +33,8 @@ public interface DeptDtoMapper {
     void update(@MappingTarget SysDept dept, DeptUpdateReq req);
 
     DeptDetailResp toDeptDetailResp(SysDept byId);
+
+    @Mapping(target = "children", ignore = true)
+    @Mapping(source = "sort", target = "weight")
+    DeptTreeResp toDeptTreeResp(SysDept sysDept);
 }

@@ -43,11 +43,14 @@ allprojects {
         targetCompatibility = curJdkVersion
     }
     repositories {
-        mavenCentral()
+        maven { url 'https://maven.aliyun.com/nexus/content/repositories/google' }
+        maven { url 'https://maven.aliyun.com/nexus/content/groups/public' }
+        maven { url 'https://maven.aliyun.com/nexus/content/repositories/jcenter' }
         maven {
+            url "https://maven.aliyun.com/repository/central"
             allowInsecureProtocol true
-            url pushMavenUrl
         }
+        mavenCentral()
     }
     dependencies {
         testCompileOnly("org.projectlombok:lombok:$lombokVersion")

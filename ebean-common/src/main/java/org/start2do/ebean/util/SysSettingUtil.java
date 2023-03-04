@@ -11,6 +11,7 @@ import org.start2do.ebean.dto.EnableType;
 import org.start2do.ebean.entity.SysSetting;
 import org.start2do.ebean.entity.query.QSysSetting;
 import org.start2do.ebean.service.SysSettingService;
+import org.start2do.util.StringUtils;
 
 @RequiredArgsConstructor
 @Component
@@ -30,8 +31,14 @@ public class SysSettingUtil {
 
 
     public static String getLabel(String type, String key) {
-        return Optional.ofNullable(SysSettingUtil.sysSettingUtil.hashMap.get(type))
-            .map(stringStringHashMap -> stringStringHashMap.get(key)).orElse(key);
+        if (StringUtils.isEmpty(type)) {
+            return type;
+        }
+        if (StringUtils.isEmpty(key)) {
+            return key;
+        }
+        return Optional.ofNullable(SysSettingUtil.sysSettingUtil.hashMap.get(type)).map(t -> t.get(key))
+            .orElseGet(() -> key);
     }
 
     public static ConcurrentHashMap<String, String> getItems(String type) {
@@ -46,7 +53,7 @@ public class SysSettingUtil {
         }
         for (SysSetting dto : sysSettingService.findAll(new QSysSetting().enable.eq(EnableType.Enable))) {
             if (dto.getType() == null) {
-                return;
+                continue;
             }
             ConcurrentHashMap<String, String> map = SysSettingUtil.sysSettingUtil.hashMap.get(dto.getType());
             if (map == null) {

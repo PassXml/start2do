@@ -20,6 +20,7 @@ import org.start2do.dto.req.role.RoleAddReq;
 import org.start2do.dto.req.role.RoleMenuReq;
 import org.start2do.dto.req.role.RolePageReq;
 import org.start2do.dto.req.role.RoleUpdateReq;
+import org.start2do.dto.req.role.RoleUserAddReq;
 import org.start2do.dto.resp.role.RoleDetailResp;
 import org.start2do.dto.resp.role.RolePageResp;
 import org.start2do.dto.resp.role.RoleUsersResp;
@@ -140,4 +141,15 @@ public class SysRoleController {
             return resp;
         }).collect(Collectors.toList()));
     }
+
+    /**
+     * 设置用户组
+     */
+    @PostMapping("set/user")
+    public R setUserRole(@RequestBody RoleUserAddReq req) {
+        BeanValidatorUtil.validate(req);
+        userRoleService.save(req.getRoleId(), req.getUserId());
+        return R.ok();
+    }
+
 }

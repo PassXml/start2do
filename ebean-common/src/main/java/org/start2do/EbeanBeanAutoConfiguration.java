@@ -4,6 +4,7 @@ import io.ebean.Database;
 import io.ebean.DatabaseFactory;
 import io.ebean.config.CurrentUserProvider;
 import io.ebean.config.DatabaseConfig;
+import io.ebean.spring.txn.SpringJdbcTransactionManager;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -31,6 +32,7 @@ public class EbeanBeanAutoConfiguration {
         config.setRunMigration(migration);
         config.setDataSource(dataSource);
         config.setDdlRun(false);
+        config.setExternalTransactionManager(new SpringJdbcTransactionManager());
         config.setDdlCreateOnly(false);
         return config;
     }
@@ -41,12 +43,11 @@ public class EbeanBeanAutoConfiguration {
         return () -> "not set";
     }
 
-    @Bean
+    @Bean(name = "Database")
     @ConditionalOnMissingBean(Database.class)
     @ConditionalOnBean(value = {DatabaseConfig.class})
     public io.ebean.Database database(DatabaseConfig config) {
-        Database database = DatabaseFactory.create(config);
-        return database;
+        return DatabaseFactory.create(config);
     }
 
 
