@@ -30,13 +30,17 @@ public class RedisCacheUtil {
     }
 
     public static <T> T get(String key, Supplier<T> function) {
+        return get(key, function, 30, TimeUnit.MINUTES);
+    }
+
+    public static <T> T get(String key, Supplier<T> function, long time, TimeUnit timeUnit) {
         Object o = redisCacheUtil.redisTemplate.opsForValue().get(key);
         if (o != null) {
             return (T) o;
         } else {
             T result = function.get();
             if (result != null) {
-                redisCacheUtil.redisTemplate.opsForValue().set(key, result);
+                redisCacheUtil.redisTemplate.opsForValue().set(key, result, time, timeUnit);
             }
             return result;
         }
