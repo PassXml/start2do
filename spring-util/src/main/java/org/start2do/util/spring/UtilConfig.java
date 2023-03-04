@@ -23,6 +23,6 @@ public class UtilConfig {
     @NoArgsConstructor
     public static class RedisConfig {
 
-        private String enable;
+        private boolean enable;
     }
 }

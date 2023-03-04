@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 //    id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'java-library'
-    id "io.ebean" version "13.11.1" apply(false)
+    id "io.ebean" version "13.14.0" apply(false)
 }
 group 'org.start2do'
 
@@ -22,7 +22,7 @@ allprojects {
         lombokVersion = '1.18.22'
         jasperreportsVersion = '6.19.1'
         mapstructVersion = "1.4.2.Final"
-        ebeanVersion = "13.11.1"
+        ebeanVersion = "13.14.0"
         vertxVersion = '4.3.4'
         curVersion = project.version == 'unspecified' ? this.rootProject.version : project.version
         jdkVersion = ["ebean-common"        : JavaVersion.VERSION_11,
@@ -43,13 +43,11 @@ allprojects {
         targetCompatibility = curJdkVersion
     }
     repositories {
-        maven { url 'https://maven.aliyun.com/nexus/content/repositories/google' }
-        maven { url 'https://maven.aliyun.com/nexus/content/groups/public' }
-        maven { url 'https://maven.aliyun.com/nexus/content/repositories/jcenter' }
-        maven {
-            url "https://maven.aliyun.com/repository/central"
-            allowInsecureProtocol true
-        }
+        mavenLocal()
+        maven { url 'https://mirrors.cloud.tencent.com/nexus/repository/maven-public/' }
+        maven { url 'https://mirrors.163.com/maven/repository/maven-public/' }
+        maven { url 'https://mirrors.huaweicloud.com/repository/maven/' }
+        maven { url 'https://maven.aliyun.com/nexus/content/groups/public/' }
         mavenCentral()
     }
     dependencies {

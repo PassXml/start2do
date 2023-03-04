@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "start2do.business.redis", value = "enable", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.util.redis", value = "enable", havingValue = "true")
 public class RedisCacheUtil {
 
     private final RedisTemplate<String, Object> redisTemplate;
