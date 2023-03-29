@@ -1,5 +1,6 @@
 package org.start2do.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import java.io.Serializable;
 import java.util.List;
 import java.util.function.Function;
@@ -16,10 +17,12 @@ public class Page<T> implements Serializable {
     /**
      * 每页显示条数
      */
+    @JsonAlias("pageSize")
     protected int size = 10;
     /**
      * 当前页
      */
+    @JsonAlias("page")
     protected int current = 1;
     /**
      * 集合
@@ -52,4 +55,11 @@ public class Page<T> implements Serializable {
         return Math.max(0, current - 1) * size;
     }
 
+    public void setPageSize(int size) {
+        this.size = size;
+    }
+
+    public void setPage(int current) {
+        this.current = current;
+    }
 }

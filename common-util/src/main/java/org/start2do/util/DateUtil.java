@@ -3,7 +3,9 @@ package org.start2do.util;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.Getter;
@@ -85,6 +87,10 @@ public class DateUtil {
             return LocalDateTime.now();
         }
         return LocalDateTime.parse(time, getPattern(pattern));
+    }
+
+    public static LocalDateTime dateToLocalDateTime(Date endDate) {
+        return LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault());
     }
 
     public static class Pattern {

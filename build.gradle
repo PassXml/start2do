@@ -57,6 +57,8 @@ allprojects {
         compileOnly("org.mapstruct:mapstruct:$mapstructVersion")
         annotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")
         annotationProcessor("io.ebean:querybean-generator:$ebeanVersion")
+        compileOnly("org.springframework.boot:spring-boot-autoconfigure:3.0.4")
+        annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '3.0.4'
     }
 
     test {
@@ -103,6 +105,16 @@ allprojects {
     }
     [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
+}
+task cleanTemp(dependsOn: [':clean']) {
+    dependsOn ':clean'
+}
+task buildTaskClass(dependsOn: ['cleanTemp']) {
+    dependsOn ':classes'
+}
+task push(dependsOn: ['buildTaskClass']) {
+    dependsOn(":jar")
+    dependsOn(":publishMavenPublicationToMavenRepository")
 }
 
 

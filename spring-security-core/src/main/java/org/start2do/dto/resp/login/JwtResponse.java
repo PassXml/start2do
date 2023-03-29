@@ -28,6 +28,7 @@ public class JwtResponse {
      * 用户名
      */
     private String username;
+    private String realName;
     private Integer deptId;
     private String deptName;
     /**
@@ -38,6 +39,7 @@ public class JwtResponse {
     public JwtResponse(UserCredentials userCredentials, String jwt) {
         this.id = userCredentials.getId();
         this.username = userCredentials.getUsername();
+        this.realName= userCredentials.getRealName();
         this.jwt = jwt;
         this.roles = userCredentials.getRoles();
         Optional<SysDept> optional = Optional.ofNullable(userCredentials.getDept());

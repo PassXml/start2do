@@ -14,6 +14,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class UtilConfig {
 
     private boolean enable;
+    private boolean schedulingEnable;
     private RedisConfig redis;
 
 

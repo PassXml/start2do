@@ -12,7 +12,9 @@ public class EbeanSpringInitListener implements ApplicationListener<Availability
     @Override
     public void onApplicationEvent(AvailabilityChangeEvent event) {
         if (ReadinessState.ACCEPTING_TRAFFIC == event.getState()) {
-            SysSettingUtil.getSysSettingUtil().sync();
+            if (SysSettingUtil.getSysSettingUtil() != null) {
+                SysSettingUtil.getSysSettingUtil().sync();
+            }
         }
     }
 }

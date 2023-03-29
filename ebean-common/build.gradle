@@ -36,7 +36,7 @@ dependencies {
     testImplementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.3"
     testImplementation "org.glassfish.jaxb:jaxb-runtime:2.3.6"
     testAnnotationProcessor("io.ebean:querybean-generator:$ebeanVersion")
-    api 'io.ebean:ebean-spring-txn:13.13.0'
+    api "io.ebean:ebean-spring-txn:$ebeanVersion"
 }
 
 test {

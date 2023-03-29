@@ -15,10 +15,15 @@ dependencies {
     compileOnly("io.ebean:ebean:$ebeanVersion")
     compileOnly("org.slf4j:slf4j-api:1.7.36")
     compileOnly("org.springframework:spring-webmvc:5.3.19")
+    compileOnly("org.springframework.boot:spring-boot:2.6.7")
 //    compileOnly("org.start2do:bean-valiate:2.0.1-SNAPSHOT")
     compileOnly(project(":bean-valiate"))
     compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
     api(project(":api"))
+    compileOnly 'com.fasterxml.jackson.core:jackson-annotations:2.14.2'
+    compileOnly group: 'org.springframework.security', name: 'spring-security-core', version: '5.6.3'
+
+
 }
 
 test {

@@ -1,9 +1,14 @@
 package org.start2do.util.spring;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import lombok.NoArgsConstructor;
 import okhttp3.ConnectionPool;
+import okhttp3.Cookie;
+import okhttp3.CookieJar;
+import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
@@ -13,17 +18,24 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
+@NoArgsConstructor
 public abstract class AbsOKHttpClient {
 
-    protected final Logger log;
+    protected Logger log;
 
 
     protected RestTemplate restTemplate;
+    protected OkHttpClient okHttpClient;
 
+
+    public CookieJar getCookieJar() {
+        return CookieJar.NO_COOKIES;
+    }
 
     public OkHttpClient okHttpConfigClient(ConnectionPool pool, Integer connectTimeout, int readTimeout,
         int writeTimeout) {
         Builder builder = new OkHttpClient().newBuilder().connectionPool(pool)
+            .cookieJar(getCookieJar())
             .connectTimeout(connectTimeout, TimeUnit.SECONDS).readTimeout(readTimeout, TimeUnit.SECONDS)
             .writeTimeout(writeTimeout, TimeUnit.SECONDS).hostnameVerifier((hostname, session) -> true)
             .addInterceptor(new HttpLoggingInterceptor(HttpLoggingInterceptor.Logger.DEFAULT));
@@ -35,13 +47,38 @@ public abstract class AbsOKHttpClient {
         return new ArrayList<>();
     }
 
-    public AbsOKHttpClient(String clientName, Integer connectTimeout, int readTimeout, int writeTimeout,
+    public void build(String clientName, Integer connectTimeout, int readTimeout, int writeTimeout,
         int maxIdleConnections, int keepAliveDuration) {
         ConnectionPool pool = new ConnectionPool(maxIdleConnections, keepAliveDuration, TimeUnit.SECONDS);
-        OkHttpClient client = okHttpConfigClient(pool, connectTimeout, readTimeout, writeTimeout);
-        OkHttp3ClientHttpRequestFactory httpRequestFactory = new OkHttp3ClientHttpRequestFactory(client);
+        okHttpClient = okHttpConfigClient(pool, connectTimeout, readTimeout, writeTimeout);
+        OkHttp3ClientHttpRequestFactory httpRequestFactory = new OkHttp3ClientHttpRequestFactory(okHttpClient);
         this.log = LoggerFactory.getLogger(clientName);
         this.restTemplate = new RestTemplate(httpRequestFactory);
+    }
+
+    public static class CookieJarManager implements CookieJar {
+
+
+        private final HashMap<String, List<Cookie>> cookieStore = new HashMap<>();
+
+        @Override
+        public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
+            if (null == url || null == cookies || cookies.size() <= 0) {
+                return;
+            }
+            cookieStore.put(url.host(), cookies);
+
+        }
+
+        @Override
+        public List<Cookie> loadForRequest(HttpUrl url) {
+            if (null != url) {
+                List<Cookie> cookies = cookieStore.get(url.host());
+                return cookies != null ? cookies : new ArrayList<Cookie>();
+            } else {
+                return new ArrayList<>();
+            }
+        }
     }
 
 }

@@ -51,5 +51,4 @@ public class UtilAutoConfig {
         redisTemplate.setConnectionFactory(factory);
         return redisTemplate;
     }
-
 }

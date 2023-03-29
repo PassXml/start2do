@@ -33,6 +33,10 @@ public class RedisCacheUtil {
         return get(key, function, 30, TimeUnit.MINUTES);
     }
 
+    public static Boolean hasKey(String key) {
+        return redisCacheUtil.redisTemplate.hasKey(key);
+    }
+
     public static <T> T get(String key, Supplier<T> function, long time, TimeUnit timeUnit) {
         Object o = redisCacheUtil.redisTemplate.opsForValue().get(key);
         if (o != null) {

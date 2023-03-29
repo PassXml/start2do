@@ -70,7 +70,7 @@ public class LogAop {
                     for (Object arg : args) {
                         Boolean skin = false;
                         for (Class aClass : logAopConfig.getSkinClazz()) {
-                            if (arg == null || aClass.equals(arg.getClass())) {
+                            if (arg == null || aClass.isAssignableFrom(arg.getClass())) {
                                 skin = true;
                                 break;
                             }

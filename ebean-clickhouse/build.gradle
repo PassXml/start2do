@@ -1,0 +1,28 @@
+plugins {
+    id 'java'
+    id 'java-library'
+}
+
+group 'org.start2do'
+version '2.0.5-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    compileOnly("org.springframework.boot:spring-boot:2.6.7")
+    compileOnly("org.springframework.boot:spring-boot-autoconfigure:2.6.7")
+    compileOnly(project(":ebean-common"))
+    compileOnly group: 'io.ebean', name: 'ebean-platform-clickhouse', version: ebeanVersion
+    compileOnly("io.ebean:ebean:$ebeanVersion")
+    compileOnly "io.ebean:ebean-spring-txn:$ebeanVersion"
+    api group: 'com.clickhouse', name: 'clickhouse-jdbc', version: '0.4.1'
+
+}
+
+test {
+    useJUnitPlatform()
+}

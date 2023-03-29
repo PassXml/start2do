@@ -12,7 +12,9 @@ public class SpringInitListener implements ApplicationListener<AvailabilityChang
     @Override
     public void onApplicationEvent(AvailabilityChangeEvent event) {
         if (ReadinessState.ACCEPTING_TRAFFIC == event.getState()) {
-            DictUtil.getDictUtil().sync();
+            if (DictUtil.getDictUtil() != null) {
+                DictUtil.getDictUtil().sync();
+            }
         }
     }
 }

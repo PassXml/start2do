@@ -19,10 +19,12 @@ public class UserCredentials extends User {
     private List<UserRole> roles;
     private List<SysMenu> menus;
     private SysDept dept;
+    private String realName;
 
-    public UserCredentials(Integer id, String username, String password,
+    public UserCredentials(Integer id, String username, String password, String realName,
         Collection<? extends GrantedAuthority> authorities) {
         super(username, password, authorities);
         this.id = id;
+        this.realName = realName;
     }
 }

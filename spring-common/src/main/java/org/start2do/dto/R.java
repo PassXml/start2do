@@ -93,4 +93,9 @@ public class R<T> implements Serializable {
         this.msg = msg;
         this.data = data;
     }
+
+    public String toJson() {
+        return "{" + "\"code\":" + code + ", \"msg\":\"" + msg + "\"" + ",\"data\":\"" + data + "\"" + '}';
+    }
+
 }

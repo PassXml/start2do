@@ -40,10 +40,10 @@ public class SysLoginUserServiceImpl extends AbsService<SysUser> implements SysL
         List<SysRole> roles = user.getRoles();
         Set<GrantedAuthority> authorities = new HashSet<GrantedAuthority>();
         UserCredentials credentials = new UserCredentials(user.getId(), user.getUsername(), user.getPassword(),
-            authorities);
-        credentials.setRoles(roles.stream()
-            .map(sysRole -> new UserRole(sysRole.getId(), sysRole.getName(), sysRole.getRoleCode()))
-            .collect(Collectors.toList()));
+            user.getRealName(), authorities);
+        credentials.setRoles(
+            roles.stream().map(sysRole -> new UserRole(sysRole.getId(), sysRole.getName(), sysRole.getRoleCode()))
+                .collect(Collectors.toList()));
         credentials.setDept(user.getDept());
         return credentials;
     }

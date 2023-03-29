@@ -2,11 +2,14 @@ package org.start2do.ebean.service;
 
 import io.ebean.DB;
 import io.ebean.Model;
+import io.ebean.PagedList;
 import io.ebean.typequery.TQRootBean;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import org.start2do.dto.DataNotFoundException;
 import org.start2do.dto.Page;
@@ -137,6 +140,16 @@ public abstract class AbsService<T extends Model> implements IService<T> {
         bean.setUseQueryCache(true);
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         return new EPage<R>(bean.findPagedList(), mapper);
+    }
+
+    @Override
+    public <S extends TQRootBean, R> Page<R> page(TQRootBean<T, S> bean, Page page, Consumer<Collection<T>> function,
+        Function<? super T, ? extends R> mapper) {
+        bean.setUseQueryCache(true);
+        bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
+        PagedList<T> list = bean.findPagedList();
+        function.accept(list.getList());
+        return new EPage<>(list, mapper);
     }
 
 

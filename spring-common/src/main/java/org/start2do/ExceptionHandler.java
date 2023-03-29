@@ -21,6 +21,7 @@ public class ExceptionHandler {
         return R.failed(5000, e.getMessage());
     }
 
+
     @ResponseBody
     @org.springframework.web.bind.annotation.ExceptionHandler(ValidateException.class)
     public R ValueException(ValidateException e) {

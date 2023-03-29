@@ -2,7 +2,9 @@ package org.start2do.ebean.service;
 
 import io.ebean.Model;
 import io.ebean.typequery.TQRootBean;
+import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import org.start2do.dto.Page;
 
@@ -51,6 +53,9 @@ public interface IService<T extends Model> {
         Function<? super T, ? extends R> mapper);
 
     <S extends TQRootBean, R> Page<R> pageUseCache(TQRootBean<T, S> bean, Page page,
+        Function<? super T, ? extends R> mapper);
+
+    <S extends TQRootBean, R> Page<R> page(TQRootBean<T, S> bean, Page page, Consumer<Collection<T>> function,
         Function<? super T, ? extends R> mapper);
 
     <S extends TQRootBean> int count(TQRootBean<T, S> bean);
