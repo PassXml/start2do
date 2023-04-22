@@ -39,7 +39,7 @@ public class Where {
     }
 
 
-    public Where notEmpty(Collection s, Consumer<Collection> function) {
+    public <T> Where notEmpty(Collection<T> s, Consumer<Collection<T>> function) {
         if (s != null && !s.isEmpty()) {
             function.accept(s);
         }

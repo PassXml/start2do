@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import org.start2do.dto.Page;
+import org.start2do.ebean.service.AbsService.Runner;
 
 public interface IService<T extends Model> {
 
@@ -64,4 +65,10 @@ public interface IService<T extends Model> {
     <S extends TQRootBean> int countUseCache(TQRootBean<T, S> bean);
 
     <S> boolean exists(TQRootBean<T, S> bean);
+
+    <S extends TQRootBean, R> Page<R> page(TQRootBean<T, S> bean, Page page, Consumer<Collection<T>> function,
+        Function<? super T, ? extends R> mapper, Consumer<Collection<R>> function2);
+
+    <S extends TQRootBean, R> Page<R> page(TQRootBean<T, S> bean, Page page,
+        Function<? super T, ? extends R> mapper, Runner<T, R> function2);
 }

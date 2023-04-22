@@ -73,8 +73,7 @@ public abstract class AbsService<T extends Model> implements IService<T> {
 
     @Override
     public T getById(Object id) {
-        return Optional.ofNullable(DB.find(aclass).setId(id).findOne())
-            .orElseThrow(DataNotFoundException::new);
+        return Optional.ofNullable(DB.find(aclass).setId(id).findOne()).orElseThrow(DataNotFoundException::new);
     }
 
     @Override
@@ -145,10 +144,11 @@ public abstract class AbsService<T extends Model> implements IService<T> {
     @Override
     public <S extends TQRootBean, R> Page<R> page(TQRootBean<T, S> bean, Page page, Consumer<Collection<T>> function,
         Function<? super T, ? extends R> mapper) {
-        bean.setUseQueryCache(true);
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         PagedList<T> list = bean.findPagedList();
-        function.accept(list.getList());
+        if (function != null) {
+            function.accept(list.getList());
+        }
         return new EPage<>(list, mapper);
     }
 
@@ -168,4 +168,37 @@ public abstract class AbsService<T extends Model> implements IService<T> {
     public <S> boolean exists(TQRootBean<T, S> bean) {
         return bean.exists();
     }
+
+    @Override
+    public <S extends TQRootBean, R> Page<R> page(TQRootBean<T, S> bean, Page page, Consumer<Collection<T>> function,
+        Function<? super T, ? extends R> mapper, Consumer<Collection<R>> function2) {
+        bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
+        PagedList<T> list = bean.findPagedList();
+        if (function != null) {
+            function.accept(list.getList());
+        }
+        EPage<R> ePage = new EPage<>(list, mapper);
+        if (function2 != null) {
+            function2.accept(ePage.getRecords());
+        }
+        return ePage;
+    }
+
+    @Override
+    public <S extends TQRootBean, R> Page<R> page(TQRootBean<T, S> bean, Page page,
+        Function<? super T, ? extends R> mapper, Runner<T, R> function2) {
+        bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
+        PagedList<T> list = bean.findPagedList();
+        EPage<R> ePage = new EPage<>(list, mapper);
+        if (function2 != null) {
+            function2.run(list.getList(), ePage.getRecords());
+        }
+        return ePage;
+    }
+
+    public interface Runner<T, R> {
+
+        void run(Collection<T> list, Collection<R> resps);
+    }
+
 }

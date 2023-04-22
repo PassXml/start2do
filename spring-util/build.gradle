@@ -22,7 +22,7 @@ dependencies {
     compileOnly("io.vertx:vertx-web-client:$vertxVersion")
     compileOnly("io.vertx:vertx-core:$vertxVersion")
     //
-    compileOnly("org.springframework.boot:spring-boot-autoconfigure:2.6.7")
+
     annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.6.7'
     compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.1'
     compileOnly("org.springframework.boot:spring-boot-starter-data-redis:2.6.7")

@@ -113,7 +113,6 @@ public class SysLogAop {
         try {
             while ((s = iterator.next()) != null) {
                 joiner.add(s).add("=").add(request.getHeader(s));
-
             }
         } catch (Exception e) {
         }
@@ -135,8 +134,8 @@ public class SysLogAop {
         HttpServletResponse response = ((ServletRequestAttributes) Objects.requireNonNull(
             RequestContextHolder.getRequestAttributes())).getResponse();
         String username = String.valueOf(currentUserProvider.currentUser());
+        SysLog logVo = getSysLog(request);
         executorService.submit(() -> {
-            SysLog logVo = getSysLog(request);
             logVo.setTitle(sysLog.value());
             logVo.setCreatePerson(username);
             logVo.setUpdatePerson(username);

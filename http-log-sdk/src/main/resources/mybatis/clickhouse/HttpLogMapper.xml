@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.start2do.mapper.HttpLogMapper">
+  <sql id="pageSql">
+    <where>
+      <if test="pojo.bodyKey != null and pojo.bodyKey != ''">
+        <if test="pojo.bodyValueLike != null">
+          visitParamExtractString(body
+                                 , #{pojo.bodyKey,jdbcType=VARCHAR}) like #{pojo.bodyValueLike,jdbcType=VARCHAR}
+        </if>
+      </if>
+
+    </where>
+  </sql>
+  <select id="findAllBodyJson" resultType="org.start2do.entity.HttpLog">
+    select *
+    from http_log
+    <include refid="pageSql"/>
+    order by create_time desc
+    <if test="page != null">
+      limit #{page.offset,jdbcType=INTEGER}, #{page.size}
+    </if>
+  </select>
+
+  <select id="count" resultType="java.lang.Long">
+    select count(1)
+    from http_log
+    <include refid="pageSql"/>
+  </select>
+</mapper>

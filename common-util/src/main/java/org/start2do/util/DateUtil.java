@@ -1,5 +1,6 @@
 package org.start2do.util;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -93,11 +94,31 @@ public class DateUtil {
         return LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault());
     }
 
+    public static String dateToString(Date date, String yyyyMmDdHHmmss) {
+        if (date == null) {
+            return "";
+        }
+        return new SimpleDateFormat(yyyyMmDdHHmmss).format(date);
+    }
+
+    public static String LocalDateTimeStr() {
+        return LocalDateTimeToString(LocalDateTime.now(), Pattern.YYYY_MM_ddHHmmss);
+    }
+
+    public static LocalTime toLocalTime(String string, String hHmmss) {
+        return LocalTime.parse(string, getPattern(hHmmss));
+    }
+
+    public static LocalDate toLocalDate(String reportTime, String yyyyMmDd) {
+        return LocalDate.parse(reportTime, getPattern(yyyyMmDd));
+    }
+
     public static class Pattern {
 
         public static final String YYYY_MM_ddHHmmss = "yyyy-MM-dd HH:mm:ss";
         public static final String YYYY_MM_dd = "yyyy-MM-dd";
         public static final String HHmmss = "HH:mm:ss";
+        public static final String HHmm = "HH:mm";
     }
 
 

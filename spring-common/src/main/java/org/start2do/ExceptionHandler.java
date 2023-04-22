@@ -1,6 +1,11 @@
 package org.start2do;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.start2do.dto.BusinessException;
@@ -48,5 +53,14 @@ public class ExceptionHandler {
     public R Exception(Exception e) {
         log.error(e.getMessage(), e);
         return R.failed(500, e.getMessage());
+    }
+
+    @ResponseBody
+    @org.springframework.web.bind.annotation.ExceptionHandler(value = MethodArgumentNotValidException.class)
+    public R handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        List<ObjectError> allErrors = e.getBindingResult().getAllErrors();
+        String message = allErrors.stream().map(DefaultMessageSourceResolvable::getDefaultMessage)
+            .collect(Collectors.joining(";"));
+        return R.failed(message);
     }
 }

@@ -1,0 +1,19 @@
+plugins {
+    id 'java'
+    id 'java-library'
+}
+
+group 'org.start2do'
+version '2.0.5-SNAPSHOT'
+
+dependencies {
+    api(project(':spring-common'))
+    api(project(':bean-valiate'))
+    api project(path: ':ebean-clickhouse', configuration: 'default')
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    compileOnly("org.springframework:spring-webmvc:5.2.3.RELEASE")
+    compileOnly 'jakarta.validation:jakarta.validation-api:2.0.2'
+}
+

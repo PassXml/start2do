@@ -10,6 +10,7 @@ import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -27,6 +28,13 @@ public abstract class AbsOKHttpClient {
     protected RestTemplate restTemplate;
     protected OkHttpClient okHttpClient;
 
+    public MediaType wwwFromMediaType() {
+        return MediaType.parse("application/x-www-form-urlencoded");
+    }
+
+    public MediaType jsonUTF8() {
+        return MediaType.parse("application/json");
+    }
 
     public CookieJar getCookieJar() {
         return CookieJar.NO_COOKIES;
@@ -41,6 +49,10 @@ public abstract class AbsOKHttpClient {
             .addInterceptor(new HttpLoggingInterceptor(HttpLoggingInterceptor.Logger.DEFAULT));
         getInterceptors().forEach(builder::addInterceptor);
         return builder.build();
+    }
+
+    public void setClientConfig(Builder config) {
+
     }
 
     public List<Interceptor> getInterceptors() {

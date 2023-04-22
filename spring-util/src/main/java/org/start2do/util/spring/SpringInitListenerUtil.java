@@ -22,7 +22,7 @@ public class SpringInitListenerUtil implements ApplicationListener<AvailabilityC
                             log.info("运行:{}", s);
                             initRunner.init();
                         } catch (Exception e) {
-                            log.error(e.getMessage(), e);
+                            log.error("{},{}", s, e.getMessage(), e);
                         }
                     });
                 });

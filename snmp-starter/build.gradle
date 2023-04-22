@@ -20,7 +20,6 @@ dependencyManagement {
 group 'org.start2do'
 
 dependencies {
-    compileOnly("org.springframework.boot:spring-boot-autoconfigure:2.6.7")
     annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.6.7'
     implementation group: 'org.snmp4j', name: 'snmp4j', version: '3.7.4'
 //

@@ -11,10 +11,17 @@ version '2.0.5-SNAPSHOT'
 allprojects {
     apply {
         plugin 'java'
-        plugin 'java-library'
         plugin 'maven-publish'
-//        plugin 'com.github.johnrengelman.shadow'
-        plugin 'io.ebean'
+        plugin 'java-library'
+        plugin "io.ebean"
+    }
+    repositories {
+        mavenLocal()
+        maven { url 'https://mirrors.cloud.tencent.com/nexus/repository/maven-public/' }
+        maven { url 'https://mirrors.163.com/maven/repository/maven-public/' }
+        maven { url 'https://mirrors.huaweicloud.com/repository/maven/' }
+        maven { url 'https://maven.aliyun.com/nexus/content/groups/public/' }
+        mavenCentral()
     }
     ext {
         pushMavenUrl = "http://192.168.30.110:8081/repository/zte-releases/"
@@ -29,6 +36,7 @@ allprojects {
                       "spring-common"       : JavaVersion.VERSION_11,
                       "spring-security-api" : JavaVersion.VERSION_11,
                       "spring-security-core": JavaVersion.VERSION_11,
+                      "http-log-sdk": JavaVersion.VERSION_11,
                       "spring-business"     : JavaVersion.VERSION_11,
         ]
     }
@@ -42,14 +50,6 @@ allprojects {
         sourceCompatibility = curJdkVersion
         targetCompatibility = curJdkVersion
     }
-    repositories {
-        mavenLocal()
-        maven { url 'https://mirrors.cloud.tencent.com/nexus/repository/maven-public/' }
-        maven { url 'https://mirrors.163.com/maven/repository/maven-public/' }
-        maven { url 'https://mirrors.huaweicloud.com/repository/maven/' }
-        maven { url 'https://maven.aliyun.com/nexus/content/groups/public/' }
-        mavenCentral()
-    }
     dependencies {
         testCompileOnly("org.projectlombok:lombok:$lombokVersion")
         compileOnly("org.projectlombok:lombok:$lombokVersion")
@@ -57,8 +57,8 @@ allprojects {
         compileOnly("org.mapstruct:mapstruct:$mapstructVersion")
         annotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")
         annotationProcessor("io.ebean:querybean-generator:$ebeanVersion")
-        compileOnly("org.springframework.boot:spring-boot-autoconfigure:3.0.4")
-        annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '3.0.4'
+        annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.6.7'
+        compileOnly("org.springframework.boot:spring-boot-autoconfigure:2.6.7")
     }
 
     test {

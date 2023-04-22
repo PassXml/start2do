@@ -29,6 +29,10 @@ public class RedisCacheUtil {
         return null;
     }
 
+    public static void remove(String key) {
+        redisCacheUtil.redisTemplate.delete(key);
+    }
+
     public static <T> T get(String key, Supplier<T> function) {
         return get(key, function, 30, TimeUnit.MINUTES);
     }
