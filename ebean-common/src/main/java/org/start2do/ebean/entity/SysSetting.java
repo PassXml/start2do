@@ -2,12 +2,13 @@ package org.start2do.ebean.entity;
 
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbComment;
+import io.ebean.annotation.Identity;
+import io.ebean.annotation.IdentityGenerated;
+import io.ebean.annotation.IdentityType;
 import io.ebean.annotation.Index;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import lombok.Getter;
@@ -30,7 +31,7 @@ import org.start2do.ebean.dto.EnableType;
 public class SysSetting extends BaseModel2 implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Identity(type = IdentityType.IDENTITY,generated = IdentityGenerated.BY_DEFAULT)
     private Long id;
 
     @Column(name = "enable", length = 2)

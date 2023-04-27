@@ -1,6 +1,7 @@
 package org.start2do.ebean.entity;
 
 import io.ebean.Model;
+import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.SoftDelete;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
@@ -63,6 +64,7 @@ public class BaseModel extends Model {
     @SoftDelete
     @Column(name = "is_delete")
     private Boolean isDelete = Boolean.FALSE;
+    @DbDefault("0")
     @Version
     @Column(name = "version")
     private Long version;

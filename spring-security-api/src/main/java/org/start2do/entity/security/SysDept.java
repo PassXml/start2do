@@ -2,11 +2,11 @@ package org.start2do.entity.security;
 
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.Identity;
+import io.ebean.annotation.IdentityType;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
@@ -25,8 +25,7 @@ import org.start2do.ebean.entity.BaseModel2;
 public class SysDept extends BaseModel2 implements Serializable {
 
     @Id
-    @Identity(start = 10)
-    @GeneratedValue(strategy = javax.persistence.GenerationType.IDENTITY)
+    @Identity(start = 10, sequenceName = "sys_dept", type = IdentityType.IDENTITY)
     private Integer id;
     @Column(name = "name", length = 128)
     private String name;

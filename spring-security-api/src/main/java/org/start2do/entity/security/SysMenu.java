@@ -4,12 +4,12 @@ import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbComment;
 import io.ebean.annotation.DbEnumValue;
 import io.ebean.annotation.Identity;
+import io.ebean.annotation.IdentityType;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -33,8 +33,7 @@ import org.start2do.ebean.entity.BaseModel2;
 public class SysMenu extends BaseModel2 implements Serializable {
 
     @Id
-    @Identity(start = 100)
-    @GeneratedValue(strategy = javax.persistence.GenerationType.IDENTITY)
+    @Identity(start = 100, type = IdentityType.IDENTITY)
     private Integer id;
     @Column(name = "name", length = 128)
     private String name;

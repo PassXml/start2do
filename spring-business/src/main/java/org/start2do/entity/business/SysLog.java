@@ -6,6 +6,7 @@ import io.ebean.annotation.DbComment;
 import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.DbEnumValue;
 import io.ebean.annotation.Identity;
+import io.ebean.annotation.IdentityGenerated;
 import io.ebean.annotation.IdentityType;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
@@ -35,7 +36,7 @@ public class SysLog extends Model {
      * 编号
      */
     @Id
-    @Identity(type = IdentityType.IDENTITY)
+    @Identity(type = IdentityType.IDENTITY,generated = IdentityGenerated.BY_DEFAULT)
     @ExcelProperty("日志编号")
     @DbComment("日志编号")
     private Long id;
