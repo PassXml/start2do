@@ -2,7 +2,7 @@ package org.start2do.dto.req.role;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import java.util.List;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

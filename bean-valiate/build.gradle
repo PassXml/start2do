@@ -4,21 +4,23 @@ plugins {
 }
 
 group 'org.start2do'
-version '2.0.5-SNAPSHOT'
+version '3.0.0-SNAPSHOT'
 
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     //jdk11
-    api 'jakarta.validation:jakarta.validation-api:2.0.2'
+//    api 'jakarta.validation:jakarta.validation-api:2.0.2'
+    api 'jakarta.validation:jakarta.validation-api:3.0.2'
 //    api 'javax.validation:validation-api:2.0.1.Final'
-//    api 'jakarta.el:jakarta.el-api:5.0.0'
-    // https://mvnrepository.com/artifact/jakarta.el/jakarta.el-api
-//    api 'jakarta.el:jakarta.el-api:4.0.0'
-//    api 'org.glassfish:jakarta.el:4.0.2'
-    api 'org.glassfish:javax.el:3.0.0'
-    api("org.hibernate.validator:hibernate-validator:6.0.23.Final")
+    api 'jakarta.el:jakarta.el-api:5.0.0'
+//    https://mvnrepository.com/artifact/jakarta.el/jakarta.el-api
+    api 'jakarta.el:jakarta.el-api:4.0.0'
+    api 'org.glassfish:jakarta.el:4.0.2'
+//    api 'org.glassfish:javax.el:3.0.0'
+    api("org.hibernate.validator:hibernate-validator:8.0.0.Final")
+//    api("org.hibernate.validator:hibernate-validator:8.0.0.Final")
 
 
 }

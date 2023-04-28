@@ -1,9 +1,9 @@
 package org.start2do.util.validator.inarray;
 
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import java.util.HashSet;
 import java.util.Set;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 
 public class InArraysLongValidation implements ConstraintValidator<InArray, Long> {
 

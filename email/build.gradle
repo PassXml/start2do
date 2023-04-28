@@ -13,16 +13,17 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.6.7'
+    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: springBootVersion
     api "io.vertx:vertx-core:$vertxVersion"
     api "io.vertx:vertx-mail-client:$vertxVersion"
     implementation(project(":bean-valiate"))
     implementation(project(":common-util"))
-    compileOnly("org.springframework.boot:spring-boot:2.6.7")
+    compileOnly("org.springframework.boot:spring-boot:$springBootVersion")
 
-    compileOnly 'javax.annotation:javax.annotation-api:1.3.2'
+    compileOnly group: 'jakarta.annotation', name: 'jakarta.annotation-api', version: '2.1.1'
+
     compileOnly("org.slf4j:slf4j-api:1.7.36")
-    compileOnly "org.springframework.boot:spring-boot-starter-mail:2.6.7"
+    compileOnly "org.springframework.boot:spring-boot-starter-mail:$springBootVersion"
 
 }
 

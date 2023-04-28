@@ -1,7 +1,8 @@
 package org.start2do.util.validator.notPattern;
 
+import jakarta.validation.ConstraintValidatorContext;
 import java.util.regex.Pattern;
-import javax.validation.ConstraintValidatorContext;
+
 
 public abstract class AbsNotHasPatternValidation {
 

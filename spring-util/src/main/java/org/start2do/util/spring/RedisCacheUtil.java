@@ -2,7 +2,7 @@ package org.start2do.util.spring;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.RedisTemplate;

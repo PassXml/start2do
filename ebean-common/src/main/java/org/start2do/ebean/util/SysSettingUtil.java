@@ -2,7 +2,7 @@ package org.start2do.ebean.util;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;

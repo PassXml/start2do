@@ -1,7 +1,7 @@
 package org.start2do.util.validator.notPattern;
 
 import java.util.regex.Pattern;
-import javax.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidator;
 
 public class NotHasEmojiValidation extends AbsNotHasPatternValidation implements
     ConstraintValidator<NotHasEmoji, String> {

@@ -15,15 +15,15 @@ dependencies {
     api(project(":spring-security-api"))
     api(project(":spring-security-core"))
     api(project(":spring-util"))
-    compileOnly("org.springframework.boot:spring-boot:2.6.7")
-    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
-    compileOnly("org.springframework:spring-webmvc:5.2.3.RELEASE")
+    compileOnly("org.springframework.boot:spring-boot:$springBootVersion")
+    compileOnly group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.0.0'
+    compileOnly("org.springframework:spring-webmvc:$springVersion")
     compileOnly 'com.fasterxml.jackson.core:jackson-annotations:2.13.3'
     compileOnly("org.aspectj:aspectjrt:1.9.7")
     compileOnly("org.aspectj:aspectjweaver:1.9.7")
     //
 
-    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.6.7'
+    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: springBootVersion
     compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.1'
     api 'com.alibaba:easyexcel:3.2.0'
 }

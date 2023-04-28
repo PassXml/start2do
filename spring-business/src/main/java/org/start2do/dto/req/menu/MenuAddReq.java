@@ -1,7 +1,7 @@
 package org.start2do.dto.req.menu;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

@@ -1,11 +1,10 @@
 plugins {
     id 'java'
-    id "org.springframework.boot" version "2.6.7"
-    id "io.spring.dependency-management" version "1.0.11.RELEASE"
+    id "org.springframework.boot" version "3.0.6"
 }
 
 group 'org.start2do'
-version '2.0.5-SNAPSHOT'
+version '3.0.0-SNAPSHOT'
 
 
 dependencies {
@@ -13,7 +12,7 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     api project(':ebean-common')
     api project(':spring-common')
-    compileOnly "org.springframework:spring-context"
+    compileOnly "org.springframework:spring-context:$springVersion"
 
 
     testImplementation("org.slf4j:slf4j-api:1.7.36")
@@ -26,12 +25,10 @@ dependencies {
     testImplementation "org.glassfish.jaxb:jaxb-runtime:2.3.6"
 
 
-    compileOnly "org.springframework.boot:spring-boot-starter-web"
-    compileOnly "org.springframework.boot:spring-boot-starter-security"
-    compileOnly "org.springframework.boot:spring-boot-starter-oauth2-client"
+    compileOnly "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
+    compileOnly "org.springframework.boot:spring-boot-starter-security:$springBootVersion"
+//    compileOnly "org.springframework.boot:spring-boot-starter-oauth2-client:$springBootVersion"
 
-
-    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.6.7'
 }
 
 test {

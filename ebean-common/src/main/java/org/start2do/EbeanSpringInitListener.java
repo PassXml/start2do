@@ -1,5 +1,6 @@
 package org.start2do;
 
+import jakarta.persistence.PersistenceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.availability.AvailabilityChangeEvent;
 import org.springframework.boot.availability.ReadinessState;
@@ -13,7 +14,11 @@ public class EbeanSpringInitListener implements ApplicationListener<Availability
     public void onApplicationEvent(AvailabilityChangeEvent event) {
         if (ReadinessState.ACCEPTING_TRAFFIC == event.getState()) {
             if (SysSettingUtil.getSysSettingUtil() != null) {
-                SysSettingUtil.getSysSettingUtil().sync();
+                try {
+                    SysSettingUtil.getSysSettingUtil().sync();
+                } catch (PersistenceException e) {
+                    log.error(e.getMessage());
+                }
             }
         }
     }

@@ -1,8 +1,9 @@
 package org.start2do.util.validator.notPattern;
 
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import java.util.regex.Pattern;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+
 
 public class InPatternValidation implements ConstraintValidator<InPattern, String> {
 

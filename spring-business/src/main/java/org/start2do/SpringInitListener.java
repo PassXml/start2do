@@ -1,5 +1,6 @@
 package org.start2do;
 
+import jakarta.persistence.PersistenceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.availability.AvailabilityChangeEvent;
 import org.springframework.boot.availability.ReadinessState;
@@ -13,7 +14,11 @@ public class SpringInitListener implements ApplicationListener<AvailabilityChang
     public void onApplicationEvent(AvailabilityChangeEvent event) {
         if (ReadinessState.ACCEPTING_TRAFFIC == event.getState()) {
             if (DictUtil.getDictUtil() != null) {
-                DictUtil.getDictUtil().sync();
+                try {
+                    DictUtil.getDictUtil().sync();
+                } catch (PersistenceException e) {
+                    log.error(e.getMessage());
+                }
             }
         }
     }

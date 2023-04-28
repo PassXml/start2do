@@ -4,7 +4,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.mail.MailAttachment;
 import io.vertx.ext.mail.MailMessage;
 import java.io.ByteArrayOutputStream;
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
