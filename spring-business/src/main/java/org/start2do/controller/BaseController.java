@@ -1,6 +1,5 @@
 package org.start2do.controller;
 
-
 import io.ebean.Model;
 import io.ebean.typequery.TQRootBean;
 import org.springframework.beans.factory.annotation.Autowired;

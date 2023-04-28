@@ -16,7 +16,7 @@ public @interface NotHasEmoji {
 
     boolean checkNull() default true;
 
-    String message() default "${validatedValue} 不符合表达式{value}";
+    String message() default "${validatedValue} 不能包含Emoji表情";
 
     Class<?>[] groups() default {};
 

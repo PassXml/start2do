@@ -15,11 +15,12 @@ public class InPatternValidation implements ConstraintValidator<InPattern, Strin
         checkNull = constraintAnnotation.checkNull();
     }
 
+    @Override
     public boolean isValid(String s, ConstraintValidatorContext constraintValidatorContext) {
         if (s == null) {
             return !checkNull;
         }
-        boolean matches = pattern.matcher(s).find();
+        boolean matches = pattern.matcher(s).matches();
         return matches;
     }
 }
