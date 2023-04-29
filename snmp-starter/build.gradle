@@ -17,14 +17,14 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-actuator:$springBootVersion") {
         exclude group: 'jakarta.validation', module: 'jakarta.validation-api'
     }
-    testImplementation("org.springframework.cloud:spring-cloud-starter-openfeign:$springCloudVersion")
-    testImplementation("org.springframework.cloud:spring-cloud-starter-sleuth:$springCloudVersion")
+    testImplementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
+    testImplementation("org.springframework.cloud:spring-cloud-starter-sleuth:3.1.7")
 
 //    implementation("com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery")
 //    implementation("com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config")
 
-    testImplementation("org.springframework.boot:spring-boot-configuration-processor:$springVersion")
-    testImplementation("org.springframework.boot:spring-boot-starter-logging:$springVersion")
+    testImplementation("org.springframework.boot:spring-boot-configuration-processor:$springBootVersion")
+    testImplementation("org.springframework.boot:spring-boot-starter-logging:$springBootVersion")
 //    testImplementation("org.springframework.boot:spring-boot-starter-web:$springBootVersion") {
 //        exclude group: "javax.validation", module: "validation-api"
 //    }

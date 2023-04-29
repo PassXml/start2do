@@ -9,16 +9,16 @@ import io.ebean.migration.MigrationRunner;
 import io.ebean.spring.txn.SpringJdbcTransactionManager;
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.start2do.ebean.id_generators.UUIDStrIdGenerator;
 
 @Import(EbeanConfig.class)
-@Configuration
+@AutoConfiguration
 @ConditionalOnProperty(name = "spring.datasource.url")
 @RequiredArgsConstructor
 public class EbeanBeanAutoConfiguration {

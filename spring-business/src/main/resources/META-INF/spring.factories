@@ -1,4 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-org.start2do.BusinessAutoConfig
-org.springframework.context.ApplicationListener=\
-  org.start2do.SpringInitListener

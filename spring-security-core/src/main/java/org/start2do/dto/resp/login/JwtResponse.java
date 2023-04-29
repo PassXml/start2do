@@ -16,7 +16,7 @@ import org.start2do.entity.security.SysDept;
 @NoArgsConstructor
 public class JwtResponse {
 
-    /**
+    /** H
      * 用户Id
      */
     private Integer id;

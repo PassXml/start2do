@@ -1,1 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=org.start2do.AutoSNMPConfig.V3Class,org.start2do.AutoSNMPConfig.V1V2Class

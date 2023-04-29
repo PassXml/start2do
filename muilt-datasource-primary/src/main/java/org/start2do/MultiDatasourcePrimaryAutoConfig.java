@@ -9,11 +9,11 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.boot.autoconfigure.MybatisAutoConfiguration;
 import org.mybatis.spring.boot.autoconfigure.SpringBootVFS;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
@@ -22,7 +22,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.start2do.typehandle.AutoGenericEnumTypeHandler;
 import org.start2do.typehandle.UUIDTypeHandler;
 
-@Configuration
+@AutoConfiguration
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Import(MultiDatasourcePrimaryConfig.class)
 @ConditionalOnProperty(prefix = "spring.datasource", name = "url")

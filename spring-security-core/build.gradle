@@ -30,8 +30,8 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-actuator:$springBootVersion") {
         exclude group: 'jakarta.validation', module: 'jakarta.validation-api'
     }
-    testImplementation("org.springframework.cloud:spring-cloud-starter-openfeign:$springCloudStarterVersion")
-    testImplementation("org.springframework.cloud:spring-cloud-starter-sleuth:$springCloudStarterVersion")
+    testImplementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
+    testImplementation("org.springframework.cloud:spring-cloud-starter-sleuth:3.1.7")
 
 //    implementation("com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery:$springAliCloudVersion")
 //    implementation("com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config:$springAliCloudVersion")
@@ -41,10 +41,10 @@ dependencies {
         exclude group: "javax.validation", module: "validation-api"
         exclude group: "jakarta.validation", module: "validation-api"
     }
-    testImplementation("org.springframework.cloud:spring-cloud-context:$springCloudVersion")
+    testImplementation("org.springframework.cloud:spring-cloud-context:4.0.2")
     testImplementation("org.springframework.boot:spring-boot-starter-aop:$springBootVersion")
     compileOnly("org.springframework.boot:spring-boot-starter-data-redis:$springBootVersion")
-    testImplementation("org.springframework.boot:spring-boot-starter-data-redis:$springVersion")
+    testImplementation("org.springframework.boot:spring-boot-starter-data-redis:$springBootVersion")
     implementation group: 'org.springframework', name: 'spring-jdbc', version: springVersion
     testImplementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.1")
     testImplementation 'mysql:mysql-connector-java:5.1.49'

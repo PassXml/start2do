@@ -5,17 +5,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.availability.AvailabilityChangeEvent;
 import org.springframework.boot.availability.ReadinessState;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.DependsOn;
 
 /**
  * 等待完成初始化之后执行初始化
  */
 @Slf4j
+@DependsOn
 public class SpringInitListenerUtil implements ApplicationListener<AvailabilityChangeEvent> {
 
     @Override
     public void onApplicationEvent(AvailabilityChangeEvent event) {
         if (ReadinessState.ACCEPTING_TRAFFIC == event.getState()) {
             try {
+                if (SpringBeanUtil.getContext() == null) {
+                    return;
+                }
                 SpringBeanUtil.getBeans(WaitInitCompleteRunner.class).forEach((s, initRunner) -> {
                     ForkJoinPool.commonPool().submit(() -> {
                         try {
