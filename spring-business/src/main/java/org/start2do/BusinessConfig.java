@@ -16,6 +16,9 @@ public class BusinessConfig {
     private Boolean enable;
     private SysLogConfig sysLog;
 
+    private String dateTimePattern = "yyyy-MM-dd HH:mm:ss";
+    private String datePattern = "yyyy-MM-dd";
+
     @Setter
     @Getter
     @Accessors(chain = true)
