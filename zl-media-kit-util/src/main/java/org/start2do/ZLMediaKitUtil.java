@@ -31,14 +31,14 @@ public class ZLMediaKitUtil extends AbsOKHttpClient {
     }
 
     public String getWebSocketFlv(AddStreamProxy req) {
-        return config.isSSL() ? "wss://"
-            : "ws://" + config.getIp() + "/" + req.getApp() + "/" + req.getStream()
+        return config.isSsl() ? "wss://"
+            : "ws://" + config.getPullHost() + "/" + req.getApp() + "/" + req.getStream()
                 + ".live.flv?vhost=" + config.getVHost();
     }
 
     public void addRtspProxy(AddStreamProxy req) {
         try {
-            HttpUrl url = HttpUrl.get(config.getHost() + AddStreamProxy.URL);
+            HttpUrl url = HttpUrl.get(config.getServerHost() + AddStreamProxy.URL);
             HttpUrl httpUrl = url.newBuilder().addQueryParameter("secret", config.getSecret())
                 .addQueryParameter("vhost", config.getVHost()).addQueryParameter("app", req.getApp())
                 .addQueryParameter("stream", req.getStream()).addQueryParameter("url", req.getUrl())

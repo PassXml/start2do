@@ -14,11 +14,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class ZLMediaKitConfig {
 
     private Boolean enable;
-    private String host;
-    private String ip;
+    private String serverHost;
+    private String pullHost;
     private String secret;
     private String vHost;
-    private boolean isSSL = false;
+    private boolean ssl = false;
 
     private WebHookSetting webHook;
 
