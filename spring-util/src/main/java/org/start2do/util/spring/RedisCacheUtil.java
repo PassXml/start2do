@@ -1,10 +1,12 @@
 package org.start2do.util.spring;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +17,17 @@ public class RedisCacheUtil {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private static RedisCacheUtil redisCacheUtil;
+
+    public static <T> Optional<T> tryLock(String key, Supplier<T> o) {
+        if (redisCacheUtil.redisTemplate.hasKey(key)) {
+            return Optional.empty();
+        }
+        set(key, 1);
+        T t = o.get();
+        remove(key);
+        return Optional.ofNullable(t);
+    }
+
 
     @PostConstruct
     public void init() {
@@ -82,5 +95,21 @@ public class RedisCacheUtil {
         incrementPre(key);
         redisCacheUtil.redisTemplate.opsForValue().increment(key, i);
     }
+
+    public static void buildByJRedis(String host, Integer port) {
+        if (port == null) {
+            port = 6379;
+        }
+        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
+        jedisConnectionFactory.setHostName(host);
+        jedisConnectionFactory.setPort(port);
+        jedisConnectionFactory.afterPropertiesSet();
+        UtilAutoConfig config = new UtilAutoConfig();
+        RedisTemplate<String, Object> template = config.objectRedisTemplate(jedisConnectionFactory);
+        template.afterPropertiesSet();
+        RedisCacheUtil cacheUtil = new RedisCacheUtil(template);
+        RedisCacheUtil.redisCacheUtil = cacheUtil;
+    }
+
 
 }

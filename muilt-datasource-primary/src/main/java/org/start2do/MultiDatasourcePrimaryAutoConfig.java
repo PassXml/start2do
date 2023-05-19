@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -33,12 +34,12 @@ public class MultiDatasourcePrimaryAutoConfig {
 
     public final static String MainSqlSessionFactory = "MainSqlSessionFactory";
 
-//    @Primary
-//    @Bean("MainDataSource")
-//    public DataSource dataSource(MultiDatasourcePrimaryConfig config) {
-//        return DataSourceBuilder.create().url(config.getUrl()).driverClassName(config.getDriverClassName())
-//            .type(config.getType()).username(config.getUsername()).password(config.getPassword()).build();
-//    }
+    @Primary
+    @Bean
+    public DataSource dataSource(MultiDatasourcePrimaryConfig config) {
+        return DataSourceBuilder.create().url(config.getUrl()).driverClassName(config.getDriverClassName())
+            .type(config.getType()).username(config.getUsername()).password(config.getPassword()).build();
+    }
 
     @Primary
     @Bean("MainSqlSessionFactory")

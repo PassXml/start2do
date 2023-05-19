@@ -19,7 +19,7 @@ dependencies {
     api("com.squareup.okhttp3:logging-interceptor:4.10.0")
     compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.1'
     compileOnly("org.springframework:spring-web:5.3.19")
-
+    compileOnly("org.slf4j:slf4j-api:1.7.36")
 }
 
 test {
