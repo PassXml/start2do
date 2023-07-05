@@ -3,6 +3,7 @@ plugins {
     id 'maven-publish'
 //    id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'java-library'
+    id 'idea'
     id "io.ebean" version "13.20.0" apply(false)
 }
 group 'org.start2do'
