@@ -15,4 +15,6 @@ public class LogPageReq {
     private String type;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private LocalDateTime[] timeRange;
+
 }

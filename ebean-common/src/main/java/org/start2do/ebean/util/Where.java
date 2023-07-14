@@ -31,6 +31,16 @@ public class Where {
         return where;
     }
 
+    public <R> Where ddefaulf(R s, R defaultValue, Consumer<R> function) {
+        if (s != null) {
+            function.accept(s);
+        } else {
+            function.accept(defaultValue);
+        }
+        return where;
+    }
+
+
     public Where notEmpty(String s, Consumer<String> function) {
         if (StringUtils.isNotEmpty(s)) {
             function.accept(s);

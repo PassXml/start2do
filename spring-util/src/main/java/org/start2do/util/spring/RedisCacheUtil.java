@@ -22,10 +22,17 @@ public class RedisCacheUtil {
         if (redisCacheUtil.redisTemplate.hasKey(key)) {
             return Optional.empty();
         }
-        set(key, 1);
-        T t = o.get();
-        remove(key);
+        set(key, 1, 5, TimeUnit.SECONDS);
+        T t = null;
+        try {
+            t = o.get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            remove(key);
+        }
         return Optional.ofNullable(t);
+
     }
 
 

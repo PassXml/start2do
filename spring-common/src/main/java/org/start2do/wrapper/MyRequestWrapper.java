@@ -2,6 +2,7 @@ package org.start2do.wrapper;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import javax.servlet.ReadListener;
@@ -16,7 +17,14 @@ public class MyRequestWrapper extends HttpServletRequestWrapper {
 
     public MyRequestWrapper(HttpServletRequest request) throws IOException {
         super(request);
-        this.requestBody = request.getInputStream().readAllBytes();
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        int nRead;
+        byte[] data = new byte[1024 * 5];
+        while ((nRead = request.getInputStream().read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, nRead);
+        }
+        buffer.flush();
+        this.requestBody = buffer.toByteArray();
     }
 
     /**

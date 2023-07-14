@@ -51,13 +51,13 @@ public class LogAop {
 
     @Around("controller()")
     public Object before(ProceedingJoinPoint point) throws Throwable {
+        long startTime = System.currentTimeMillis();
         Object proceed = point.proceed();
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
         ServletRequestAttributes sra = (ServletRequestAttributes) ra;
         if (sra != null) {
             HttpServletRequest request = sra.getRequest();
             executorService.submit(() -> {
-                long startTime = System.currentTimeMillis();
                 String requestURI = request.getRequestURI();
                 StringJoiner headerString = new StringJoiner(",");
                 Enumeration<String> headerNames = request.getHeaderNames();

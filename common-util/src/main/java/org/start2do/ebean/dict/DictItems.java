@@ -27,7 +27,7 @@ public class DictItems {
         //通过反射取出Enum所有常量的属性值
         for (T each : enumClass.getEnumConstants()) {
             //利用value进行循环比较，获取对应的枚举
-            if (value.equals(each.value())) {
+            if (value != null && value.equals(each.value())) {
                 return each;
             }
         }
