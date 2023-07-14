@@ -16,6 +16,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Setter
@@ -36,13 +37,9 @@ public class LogAopConfig {
         if (skinClazz == null) {
             skinClazz = new ArrayList<>();
         }
-        skinClazz.addAll(Arrays.asList(
-            HttpServletRequest.class, HttpServletResponse.class,
-            ServletResponse.class, ServletRequest.class, OutputStream.class,
-            ByteArrayOutputStream.class
-        ));
+        skinClazz.addAll(Arrays.asList(HttpServletRequest.class, HttpServletResponse.class, ServletResponse.class,
+            ServletRequest.class, OutputStream.class, ByteArrayOutputStream.class, MultipartFile.class));
     }
-
 
 
 }

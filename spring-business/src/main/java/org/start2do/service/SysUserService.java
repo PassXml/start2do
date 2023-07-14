@@ -15,6 +15,7 @@ import org.start2do.entity.security.query.QSysRole;
 import org.start2do.entity.security.query.QSysUser;
 import org.start2do.entity.security.query.QSysUserRole;
 import org.start2do.util.ListUtil;
+import org.start2do.util.spring.RedisCacheUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +33,10 @@ public class SysUserService extends AbsService<SysUser> {
         for (Integer roleId : roles) {
             sysUserRoleService.save(new SysUserRole(entity.getId(), roleId));
         }
+    }
+
+    public SysUser getRedisCacheById(Long id) {
+        return RedisCacheUtil.get("Cache:SysUser:" + id, () -> findOneById(id));
     }
 
     private void checkRole(List<Integer> roles) {

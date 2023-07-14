@@ -115,6 +115,7 @@ public class SysLogAop {
                 joiner.add(s).add("=").add(request.getHeader(s));
             }
         } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
         sysLog.setRequestHeader(joiner.toString());
         try {

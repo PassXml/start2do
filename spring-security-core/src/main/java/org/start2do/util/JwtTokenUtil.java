@@ -33,10 +33,12 @@ public class JwtTokenUtil implements Serializable {
     public static String Bearer = "Bearer ";
     public static int BearerLen = 7;
     public static boolean CheckExpired = true;
+    public static boolean MockUser = false;
+    public static String MockUserName = "admin";
+    public static Integer MockUserId = 1;
 
 
     public String getUsernameFromToken(String token) {
-
         return getClaimFromToken(token, claims -> claims.get(USERNAME)).toString();
     }
 
@@ -97,6 +99,9 @@ public class JwtTokenUtil implements Serializable {
     }
 
     public Integer getUserId() {
+        if (MockUser) {
+            return MockUserId;
+        }
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
         ServletRequestAttributes sra = (ServletRequestAttributes) ra;
         HttpServletRequest request = sra.getRequest();
@@ -107,6 +112,9 @@ public class JwtTokenUtil implements Serializable {
     }
 
     public String getUserName() {
+        if (MockUser) {
+            return MockUserName;
+        }
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
         ServletRequestAttributes sra = (ServletRequestAttributes) ra;
         HttpServletRequest request = sra.getRequest();

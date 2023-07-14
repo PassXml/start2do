@@ -20,5 +20,8 @@ public class Start2doSecurityConfig {
     private Boolean checkExpired;
 
     private String secret;
+    private Boolean mockUser = false;
+    private Integer mockUserId = 1;
+    private String mockUserName = "admin";
 
 }

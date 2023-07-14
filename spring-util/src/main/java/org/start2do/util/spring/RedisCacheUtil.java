@@ -1,5 +1,6 @@
 package org.start2do.util.spring;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import jakarta.annotation.PostConstruct;
@@ -53,6 +54,24 @@ public class RedisCacheUtil {
             return result;
         }
     }
+
+    public static <T> Optional<T> tryLock(String key, Supplier<T> o) {
+        if (redisCacheUtil.redisTemplate.hasKey(key)) {
+            return Optional.empty();
+        }
+        set(key, 1, 5, TimeUnit.SECONDS);
+        T t = null;
+        try {
+            t = o.get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            remove(key);
+        }
+        return Optional.ofNullable(t);
+
+    }
+
 
     public static void set(String key, Object obj) {
         redisCacheUtil.redisTemplate.opsForValue().set(key, obj);

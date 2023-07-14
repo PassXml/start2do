@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -43,14 +44,13 @@ public class SecurityAutoConfiguration {
     public AuthenticationManager authenticationManager(HttpSecurity http, BCryptPasswordEncoder bCryptPasswordEncoder,
         UserDetailsService userDetailService, AuthenticationProvider authenticationProvider) throws Exception {
         return http.getSharedObject(AuthenticationManagerBuilder.class).userDetailsService(userDetailService)
-            .passwordEncoder(bCryptPasswordEncoder).and().authenticationProvider(
-                authenticationProvider
-            ).build();
+            .passwordEncoder(bCryptPasswordEncoder).and().authenticationProvider(authenticationProvider).build();
     }
 
 
     @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
     @Bean
+    @ConditionalOnMissingBean(value = {PasswordEncoder.class})
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -64,5 +64,9 @@ public class SecurityAutoConfiguration {
             log.info("生成密钥:{}", secret);
         }
         JwtTokenUtil.SECRET = secret;
+        JwtTokenUtil.MockUser = start2doSecurityConfig.getMockUser();
+        JwtTokenUtil.MockUserId = start2doSecurityConfig.getMockUserId();
+        JwtTokenUtil.MockUserName = start2doSecurityConfig.getMockUserName();
+
     }
 }

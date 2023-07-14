@@ -1,10 +1,12 @@
 package org.start2do.util;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
@@ -111,6 +113,18 @@ public class DateUtil {
 
     public static LocalDate toLocalDate(String reportTime, String yyyyMmDd) {
         return LocalDate.parse(reportTime, getPattern(yyyyMmDd));
+    }
+
+    public static long toTimestamp(String time, String pattern, ZoneOffset timeZone) {
+        return LocalDateTime.parse(time, getPattern(pattern)).toInstant(timeZone).toEpochMilli();
+    }
+
+    public static long toTimestamp(LocalDateTime time) {
+        return time.toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
+    }
+
+    public static LocalDateTime timestampToLocalDateTime(Long timestamp, ZoneOffset offset) {
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), offset);
     }
 
     public static class Pattern {
