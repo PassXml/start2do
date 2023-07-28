@@ -28,6 +28,7 @@ import org.start2do.entity.business.SysLog.Type;
 import org.start2do.entity.business.query.QSysLog;
 import org.start2do.service.SysLogService;
 import org.start2do.util.BeanValidatorUtil;
+import org.start2do.util.ExcelUtil;
 
 /**
  * 日志管理
@@ -55,22 +56,24 @@ public class SysLogController {
      */
     @GetMapping("export")
     public void export(LogPageReq req, HttpServletResponse response) throws IOException {
+        ExcelUtil.resetCellMaxTextLength();
         QSysLog qClass = new QSysLog().createTime.desc();
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();3333333333333   1
         Where.ready().notEmpty(req.getType(), s -> qClass.type.eq(Type.find(s)));
+        int i = 365;
         if (req.getTimeRange() == null) {
             if (req.getStartTime() != null && req.getEndTime() != null) {
-                if (ChronoUnit.DAYS.between(req.getStartTime(), req.getEndTime()) > 90) {
-                    throw new BusinessException("不能导出大于90天的数据");
+                if (ChronoUnit.DAYS.between(req.getStartTime(), req.getEndTime()) > i) {
+                    throw new BusinessException("不能导出大于365天的数据");
                 }
             }
             if (req.getStartTime() != null) {
-                if (ChronoUnit.DAYS.between(req.getStartTime(), now) > 90) {
-                    throw new BusinessException("不能导出大于90天的数据");
+                if (ChronoUnit.DAYS.between(req.getStartTime(), now) > i) {
+                    throw new BusinessException("不能导出大于365天的数据");
                 }
                 qClass.createTime.ge(req.getStartTime());
             } else {
-                qClass.createTime.ge(now.plusDays(-7));
+                qClass.createTime.ge(now.plusDays(-i));
             }
             if (req.getEndTime() == null) {
 
@@ -80,8 +83,8 @@ public class SysLogController {
         } else {
             LocalDateTime endTime = req.getTimeRange()[1];
             LocalDateTime startTime = req.getTimeRange()[0];
-            if (ChronoUnit.DAYS.between(startTime, endTime) > 90) {
-                throw new BusinessException("不能导出大于90天的数据");
+            if (ChronoUnit.DAYS.between(startTime, endTime) > i) {
+                throw new BusinessException("不能导出大于365天的数据");
             }
             qClass.createTime.ge(startTime).createTime.lt(endTime);
         }

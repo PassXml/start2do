@@ -13,6 +13,7 @@ import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
+import okhttp3.RequestBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,11 @@ public abstract class AbsOKHttpClient {
     public MediaType jsonUTF8() {
         return MediaType.parse("application/json");
     }
+
+    public RequestBody jsonUTF8(String jsonSrt) {
+        return RequestBody.create(jsonSrt, jsonUTF8());
+    }
+
 
     public CookieJar getCookieJar() {
         return CookieJar.NO_COOKIES;
