@@ -4,18 +4,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
 @Setter
 @Getter
 @Accessors(chain = true)
 @NoArgsConstructor
-@ConfigurationProperties(prefix = "start2o")
-@AutoConfiguration
+@Configuration
+@ConfigurationProperties(prefix = "start2do")
 public class SpringCommonConfig {
 
     private ReplaceFilter replaceFilter;
+    private ErrorTrace errorTrace;
 
     @Setter
     @Getter
@@ -24,5 +25,14 @@ public class SpringCommonConfig {
     public static class ReplaceFilter {
 
         private Boolean enable;
+    }
+
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    public static class ErrorTrace {
+
+        private String packageName;
     }
 }

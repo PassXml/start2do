@@ -1,6 +1,10 @@
 package org.start2do.util;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -23,6 +27,15 @@ public class FileUtil {
             }
         }
         return result;
+    }
+
+    public void writeFile(String filePath, InputStream inputStream) {
+        try {
+            inputStream.transferTo(new FileOutputStream(Paths.get(filePath).toFile()));
+            inputStream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

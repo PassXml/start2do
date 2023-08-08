@@ -13,6 +13,10 @@ public class StaticDictPool {
      */
     private static final Map<IDictItem, DictItemBean> dictItemMap = new ConcurrentHashMap<>();
 
+    public static final Map<IDictItem, DictItemBean> get() {
+        return dictItemMap;
+    }
+
     /**
      * 往 map 中添加代码项
      */

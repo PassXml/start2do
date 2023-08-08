@@ -7,6 +7,7 @@ import org.mapstruct.factory.Mappers;
 import org.start2do.dto.req.setting.SettingAddReq;
 import org.start2do.dto.req.setting.SettingUpdateReq;
 import org.start2do.dto.resp.setting.SettingDetailResp;
+import org.start2do.dto.resp.setting.SettingMenuResp;
 import org.start2do.dto.resp.setting.SettingPageResp;
 import org.start2do.ebean.dto.EnableType;
 import org.start2do.ebean.entity.SysSetting;
@@ -28,10 +29,12 @@ public interface SettingDtoMapper {
 
     @IgnoreBaseModel2
     @IgnoreId
-
     void update(@MappingTarget SysSetting setting, SettingUpdateReq req);
 
     @Mapping(target = "enableStr", source = "enable.label")
     @Mapping(target = "enable", source = "enable.value")
     SettingDetailResp toDetail(SysSetting req);
+
+    SettingMenuResp toSettingMenuResp(SysSetting sysSetting);
+
 }

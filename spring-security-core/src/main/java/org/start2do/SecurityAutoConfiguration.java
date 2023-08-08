@@ -7,6 +7,8 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScans;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -16,6 +18,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.context.DelegatingSecurityContextRepository;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.start2do.config.KaptchaConfig;
 import org.start2do.util.JwtTokenUtil;
 import org.start2do.util.StringUtils;
@@ -24,9 +30,24 @@ import org.start2do.util.StringUtils;
 @Import({Start2doSecurityConfig.class, KaptchaConfig.class})
 @AutoConfiguration
 @RequiredArgsConstructor
+@ComponentScans(value = {
+    @ComponentScan(value = "org.start2do"),
+    @ComponentScan(value = "org.start2do.*"),
+    @ComponentScan(value = "org.start2do.controller"),
+})
 public class SecurityAutoConfiguration {
 
     private final Start2doSecurityConfig start2doSecurityConfig;
+
+
+    @Bean
+    @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
+    SecurityContextRepository securityContextRepository() {
+        return new DelegatingSecurityContextRepository(
+            new RequestAttributeSecurityContextRepository(),
+            new HttpSessionSecurityContextRepository()
+        );
+    }
 
 
     @Bean

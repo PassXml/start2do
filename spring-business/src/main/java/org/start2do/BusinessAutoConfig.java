@@ -8,19 +8,25 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScans;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+@ComponentScans(value = {
+    @ComponentScan(value = "org.start2do.controller"),
+    @ComponentScan(value = "org.start2do.service"),
+    @ComponentScan(value = "org.start2do.util"),
+    @ComponentScan(value = "org.start2do.entity"),
+})
 @Import(BusinessConfig.class)
 @ConditionalOnProperty(prefix = "start2do.business", value = "enable", havingValue = "true")
-@AutoConfiguration
 public class BusinessAutoConfig {
 
 

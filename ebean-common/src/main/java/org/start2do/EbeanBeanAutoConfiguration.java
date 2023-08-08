@@ -14,6 +14,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScans;
 import org.springframework.context.annotation.Import;
 import org.start2do.ebean.id_generators.UUIDStrIdGenerator;
 
@@ -21,6 +23,9 @@ import org.start2do.ebean.id_generators.UUIDStrIdGenerator;
 @AutoConfiguration
 @ConditionalOnProperty(name = "spring.datasource.url")
 @RequiredArgsConstructor
+@ComponentScans(value = {
+    @ComponentScan(value = "org.start2do.ebean"),
+})
 public class EbeanBeanAutoConfiguration {
 
     private final EbeanConfig ebeanConfig;

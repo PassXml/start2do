@@ -33,6 +33,7 @@ allprojects {
         springBootVersion = '3.0.6'
         springVersion = '6.0.3'
         springCloudVersion = '2022.0.0'
+        reactorVersion = '3.5.8'
         springCloudStarterVersion = '3.1.7'
         springAliCloudVersion = '2022.0.0.0-RC2'
         curVersion = project.version == 'unspecified' ? this.rootProject.version : project.version

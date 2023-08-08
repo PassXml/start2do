@@ -23,7 +23,7 @@ import org.start2do.ebean.entity.BaseModel2;
 @NoArgsConstructor
 @Entity
 @Table(name = "sys_dict")
-@Cache(enableQueryCache=true)
+@Cache(enableQueryCache = true)
 public class SysDict extends BaseModel2 {
 
     @Id
@@ -31,7 +31,7 @@ public class SysDict extends BaseModel2 {
     private java.util.UUID id;
 
     @NotNull
-    @DbComment("字典名称")
+    @DbComment("字典名称,Type")
     private String dictName;
 
     @DbComment("字典描述")

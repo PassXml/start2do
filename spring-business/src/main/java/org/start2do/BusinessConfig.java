@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.start2do.util.StringUtils;
 
 @Setter
 @Getter
@@ -27,5 +28,28 @@ public class BusinessConfig {
 
         private boolean enable;
 
+    }
+
+    private FileSetting fileSetting;
+
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    public static class FileSetting {
+
+        private FileSettingType type = FileSettingType.local;
+        private String uploadDir;
+
+        public String getUploadDir() {
+            if (StringUtils.isEmpty(uploadDir)) {
+                return System.getProperty("java.io.tmpdir");
+            }
+            return uploadDir;
+        }
+    }
+
+    public enum FileSettingType {
+        local
     }
 }

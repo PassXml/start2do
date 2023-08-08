@@ -11,6 +11,7 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     compileOnly("org.slf4j:slf4j-api:1.7.36")
     compileOnly group: 'io.ebean', name: 'ebean-annotation', version: '8.4'
+    compileOnly 'jakarta.validation:jakarta.validation-api:3.0.2'
 
 }
 

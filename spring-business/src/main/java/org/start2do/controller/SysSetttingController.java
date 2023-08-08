@@ -1,5 +1,6 @@
 package org.start2do.controller;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,7 +15,9 @@ import org.start2do.dto.req.setting.SettingAddReq;
 import org.start2do.dto.req.setting.SettingPageReq;
 import org.start2do.dto.req.setting.SettingUpdateReq;
 import org.start2do.dto.resp.setting.SettingDetailResp;
+import org.start2do.dto.resp.setting.SettingMenuResp;
 import org.start2do.dto.resp.setting.SettingPageResp;
+import org.start2do.ebean.dto.EnableType;
 import org.start2do.ebean.entity.SysSetting;
 import org.start2do.ebean.entity.query.QSysSetting;
 import org.start2do.ebean.service.SysSettingService;
@@ -37,8 +40,8 @@ public class SysSetttingController {
     @GetMapping("page")
     public R<Page<SettingPageResp>> page(SettingPageReq req) {
         QSysSetting qClass = new QSysSetting();
-        Where.ready().like(req.getKey(), qClass.key::like)
-            .notEmpty(req.getType(), qClass.type::eq).like(req.getValue(), qClass.value::like);
+        Where.ready().like(req.getKey(), qClass.key::like).notEmpty(req.getType(), qClass.type::eq)
+            .like(req.getValue(), qClass.value::like);
         return R.ok(settingService.page(qClass, req, SettingDtoMapper.INSTANCE::toSettingResp));
     }
 
@@ -83,5 +86,13 @@ public class SysSetttingController {
         return R.ok(SettingDtoMapper.INSTANCE.toDetail(settingService.getById(req.getId())));
     }
 
+    /**
+     * 所有系统设置
+     */
+    @GetMapping("all")
+    public R<List<SettingMenuResp>> all() {
+        return R.ok(settingService.findAll(new QSysSetting().enable.eq(EnableType.Enable)).stream()
+            .map(SettingDtoMapper.INSTANCE::toSettingMenuResp).toList());
+    }
 
 }

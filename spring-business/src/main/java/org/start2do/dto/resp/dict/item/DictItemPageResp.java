@@ -1,6 +1,5 @@
 package org.start2do.dto.resp.dict.item;
 
-import java.util.UUID;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,21 +13,15 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 public class DictItemPageResp {
 
-    private java.util.UUID id;
-
-    private UUID dictId;
-
     private String itemName;
 
     private String itemData;
 
-
-    private String itemTag;
-
-    private String itemNote;
-
     private Integer itemSort;
 
-    private String itemDesc;
-
+    public DictItemPageResp(String itemName, String itemData, Integer itemSort) {
+        this.itemName = itemName;
+        this.itemData = itemData;
+        this.itemSort = itemSort;
+    }
 }

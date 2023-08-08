@@ -35,4 +35,8 @@ public interface IDictItem {
         return StringUtils.isNotBlank(value) && value.endsWith(value());
     }
 
+    static <T extends IDictItem> T find(Class<T> tClass, String value) {
+        return DictItems.getByValue(tClass, value);
+    }
+
 }

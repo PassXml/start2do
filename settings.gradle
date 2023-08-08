@@ -18,4 +18,5 @@ include 'ebean-clickhouse'
 include 'http-log-sdk'
 include 'muilt-datasource-primary'
 include 'zl-media-kit-util'
+include 'eventbus'
 

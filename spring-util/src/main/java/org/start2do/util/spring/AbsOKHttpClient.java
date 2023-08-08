@@ -68,6 +68,7 @@ public abstract class AbsOKHttpClient {
         this.restTemplate = new RestTemplate(httpRequestFactory);
     }
 
+
     public static class CookieJarManager implements CookieJar {
 
 

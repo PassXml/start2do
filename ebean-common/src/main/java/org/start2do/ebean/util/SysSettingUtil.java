@@ -1,8 +1,9 @@
 package org.start2do.ebean.util;
 
+import jakarta.annotation.PostConstruct;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -63,6 +64,7 @@ public class SysSettingUtil {
             SysSettingUtil.sysSettingUtil.hashMap.put(dto.getType(), map);
         }
     }
+
 
 
 }

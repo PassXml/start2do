@@ -23,7 +23,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @Entity
 @Table(name = "sys_dict_item")
-@Cache(enableQueryCache=true)
+@Cache(enableQueryCache = true)
 public class SysDictItem extends Model {
 
     @DbComment("UUID")
@@ -33,15 +33,15 @@ public class SysDictItem extends Model {
     @DbComment("字典项ID")
     @Column(name = "dict_id", nullable = false, length = 128)
     private UUID dictId;
-    @JoinColumn(name = "dict_id",insertable = false, updatable = false)
+    @JoinColumn(name = "dict_id", insertable = false, updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private SysDict sysDict;
 
-    @DbComment("字典项名称")
+    @DbComment("字典项名称(label)")
     @Column(name = "item_name", length = 128, nullable = false)
     private String itemName;
 
-    @DbComment("字典项数据项")
+    @DbComment("字典项数据项(value)")
     @Column(name = "item_data", length = 1024, nullable = false)
     private String itemData;
 
