@@ -48,7 +48,7 @@ public class ExceptionHandler {
 
     private void log(Exception e) {
         if (config.getErrorTrace() == null) {
-            log(e);
+            e.printStackTrace();
         } else {
             for (StackTraceElement element : e.getStackTrace()) {
                 if (element.getClassName().startsWith(config.getErrorTrace().getPackageName())) {
