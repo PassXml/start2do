@@ -11,7 +11,6 @@ public class HexUtil {
      */
     public static String fixedBytesToString(byte[] bytes) {
         int endLength = bytes.length;
-        int consecutiveZeroCount = 0;
         for (int i = bytes.length - 1; i >= 0; i--) {
             if (bytes[i] != 0) {
                 endLength = i;
