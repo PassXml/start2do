@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.hibernate.validator.constraints.UUID;
 import org.start2do.ebean.entity.BaseModel2;
 
 @Setter
@@ -20,7 +19,6 @@ import org.start2do.ebean.entity.BaseModel2;
 public class SysFile extends BaseModel2 {
 
     @Id
-    @UUID
     private java.util.UUID id;
     @Column(length = 1024)
     private String fileName;

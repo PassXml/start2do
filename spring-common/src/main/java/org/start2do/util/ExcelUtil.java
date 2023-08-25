@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.StringJoiner;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
+import org.apache.poi.ss.SpreadsheetVersion;
 
 @UtilityClass
 public class ExcelUtil {
@@ -59,5 +60,18 @@ public class ExcelUtil {
         String value();
 
         boolean skin() default false;
+    }
+    public static void resetCellMaxTextLength() {
+        SpreadsheetVersion excel2007 = SpreadsheetVersion.EXCEL2007;
+        if (Integer.MAX_VALUE != excel2007.getMaxTextLength()) {
+            Field field;
+            try {
+                field = excel2007.getClass().getDeclaredField("_maxTextLength");
+                field.setAccessible(true);
+                field.set(excel2007,Integer.MAX_VALUE);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

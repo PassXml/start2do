@@ -2,6 +2,7 @@ package org.start2do.wrapper;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import jakarta.servlet.ReadListener;
