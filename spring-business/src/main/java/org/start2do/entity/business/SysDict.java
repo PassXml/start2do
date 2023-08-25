@@ -31,7 +31,7 @@ public class SysDict extends BaseModel2 {
     private java.util.UUID id;
 
     @NotNull
-    @DbComment("字典名称")
+    @DbComment("字典名称,Type")
     private String dictName;
 
     @DbComment("字典描述")

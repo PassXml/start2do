@@ -29,6 +29,9 @@ public class DictItemPageResp {
 
     private Integer itemSort;
 
-    private String itemDesc;
-
+    public DictItemPageResp(String itemName, String itemData, Integer itemSort) {
+        this.itemName = itemName;
+        this.itemData = itemData;
+        this.itemSort = itemSort;
+    }
 }

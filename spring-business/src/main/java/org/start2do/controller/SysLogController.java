@@ -58,7 +58,7 @@ public class SysLogController {
     public void export(LogPageReq req, HttpServletResponse response) throws IOException {
         ExcelUtil.resetCellMaxTextLength();
         QSysLog qClass = new QSysLog().createTime.desc();
-        LocalDateTime now = LocalDateTime.now();3333333333333   1
+        LocalDateTime now = LocalDateTime.now();
         Where.ready().notEmpty(req.getType(), s -> qClass.type.eq(Type.find(s)));
         int i = 365;
         if (req.getTimeRange() == null) {

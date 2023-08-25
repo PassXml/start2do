@@ -1,4 +1,4 @@
-package org.start2do.config;
+package org.start2do;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,26 +12,27 @@ import org.springframework.context.annotation.Configuration;
 @Accessors(chain = true)
 @NoArgsConstructor
 @Configuration
-@ConfigurationProperties(prefix = "zl-media-kit")
-public class ZLMediaKitConfig {
+@ConfigurationProperties(prefix = "start2do")
+public class SpringCommonConfig {
 
-    private Boolean enable;
-    private String serverHost;
-    private String pullHost;
-    private String secret;
-    private String vHost;
-    private boolean ssl = false;
-
-    private WebHookSetting webHook;
+    private ReplaceFilter replaceFilter;
+    private ErrorTrace errorTrace;
 
     @Setter
     @Getter
     @Accessors(chain = true)
     @NoArgsConstructor
-    public static class WebHookSetting {
+    public static class ReplaceFilter {
 
         private Boolean enable;
-
     }
 
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    public static class ErrorTrace {
+
+        private String packageName;
+    }
 }

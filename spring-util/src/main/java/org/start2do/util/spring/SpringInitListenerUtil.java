@@ -16,6 +16,9 @@ public class SpringInitListenerUtil implements ApplicationListener<AvailabilityC
     public void onApplicationEvent(AvailabilityChangeEvent event) {
         if (ReadinessState.ACCEPTING_TRAFFIC == event.getState()) {
             try {
+                if (SpringBeanUtil.getContext() == null) {
+                    return;
+                }
                 SpringBeanUtil.getBeans(WaitInitCompleteRunner.class).forEach((s, initRunner) -> {
                     ForkJoinPool.commonPool().submit(() -> {
                         try {

@@ -1,5 +1,6 @@
 package org.start2do.service;
 
+import org.start2do.dto.req.ZLMediaOnPlayReq;
 import org.start2do.dto.req.ZLMediaOnServerKeepaliveReq;
 import org.start2do.dto.req.ZLMediaOnStreamNoneReaderReq;
 import org.start2do.dto.req.ZLMediaOnStreamNotFoundReq;
@@ -11,4 +12,7 @@ public interface ZLMediaService {
     void onStreamNoneReader(ZLMediaOnStreamNoneReaderReq req);
 
     void onServerKeepalive(ZLMediaOnServerKeepaliveReq req);
+
+    void onPlay(ZLMediaOnPlayReq req);
+
 }

@@ -12,9 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
@@ -23,7 +21,6 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.start2do.typehandle.AutoGenericEnumTypeHandler;
 import org.start2do.typehandle.UUIDTypeHandler;
 
-@Configuration
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Import(MultiDatasourcePrimaryConfig.class)
 @ConditionalOnProperty(prefix = "spring.datasource", name = "url")
@@ -34,12 +31,12 @@ public class MultiDatasourcePrimaryAutoConfig {
 
     public final static String MainSqlSessionFactory = "MainSqlSessionFactory";
 
-    @Primary
-    @Bean
-    public DataSource dataSource(MultiDatasourcePrimaryConfig config) {
-        return DataSourceBuilder.create().url(config.getUrl()).driverClassName(config.getDriverClassName())
-            .type(config.getType()).username(config.getUsername()).password(config.getPassword()).build();
-    }
+//    @Primary
+//    @Bean("MainDataSource")
+//    public DataSource dataSource(MultiDatasourcePrimaryConfig config) {
+//        return DataSourceBuilder.create().url(config.getUrl()).driverClassName(config.getDriverClassName())
+//            .type(config.getType()).username(config.getUsername()).password(config.getPassword()).build();
+//    }
 
     @Primary
     @Bean("MainSqlSessionFactory")

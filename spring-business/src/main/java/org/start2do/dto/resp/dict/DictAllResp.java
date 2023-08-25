@@ -1,5 +1,6 @@
 package org.start2do.dto.resp.dict;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -17,6 +18,7 @@ import org.start2do.dto.resp.dict.item.DictItemPageResp;
 @NoArgsConstructor
 public class DictAllResp {
 
+    @JsonIgnore
     private UUID id;
     /**
      * createBy
@@ -52,4 +54,8 @@ public class DictAllResp {
      */
     private String dictNote;
     private List<DictItemPageResp> items;
+    public DictAllResp(String dictName, List<DictItemPageResp> items) {
+        this.dictName = dictName;
+        this.items = items;
+    }
 }

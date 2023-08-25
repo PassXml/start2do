@@ -59,7 +59,8 @@ public interface DictDtoMapper {
 
     DictItemDetailResp toDictItemDetailResp(SysDictItem item);
 
-    @Mapping(target = "dictTypeStr", source = "dictType.label")
-    @Mapping(target = "dictType", source = "dictType.value")
+
+    @Mapping(source = "dictType.value", target = "dictType")
+    @Mapping(source = "dictType.label", target = "dictTypeStr")
     DictDetailResp toDictDetailResp(SysDict dict);
 }

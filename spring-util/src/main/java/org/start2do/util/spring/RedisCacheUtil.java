@@ -18,24 +18,6 @@ public class RedisCacheUtil {
     private final RedisTemplate<String, Object> redisTemplate;
     private static RedisCacheUtil redisCacheUtil;
 
-    public static <T> Optional<T> tryLock(String key, Supplier<T> o) {
-        if (redisCacheUtil.redisTemplate.hasKey(key)) {
-            return Optional.empty();
-        }
-        set(key, 1, 5, TimeUnit.SECONDS);
-        T t = null;
-        try {
-            t = o.get();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            remove(key);
-        }
-        return Optional.ofNullable(t);
-
-    }
-
-
     @PostConstruct
     public void init() {
         RedisCacheUtil.redisCacheUtil = this;
@@ -73,6 +55,24 @@ public class RedisCacheUtil {
             return result;
         }
     }
+
+    public static <T> Optional<T> tryLock(String key, Supplier<T> o) {
+        if (redisCacheUtil.redisTemplate.hasKey(key)) {
+            return Optional.empty();
+        }
+        set(key, 1, 5, TimeUnit.SECONDS);
+        T t = null;
+        try {
+            t = o.get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            remove(key);
+        }
+        return Optional.ofNullable(t);
+
+    }
+
 
     public static void set(String key, Object obj) {
         redisCacheUtil.redisTemplate.opsForValue().set(key, obj);

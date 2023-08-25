@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.R;
+import org.start2do.dto.req.ZLMediaOnPlayReq;
 import org.start2do.dto.req.ZLMediaOnServerKeepaliveReq;
 import org.start2do.dto.req.ZLMediaOnStreamNoneReaderReq;
 import org.start2do.dto.req.ZLMediaOnStreamNotFoundReq;
@@ -13,7 +15,8 @@ import org.start2do.service.ZLMediaService;
 
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "zl-media-kit", havingValue = "true", name = "web-hook.enable")
-@RestController("zlmediakit/hook")
+@RequestMapping("/zlmediakit/hook")
+@RestController
 public class ZLMController {
 
     private final ZLMediaService zlMediaService;
@@ -42,6 +45,13 @@ public class ZLMController {
     @PostMapping("on_server_keepalive")
     public R onServerKeepalive(@RequestBody ZLMediaOnServerKeepaliveReq req) {
         zlMediaService.onServerKeepalive(req);
+        return R.ok();
+    }  /**
+     * 定时上传信息
+     */
+    @PostMapping("on_play")
+    public R onPlay(@RequestBody ZLMediaOnPlayReq req) {
+        zlMediaService.onPlay(req);
         return R.ok();
     }
 }
