@@ -21,4 +21,14 @@ public enum EnableType implements IDictItem {
         }
         throw new BusinessException(String.format("%s未知字典值:%s", "EnableType", s));
     }
+
+    public static EnableType get(String s) {
+        for (EnableType value : values()) {
+            if (value != null && value.getValue().equals(s)) {
+                return value;
+            }
+        }
+        throw new BusinessException(String.format("%s未知字典值:%s", "EnableType", s));
+    }
+
 }

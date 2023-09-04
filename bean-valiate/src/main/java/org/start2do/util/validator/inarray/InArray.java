@@ -14,11 +14,11 @@ public @interface InArray {
 
     String[] value() default {};
 
-    boolean checkNull() default true;
-
     String message() default "${validatedValue} 不在{value}的取值范围内";
 
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
+
+    boolean ignoreNull() default  false;
 }

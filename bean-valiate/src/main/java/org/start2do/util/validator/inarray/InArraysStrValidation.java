@@ -8,24 +8,26 @@ import javax.validation.ConstraintValidatorContext;
 public class InArraysStrValidation implements ConstraintValidator<InArray, String> {
 
     private Set<String> set = new HashSet<>();
-    private Boolean checkNull;
+    private Boolean ignoreNull = false;
 
     @Override
     public void initialize(InArray constraintAnnotation) {
         for (String s : constraintAnnotation.value()) {
             set.add(s);
         }
-        this.checkNull = constraintAnnotation.checkNull();
+        this.ignoreNull = constraintAnnotation.ignoreNull();
     }
 
     @Override
     public boolean isValid(String s, ConstraintValidatorContext constraintValidatorContext) {
         if (s == null) {
-            return !checkNull;
+            return ignoreNull;
         }
         if (set.contains(s)) {
             return true;
         }
+        set.clear();
+        set = null;
         return false;
     }
 }

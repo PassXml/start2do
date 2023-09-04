@@ -59,8 +59,10 @@ allprojects {
         testCompileOnly("org.projectlombok:lombok:$lombokVersion")
         compileOnly("org.projectlombok:lombok:$lombokVersion")
         annotationProcessor("org.projectlombok:lombok:$lombokVersion")
+        testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
         compileOnly("org.mapstruct:mapstruct:$mapstructVersion")
         annotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")
+        testAnnotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")
         annotationProcessor("io.ebean:querybean-generator:$ebeanVersion")
         annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.6.7'
         compileOnly("org.springframework.boot:spring-boot-autoconfigure:2.6.7")

@@ -8,24 +8,26 @@ import javax.validation.ConstraintValidatorContext;
 public class InArraysLongValidation implements ConstraintValidator<InArray, Long> {
 
     private Set<Long> set = new HashSet<>();
-    private Boolean checkNull;
+    private Boolean ignoreNull;
 
     @Override
     public void initialize(InArray constraintAnnotation) {
         for (String s : constraintAnnotation.value()) {
             set.add(Long.parseLong(s));
         }
-        this.checkNull = constraintAnnotation.checkNull();
+        this.ignoreNull = constraintAnnotation.ignoreNull();
     }
 
     @Override
     public boolean isValid(Long aLong, ConstraintValidatorContext constraintValidatorContext) {
         if (aLong == null) {
-            return !checkNull;
+            return ignoreNull;
         }
         if (set.contains(aLong)) {
             return true;
         }
+        set.clear();
+        set = null;
         return false;
     }
 }
