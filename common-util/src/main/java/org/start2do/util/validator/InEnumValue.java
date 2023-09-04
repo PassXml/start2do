@@ -23,20 +23,24 @@ public @interface InEnumValue {
 
     Class<? extends IDictItem> value();
 
+    boolean ignoreNull() default false;
+
 
     class Validator implements ConstraintValidator<InEnumValue, String> {
 
         private Class<? extends IDictItem> enumClass;
+        private Boolean ignoreNull;
 
         @Override
         public void initialize(InEnumValue enumValue) {
             enumClass = enumValue.value();
+            this.ignoreNull = enumValue.ignoreNull();
         }
 
         @Override
         public boolean isValid(String value, ConstraintValidatorContext constraintValidatorContext) {
             if (value == null) {
-                return Boolean.TRUE;
+                return ignoreNull;
             }
             if (enumClass == null) {
                 return Boolean.TRUE;

@@ -14,7 +14,7 @@ public @interface InArray {
 
     String[] value() default {};
 
-    boolean checkNull() default true;
+    boolean ignoreNull() default false;
 
     String message() default "${validatedValue} 不在{value}的取值范围内";
 

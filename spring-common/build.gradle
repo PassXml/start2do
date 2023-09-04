@@ -17,7 +17,7 @@ dependencies {
     api(project(":api"))
     compileOnly 'com.fasterxml.jackson.core:jackson-annotations:2.14.2'
     compileOnly group: 'org.springframework.security', name: 'spring-security-core', version: springVersion
-
+    compileOnly("org.apache.poi:poi:5.0.0")
 
 }
 

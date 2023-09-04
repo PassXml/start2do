@@ -50,9 +50,10 @@ public class ExceptionHandler {
         if (config.getErrorTrace() == null) {
             log.error(e.getMessage(), e);
         } else {
+            log.error(e.getMessage(), e);
             for (StackTraceElement element : e.getStackTrace()) {
                 if (element.getClassName().startsWith(config.getErrorTrace().getPackageName())) {
-                    log.error("{},{},{}:{}", e.getMessage(), element.getClassName(), element.getMethodName(),
+                    log.info("{},{},{}:{}", e.getMessage(), element.getClassName(), element.getMethodName(),
                         element.getLineNumber());
                     break;
                 }

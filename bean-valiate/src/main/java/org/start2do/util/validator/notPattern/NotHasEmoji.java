@@ -14,7 +14,7 @@ public @interface NotHasEmoji {
 
     String value() default "[\\ud800\\udc00-\\udbff\\udfff\\ud800-\\udfff]";
 
-    boolean checkNull() default true;
+    boolean ignoreNull() default false;
 
     String message() default "${validatedValue} 不能包含Emoji表情";
 

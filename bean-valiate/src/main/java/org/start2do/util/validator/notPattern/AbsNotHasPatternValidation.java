@@ -7,11 +7,11 @@ import java.util.regex.Pattern;
 public abstract class AbsNotHasPatternValidation {
 
     protected Pattern pattern;
-    protected Boolean checkNull;
+    protected Boolean ignoreNull;
 
     public boolean isValid(String s, ConstraintValidatorContext constraintValidatorContext) {
         if (s == null) {
-            return !checkNull;
+            return ignoreNull;
         }
         boolean matches = pattern.matcher(s).find();
         return !matches;

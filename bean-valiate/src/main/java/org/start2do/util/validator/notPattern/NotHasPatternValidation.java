@@ -10,7 +10,7 @@ public class NotHasPatternValidation extends AbsNotHasPatternValidation implemen
     @Override
     public void initialize(NotHasPattern constraintAnnotation) {
         pattern = Pattern.compile(constraintAnnotation.value());
-        checkNull = constraintAnnotation.checkNull();
+        ignoreNull = constraintAnnotation.ignoreNull();
     }
 }
 

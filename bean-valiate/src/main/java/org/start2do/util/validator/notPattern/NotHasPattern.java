@@ -8,14 +8,14 @@ import java.lang.annotation.Target;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
-@Target({ElementType.FIELD, ElementType.METHOD,ElementType.TYPE})
+@Target({ElementType.FIELD, ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {NotHasPatternValidation.class})
 public @interface NotHasPattern {
 
     String value() default "";
 
-    boolean checkNull() default true;
+    boolean ignoreNull() default false;
 
     String message() default "${validatedValue} 不符合表达式{value}";
 

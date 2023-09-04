@@ -15,7 +15,7 @@ public @interface InPattern {
 
     String value() default "";
 
-    boolean checkNull() default true;
+    boolean ignoreNull() default false;
 
     String message() default "${validatedValue} 不符合表达式{value}";
 

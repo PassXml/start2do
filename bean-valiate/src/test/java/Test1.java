@@ -15,7 +15,7 @@ public class Test1 {
         @NotEmpty
 //        @InArray(value = {"1", "2"})
 //        @NotHasPattern(checkNull = false, value = "[\\ud800\\udc00-\\udbff\\udfff\\ud800-\\udfff]")
-        @NotHasEmoji(checkNull = false)
+        @NotHasEmoji(ignoreNull = true)
         private String name;
 
         public void setName(String name) {

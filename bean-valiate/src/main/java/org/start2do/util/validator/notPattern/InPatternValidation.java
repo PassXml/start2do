@@ -8,18 +8,18 @@ import java.util.regex.Pattern;
 public class InPatternValidation implements ConstraintValidator<InPattern, String> {
 
     protected Pattern pattern;
-    protected Boolean checkNull;
+    protected Boolean ignoreNull;
 
     @Override
     public void initialize(InPattern constraintAnnotation) {
         pattern = Pattern.compile(constraintAnnotation.value());
-        checkNull = constraintAnnotation.checkNull();
+        ignoreNull = constraintAnnotation.ignoreNull();
     }
 
     @Override
     public boolean isValid(String s, ConstraintValidatorContext constraintValidatorContext) {
         if (s == null) {
-            return !checkNull;
+            return ignoreNull;
         }
         boolean matches = pattern.matcher(s).matches();
         return matches;

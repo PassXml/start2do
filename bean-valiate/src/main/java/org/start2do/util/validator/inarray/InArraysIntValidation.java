@@ -8,7 +8,7 @@ import java.util.Set;
 public class InArraysIntValidation implements ConstraintValidator<InArray, Integer> {
 
     private Set<Integer> set = new HashSet<>();
-    private Boolean checkNull;
+    private Boolean ignoreNull;
 
 
     @Override
@@ -16,13 +16,13 @@ public class InArraysIntValidation implements ConstraintValidator<InArray, Integ
         for (String s : constraintAnnotation.value()) {
             set.add(Integer.parseInt(s));
         }
-        this.checkNull = constraintAnnotation.checkNull();
+        this.ignoreNull = constraintAnnotation.ignoreNull();
     }
 
     @Override
     public boolean isValid(Integer integer, ConstraintValidatorContext constraintValidatorContext) {
         if (integer == null) {
-            return !checkNull;
+            return ignoreNull;
         }
         if (set.contains(integer)) {
             return true;

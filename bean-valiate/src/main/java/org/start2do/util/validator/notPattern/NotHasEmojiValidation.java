@@ -10,7 +10,7 @@ public class NotHasEmojiValidation extends AbsNotHasPatternValidation implements
     @Override
     public void initialize(NotHasEmoji constraintAnnotation) {
         pattern = Pattern.compile(constraintAnnotation.value());
-        checkNull = constraintAnnotation.checkNull();
+        ignoreNull = constraintAnnotation.ignoreNull();
     }
 }
 

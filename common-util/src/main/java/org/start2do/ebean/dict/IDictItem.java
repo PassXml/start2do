@@ -39,4 +39,7 @@ public interface IDictItem {
         return DictItems.getByValue(tClass, value);
     }
 
+    default String convert(IDictItem s) {
+        return s.value();
+    }
 }
