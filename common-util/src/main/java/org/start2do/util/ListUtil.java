@@ -97,6 +97,16 @@ public class ListUtil {
         }
     }
 
+    public <T, R> void fillInValue(List<T> source, List<R> items, Compare<T, R> compare, Runner<T, R> runner) {
+        for (T t : source) {
+            for (R item : items) {
+                if (compare.test(t, item)) {
+                    runner.run(t, item);
+                }
+            }
+        }
+    }
+
     public <T, R> void fillIn(List<T> source, List<R> items, Compare<T, R> compare, Runner<T, List<R>> runner) {
         for (T t : source) {
             List<R> fillInList = new ArrayList<>();

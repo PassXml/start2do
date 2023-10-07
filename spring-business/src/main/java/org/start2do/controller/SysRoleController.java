@@ -35,6 +35,7 @@ import org.start2do.service.SysRoleService;
 import org.start2do.service.SysUserRoleService;
 import org.start2do.service.SysUserService;
 import org.start2do.util.BeanValidatorUtil;
+import org.start2do.util.ListUtil;
 
 /**
  * 角色管理
@@ -129,16 +130,19 @@ public class SysRoleController {
         if (all.isEmpty()) {
             return R.ok(new ArrayList<>());
         }
-        Map<Integer, SysUser> map = userService.findAll(
-                new QSysUser().id.in(all.stream().map(SysUserRole::getUserId).collect(Collectors.toSet()))).stream()
-            .collect(Collectors.toMap(SysUser::getId, e -> e));
+        List<SysUser> allUsers = new ArrayList<>();
+        ListUtil.splitAfterRun(999, all, spList -> {
+            List<SysUser> users = userService.findAll(
+                new QSysUser().id.in(spList.stream().map(SysUserRole::getUserId).collect(Collectors.toSet())));
+            allUsers.addAll(users);
+        });
+        Map<Integer, SysUser> map = allUsers.stream().collect(Collectors.toMap(SysUser::getId, e -> e));
         return R.ok(all.stream().map(t -> {
             SysUser user = map.get(t.getUserId());
-            RoleUsersResp resp = new RoleUsersResp(t.getUserId(),
+            return new RoleUsersResp(t.getUserId(),
                 Optional.ofNullable(user).map(SysUser::getUsername).orElse(null),
                 Optional.ofNullable(user).map(SysUser::getRealName).orElse(null)
             );
-            return resp;
         }).collect(Collectors.toList()));
     }
 
