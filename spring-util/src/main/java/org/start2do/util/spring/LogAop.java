@@ -1,16 +1,21 @@
 package org.start2do.util.spring;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -44,13 +49,16 @@ public class LogAop {
         log.info("启用LogAOP");
     }
 
-    @Pointcut("within(@org.springframework.web.bind.annotation.RestController *) || within(@org.springframework.stereotype.Controller *)")
-    public void controller() {
-
-    }
-
-    @Around("controller()")
+    @Around("within(@org.springframework.web.bind.annotation.RestController *) || within(@org.springframework.stereotype.Controller *)")
     public Object before(ProceedingJoinPoint point) throws Throwable {
+        MethodSignature signature = (MethodSignature) point.getSignature();
+        Method method = signature.getMethod();
+        LogSetting logSetting = method.getAnnotation(LogSetting.class);
+        if (logSetting != null) {
+            if (logSetting.ignore()) {
+                return point.proceed();
+            }
+        }
         long startTime = System.currentTimeMillis();
         Object proceed = point.proceed();
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
@@ -102,4 +110,12 @@ public class LogAop {
 
         String toJson(Object object);
     }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface LogSetting {
+
+        boolean ignore() default false;
+    }
+
 }

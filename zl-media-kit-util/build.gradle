@@ -17,7 +17,7 @@ dependencies {
     compileOnly("jakarta.annotation:jakarta.annotation-api:2.1.1")
     api 'com.squareup.okhttp3:okhttp:4.10.0'
     api("com.squareup.okhttp3:logging-interceptor:4.10.0")
-    compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.1'
+    compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.15.2'
     compileOnly("org.springframework:spring-web:5.3.19")
 
 }

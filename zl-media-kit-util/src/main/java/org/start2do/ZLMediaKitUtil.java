@@ -43,9 +43,9 @@ public class ZLMediaKitUtil extends AbsOKHttpClient {
             HttpUrl httpUrl = HttpUrl.get(config.getServerHost() + AddStreamProxy.URL).newBuilder()
                 .addQueryParameter("secret", config.getSecret()).addQueryParameter("vhost", config.getVHost())
                 .addQueryParameter("app", req.getApp()).addQueryParameter("stream", req.getStream())
-                .addQueryParameter("url", req.getUrl()).addQueryParameter("modify_stamp", "1")
-                .addQueryParameter("url", req.getUrl()).addQueryParameter("enable_rtmp", "1")
-                .addQueryParameter("enable_ts", "1").addQueryParameter("enable_fmp4", "1").build();
+                .addQueryParameter("modify_stamp", "1").addQueryParameter("url", req.getUrl())
+                .addQueryParameter("enable_rtmp", "1").addQueryParameter("enable_ts", "1")
+                .addQueryParameter("enable_fmp4", "1").build();
             log.info("添加流地址:{}", httpUrl);
             Response response = okHttpClient.newCall(new Builder().url(httpUrl).get().build()).execute();
             BaseResp resp = objectMapper.readValue(response.body().byteStream(), BaseResp.class);

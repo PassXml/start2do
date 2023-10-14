@@ -43,6 +43,7 @@ import org.start2do.service.imp.SysLoginUserServiceImpl;
 import org.start2do.util.BeanValidatorUtil;
 import org.start2do.util.JwtTokenUtil;
 import org.start2do.util.StringUtils;
+import org.start2do.util.spring.LogAop.LogSetting;
 
 /**
  * 登录
@@ -127,6 +128,7 @@ public class LoginController {
      */
     @SneakyThrows
     @GetMapping("/code")
+    @LogSetting(ignore = true)
     public R<CodeResp> code() {
         if (!config.getEnable()) {
             throw new BusinessException("未启用验证码");

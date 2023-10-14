@@ -25,22 +25,29 @@ public @interface InEnumValue {
 
     boolean ignoreNull() default false;
 
+    boolean ignoreEmpty() default false;
+
 
     class Validator implements ConstraintValidator<InEnumValue, String> {
 
         private Class<? extends IDictItem> enumClass;
         private Boolean ignoreNull;
+        private Boolean ignoreEmpty;
 
         @Override
         public void initialize(InEnumValue enumValue) {
             enumClass = enumValue.value();
             this.ignoreNull = enumValue.ignoreNull();
+            this.ignoreEmpty = enumValue.ignoreEmpty();
         }
 
         @Override
         public boolean isValid(String value, ConstraintValidatorContext constraintValidatorContext) {
             if (value == null) {
                 return ignoreNull;
+            }
+            if (value.isEmpty()) {
+                return ignoreEmpty;
             }
             if (enumClass == null) {
                 return Boolean.TRUE;

@@ -4,8 +4,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,9 +16,7 @@ import org.start2do.BusinessConfig;
 import org.start2do.BusinessConfig.FileSetting;
 import org.start2do.dto.R;
 import org.start2do.entity.business.SysFile;
-import org.start2do.entity.business.query.QSysFile;
 import org.start2do.service.SysFileService;
-import org.start2do.util.Md5Util;
 
 /**
  * 系统文件
@@ -68,21 +64,7 @@ public class SysFileController {
      */
     @PostMapping("upload")
     public R<UUID> upload(MultipartFile file) throws IOException {
-        long size = file.getSize();
-        if (size < 1) {
-            throw new RuntimeException("不加上传大小为空的文件");
-        }
-        String filename = file.getOriginalFilename();
-        InputStream inputStream = file.getInputStream();
-        String md5 = Md5Util.md5(inputStream);
-        SysFile sysFile = sysFileService.findOne(new QSysFile().fileMd5.eq(md5));
-        if (sysFile != null) {
-            return R.ok(sysFile.getId());
-        }
-        Path path = Paths.get(uploadDir + "/" + md5);
-        file.transferTo(path);
-        SysFile entity = new SysFile(filename, path.toAbsolutePath().toString(), md5, null, size);
-        sysFileService.save(entity);
+        SysFile entity = sysFileService.updateFile(file);
         return R.ok(entity.getId());
     }
 }

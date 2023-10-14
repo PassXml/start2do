@@ -1,12 +1,19 @@
 package org.start2do.util.spring;
 
+import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,8 +21,44 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(prefix = "start2do.util.redis", value = "enable", havingValue = "true")
 public class RedisCacheUtil {
 
+    public static RedisTemplate<String, Object> getRedisTemplate() {
+        return redisCacheUtil.redisTemplate;
+    }
+
     private final RedisTemplate<String, Object> redisTemplate;
     private static RedisCacheUtil redisCacheUtil;
+
+    public static List<String> scan(RedisTemplate redisTemplate, String query) {
+        Set<String> resultKeys = (Set<String>) redisTemplate.execute((RedisCallback<Set<String>>) connection -> {
+            ScanOptions scanOptions = ScanOptions.scanOptions().match("*" + query + "*").count(1000).build();
+            Cursor<byte[]> scan = connection.scan(scanOptions);
+            Set<String> keys = new HashSet<>();
+            while (scan.hasNext()) {
+                byte[] next = scan.next();
+                keys.add(new String(next));
+            }
+            return keys;
+        });
+
+        return new ArrayList<>(resultKeys);
+    }
+
+    public static List<String> scan(String key) {
+        return scan(RedisCacheUtil.redisCacheUtil.redisTemplate, key);
+    }
+
+    public static void zset(String key, Object id, int size) {
+        redisCacheUtil.redisTemplate.opsForZSet().add(key, id, size);
+    }
+
+    public static Double zsetSore(String key, Object value) {
+        return redisCacheUtil.redisTemplate.opsForZSet().score(key, value);
+    }
+
+    public static Set<Object> zsetRange(String key, int start, int end) {
+        return redisCacheUtil.redisTemplate.opsForZSet().reverseRange(key, start, end);
+    }
+
 
     @PostConstruct
     public void init() {

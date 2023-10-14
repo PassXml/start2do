@@ -36,7 +36,8 @@ public class EventBus implements MessageCodec<EventBusDto, EventBusDto> {
 
     public void initializeVertx() {
         vertx = Vertx.vertx(
-            new VertxOptions().setFileSystemOptions(new FileSystemOptions().setFileCachingEnabled(false)));
+            new VertxOptions().setBlockedThreadCheckInterval(5000)
+                .setFileSystemOptions(new FileSystemOptions().setFileCachingEnabled(false)));
     }
 
     public void initializeClusteredVertx() throws IOException {
