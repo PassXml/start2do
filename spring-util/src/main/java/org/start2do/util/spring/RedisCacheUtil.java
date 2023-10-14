@@ -10,10 +10,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.Topic;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -26,6 +29,8 @@ public class RedisCacheUtil {
     }
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private static RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+
     private static RedisCacheUtil redisCacheUtil;
 
     public static List<String> scan(RedisTemplate redisTemplate, String query) {
@@ -63,6 +68,7 @@ public class RedisCacheUtil {
     @PostConstruct
     public void init() {
         RedisCacheUtil.redisCacheUtil = this;
+        container.setConnectionFactory(this.redisTemplate.getConnectionFactory());
     }
 
     public static <T> T get(String key) {
@@ -128,21 +134,40 @@ public class RedisCacheUtil {
         return redisCacheUtil.redisTemplate.expire(key, time, timeUnit);
     }
 
-    private static void incrementPre(String key) {
+    private static void incrementPre(String key, Integer defaultValue) {
         if (redisCacheUtil.redisTemplate.hasKey(key)) {
             return;
         }
-        redisCacheUtil.redisTemplate.opsForValue().set(key, 0);
+        if (defaultValue == null) {
+            defaultValue = 0;
+        }
+        redisCacheUtil.redisTemplate.opsForValue().set(key, defaultValue);
     }
 
-    public static void increment(String key) {
-        incrementPre(key);
-        redisCacheUtil.redisTemplate.opsForValue().increment(key);
+    public static Long increment(String key) {
+        return increment(key, 1, 0);
     }
 
-    public static void increment(String key, long i) {
-        incrementPre(key);
-        redisCacheUtil.redisTemplate.opsForValue().increment(key, i);
+    public static Long increment(String key, long i, Integer defaultValue) {
+        incrementPre(key, defaultValue);
+        return redisCacheUtil.redisTemplate.opsForValue().increment(key, i);
     }
+
+    public static Long increment(String key, long i) {
+        return increment(key, i, 0);
+    }
+
+    public static Long convertAndSend(String key, Object obj) {
+        return redisCacheUtil.redisTemplate.convertAndSend(key, obj);
+    }
+
+    public static void addMessageListener(MessageListener listener, Topic topic) {
+        container.addMessageListener(listener, topic);
+    }
+
+    public static void addMessageListener(MessageListener listener, List<Topic> topic) {
+        container.addMessageListener(listener, topic);
+    }
+
 
 }
