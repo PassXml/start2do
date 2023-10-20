@@ -1,5 +1,6 @@
 package org.start2do.ebean.dict;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.ebean.annotation.DbEnumType;
 import io.ebean.annotation.DbEnumValue;
 import org.start2do.util.StringUtils;
@@ -22,6 +23,7 @@ public interface IDictItem {
         return getItemBean().getLabel();
     }
 
+    @JsonValue
     @DbEnumValue(length = 2, storage = DbEnumType.VARCHAR)
     default String getValue() {
         return getItemBean().getValue();

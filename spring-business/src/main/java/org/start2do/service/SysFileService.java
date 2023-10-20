@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.start2do.BusinessConfig;
@@ -13,6 +14,7 @@ import org.start2do.BusinessConfig.FileSetting;
 import org.start2do.ebean.service.AbsService;
 import org.start2do.entity.business.SysFile;
 import org.start2do.entity.business.query.QSysFile;
+import org.start2do.util.DateUtil;
 import org.start2do.util.Md5Util;
 
 @Service
@@ -53,11 +55,15 @@ public class SysFileService extends AbsService<SysFile> {
         if (sysFile != null) {
             return sysFile;
         }
-        Path path = Paths.get(businessConfig.getFileSetting().getUploadDir() + "/" + md5);
+        String uploadDir = businessConfig.getFileSetting().getUploadDir();
+        String subfix = filename.substring(filename.lastIndexOf(".") + 1);
+        Path path = Paths.get(
+            uploadDir + File.separator + DateUtil.LocalDateToString(LocalDate.now(), "yyyyMMdd") + File.separator
+                + md5 + "." + subfix);
+        Files.createDirectories(path.getParent());
         file.transferTo(path);
-        String filePath = path.toAbsolutePath().toString();
-        SysFile entity = new SysFile(filename, filePath,
-            md5, md5, null, size);
+        String relativeFilePath = path.toAbsolutePath().toString().substring(uploadDir.length() + 1);
+        SysFile entity = new SysFile(filename, relativeFilePath, relativeFilePath, md5, null, size, subfix);
         super.save(entity);
         return entity;
     }

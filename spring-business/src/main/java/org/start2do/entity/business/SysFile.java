@@ -49,13 +49,13 @@ public class SysFile extends BaseModel2 {
     private String suffix;
 
     public SysFile(String fileName, String filePath, String relativeFilePath, String fileMd5, String host,
-        Long fileSize) {
+        Long fileSize,String suffix) {
         this.fileName = fileName;
         this.filePath = filePath;
         this.fileMd5 = fileMd5;
         this.relativeFilePath = relativeFilePath;
         this.host = host;
         this.fileSize = fileSize;
-        this.suffix = fileName.substring(fileName.lastIndexOf(".") + 1);
+        this.suffix = suffix;
     }
 }

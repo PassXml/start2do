@@ -44,7 +44,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             } catch (IllegalArgumentException e) {
                 log.warn("Unable to get JWT Token");
             } catch (ExpiredJwtException e) {
-                log.warn("JWT Token has expired");
+                if (!config.getMockUser()) {
+                    log.warn("JWT Token has expired");
+                    throw e;
+                }
             }
         }
         if (config.getMockUser()) {

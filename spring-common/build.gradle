@@ -8,7 +8,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     compileOnly("io.ebean:ebean:$ebeanVersion")
-    compileOnly("org.slf4j:slf4j-api:1.7.36")
+    compileOnly("org.slf4j:slf4j-api:2.0.5")
     compileOnly("org.springframework:spring-webmvc:$springVersion")
     compileOnly("org.springframework.boot:spring-boot:$springBootVersion")
 //    compileOnly("org.start2do:bean-valiate:2.0.1-SNAPSHOT")

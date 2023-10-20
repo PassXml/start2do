@@ -32,7 +32,7 @@ import lombok.experimental.Accessors;
 @ToString
 @NoArgsConstructor
 @Accessors(chain = true)
-public class R<T> implements Serializable {
+public class R<T> implements Serializable,Cloneable {
 
     private static final long serialVersionUID = 1L;
 
@@ -78,6 +78,11 @@ public class R<T> implements Serializable {
 
     public static <T> R<T> failed(Integer code, String msg) {
         return restResult(null, code, msg);
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 
     private static <T> R<T> restResult(T data, int code, String msg) {

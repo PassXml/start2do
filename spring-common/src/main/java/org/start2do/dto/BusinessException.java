@@ -20,4 +20,8 @@ public class BusinessException extends RuntimeException {
         super(message);
         this.code = 5000;
     }
+
+    public static void nowThrow(String msg) {
+        throw new BusinessException(msg);
+    }
 }
