@@ -3,6 +3,8 @@ package org.start2do.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -35,6 +37,7 @@ public class ListUtil {
         if (list == null || maxSize < 0 || spFunction == null) {
             return;
         }
+        Spliterators.spliterator(list, Spliterator.IMMUTABLE | Spliterator.ORDERED);
         int cur = 0;
         int end = list.size();
         while (cur < end) {

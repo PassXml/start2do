@@ -1,11 +1,10 @@
 package org.start2do.ebean.util;
 
-import jakarta.annotation.PostConstruct;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.start2do.ebean.dto.EnableType;
@@ -16,19 +15,13 @@ import org.start2do.util.StringUtils;
 
 @RequiredArgsConstructor
 @Component
-public class SysSettingUtil {
+public class SysSettingUtil implements CommandLineRunner {
 
     private final SysSettingService sysSettingService;
 
     @Getter
     private static SysSettingUtil sysSettingUtil;
     private ConcurrentHashMap<String, ConcurrentHashMap<String, String>> hashMap;
-
-    @PostConstruct
-    public void init() {
-        hashMap = new ConcurrentHashMap<>();
-        SysSettingUtil.sysSettingUtil = this;
-    }
 
 
     public static String getLabel(String type, String key) {
@@ -49,9 +42,6 @@ public class SysSettingUtil {
 
     @Scheduled(cron = "0 0/10 0 * * ?")
     public void sync() {
-        if (hashMap == null) {
-            init();
-        }
         for (SysSetting dto : sysSettingService.findAll(new QSysSetting().enable.eq(EnableType.Enable))) {
             if (dto.getType() == null) {
                 continue;
@@ -66,5 +56,10 @@ public class SysSettingUtil {
     }
 
 
-
+    @Override
+    public void run(String... args) throws Exception {
+        hashMap = new ConcurrentHashMap<>();
+        SysSettingUtil.sysSettingUtil = this;
+        sync();
+    }
 }

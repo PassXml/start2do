@@ -2,11 +2,8 @@ package org.start2do.entity.security;
 
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbComment;
-import io.ebean.annotation.DbEnumValue;
 import io.ebean.annotation.Identity;
 import io.ebean.annotation.IdentityType;
-import java.io.Serializable;
-import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -16,11 +13,14 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.io.Serializable;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.start2do.dto.BusinessException;
+import org.start2do.ebean.dict.IDictItem;
 import org.start2do.ebean.entity.BaseModel2;
 
 @Setter
@@ -60,26 +60,14 @@ public class SysMenu extends BaseModel2 implements Serializable {
     @ManyToMany(fetch = FetchType.LAZY)
     private List<SysRole> roles;
 
-    public enum Type {
+    public enum Type implements IDictItem {
         Menu("0", "普通路由(显示)"),
         HideMenu("1", "隐藏路由"),
         Button("2", "按钮"),
         ;
-        private String value;
-        private String label;
 
         Type(String value, String label) {
-            this.value = value;
-            this.label = label;
-        }
-
-        @DbEnumValue(length = 2)
-        public String getValue() {
-            return value;
-        }
-
-        public String getLabel() {
-            return label;
+            putItemBean(value, label);
         }
 
         public static Type find(String s) {

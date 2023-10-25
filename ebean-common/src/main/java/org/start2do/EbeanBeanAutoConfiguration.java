@@ -1,5 +1,6 @@
 package org.start2do;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ebean.Database;
 import io.ebean.DatabaseFactory;
 import io.ebean.config.CurrentUserProvider;
@@ -28,9 +29,8 @@ import org.start2do.ebean.id_generators.UUIDStrIdGenerator;
 })
 public class EbeanBeanAutoConfiguration {
 
-    private final EbeanConfig ebeanConfig;
 
-    private void migration(DataSource dataSource) {
+    public static void migration(DataSource dataSource, EbeanConfig ebeanConfig) {
         if (!ebeanConfig.isMigration()) {
             return;
         }
@@ -39,22 +39,53 @@ public class EbeanBeanAutoConfiguration {
         runner.run(dataSource);
     }
 
-    @Bean
+    @ConditionalOnBean(value = {ObjectMapper.class})
     @ConditionalOnMissingBean(DatabaseConfig.class)
-    public DatabaseConfig databaseConfig(DataSource dataSource, CurrentUserProvider currentUserProvider) {
-        DatabaseConfig config = new DatabaseConfig();
-        config.loadFromProperties();
-        config.add(new UUIDStrIdGenerator());
-        config.setCurrentUserProvider(currentUserProvider);
-        config.setRunMigration(ebeanConfig.isMigration());
-        config.setDataSource(dataSource);
-        config.setDdlRun(false);
-        config.setExternalTransactionManager(new SpringJdbcTransactionManager());
-        config.setDdlCreateOnly(false);
-        if (ebeanConfig.isMigration()) {
-            migration(dataSource);
+    public static class Config1 {
+
+
+        @Bean
+        public DatabaseConfig databaseConfig(DataSource dataSource, CurrentUserProvider currentUserProvider,
+            ObjectMapper objectMapper, EbeanConfig ebeanConfig) {
+            DatabaseConfig config = new DatabaseConfig();
+            config.loadFromProperties();
+            config.add(new UUIDStrIdGenerator());
+            config.setCurrentUserProvider(currentUserProvider);
+            config.setRunMigration(ebeanConfig.isMigration());
+            config.setDataSource(dataSource);
+            config.setDdlRun(false);
+            config.setExternalTransactionManager(new SpringJdbcTransactionManager());
+            config.setDdlCreateOnly(false);
+            if (ebeanConfig.isMigration()) {
+                EbeanBeanAutoConfiguration.migration(dataSource, ebeanConfig);
+            }
+            config.setObjectMapper(objectMapper);
+            return config;
         }
-        return config;
+    }
+
+
+    @ConditionalOnMissingBean({DatabaseConfig.class, ObjectMapper.class})
+    public static class Config2 {
+
+        @Bean
+        public DatabaseConfig databaseConfig(DataSource dataSource, CurrentUserProvider currentUserProvider,
+            EbeanConfig ebeanConfig) {
+            DatabaseConfig config = new DatabaseConfig();
+            config.loadFromProperties();
+            config.add(new UUIDStrIdGenerator());
+            config.setCurrentUserProvider(currentUserProvider);
+            config.setRunMigration(ebeanConfig.isMigration());
+            config.setDataSource(dataSource);
+            config.setDdlRun(false);
+            config.setExternalTransactionManager(new SpringJdbcTransactionManager());
+            config.setDdlCreateOnly(false);
+            if (ebeanConfig.isMigration()) {
+                EbeanBeanAutoConfiguration.migration(dataSource, ebeanConfig);
+            }
+            return config;
+        }
+
     }
 
     @Bean

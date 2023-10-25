@@ -3,6 +3,7 @@ package org.start2do.ebean.service;
 import io.ebean.DB;
 import io.ebean.Model;
 import io.ebean.PagedList;
+import io.ebean.Transaction;
 import io.ebean.typequery.TQRootBean;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -194,6 +195,10 @@ public abstract class AbsService<T extends Model> implements IService<T> {
             function2.run(list.getList(), ePage.getRecords());
         }
         return ePage;
+    }
+
+    public void save(T entity, Transaction transaction) {
+        entity.save(transaction);
     }
 
     public interface Runner<T, R> {

@@ -32,11 +32,12 @@ dependencies {
     annotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")
     compileOnly 'jakarta.validation:jakarta.validation-api:2.0.2'
 //
-    testImplementation("org.slf4j:slf4j-simple:1.7.36")
+    testImplementation("org.slf4j:slf4j-simple:2.0.5")
     testImplementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.3"
     testImplementation "org.glassfish.jaxb:jaxb-runtime:2.3.6"
     testAnnotationProcessor("io.ebean:querybean-generator:$ebeanVersion")
     api "io.ebean:ebean-spring-txn:$ebeanVersion"
+    compileOnly("com.fasterxml.jackson.core:jackson-databind:2.14.2")
 }
 
 test {

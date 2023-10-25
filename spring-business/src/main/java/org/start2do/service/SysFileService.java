@@ -58,12 +58,14 @@ public class SysFileService extends AbsService<SysFile> {
         String uploadDir = businessConfig.getFileSetting().getUploadDir();
         String subfix = filename.substring(filename.lastIndexOf(".") + 1);
         Path path = Paths.get(
-            uploadDir + File.separator + DateUtil.LocalDateToString(LocalDate.now(), "yyyyMMdd") + File.separator
-                + md5 + "." + subfix);
+            uploadDir + File.separator + DateUtil.LocalDateToString(LocalDate.now(), "yyyyMMdd") + File.separator + md5
+                + "." + subfix);
         Files.createDirectories(path.getParent());
         file.transferTo(path);
-        String relativeFilePath = path.toAbsolutePath().toString().substring(uploadDir.length() + 1);
-        SysFile entity = new SysFile(filename, relativeFilePath, relativeFilePath, md5, null, size, subfix);
+        String relativeFilePath = path.toAbsolutePath().toString().substring(uploadDir.length());
+        relativeFilePath = relativeFilePath.replaceAll("\\\\", "/");
+        SysFile entity = new SysFile(filename, relativeFilePath, relativeFilePath, md5,
+            businessConfig.getFileSetting().getHost(), size, subfix);
         super.save(entity);
         return entity;
     }

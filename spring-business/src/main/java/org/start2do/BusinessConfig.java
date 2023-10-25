@@ -40,6 +40,7 @@ public class BusinessConfig {
 
         private FileSettingType type = FileSettingType.local;
         private String uploadDir;
+        private String host;
 
         public String getUploadDir() {
             if (StringUtils.isEmpty(uploadDir)) {

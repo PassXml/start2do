@@ -3,11 +3,8 @@ package org.start2do.entity.security;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbDefault;
-import io.ebean.annotation.DbEnumValue;
 import io.ebean.annotation.Identity;
 import io.ebean.annotation.IdentityType;
-import java.io.Serializable;
-import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -17,11 +14,14 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.io.Serializable;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.start2do.dto.BusinessException;
+import org.start2do.ebean.dict.IDictItem;
 import org.start2do.ebean.entity.BaseModel2;
 
 @Setter
@@ -86,23 +86,11 @@ public class SysUser extends BaseModel2 implements Serializable {
         this.menus = menus;
     }
 
-    public enum Status {
+    public enum Status implements IDictItem {
         Normal("1", "正常"), Lock("0", "锁定");
-        private String value;
-        private String label;
 
         Status(String value, String label) {
-            this.value = value;
-            this.label = label;
-        }
-
-        @DbEnumValue
-        public String getValue() {
-            return value;
-        }
-
-        public String getLabel() {
-            return label;
+            putItemBean(value, label);
         }
 
         public static Status find(String s) {
