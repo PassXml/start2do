@@ -60,6 +60,9 @@ public class SysFile extends BaseModel2 {
     }
 
     public String getUrl() {
-        return host + relativeFilePath;
+        if (relativeFilePath.startsWith("/")) {
+            return host + relativeFilePath;
+        }
+        return host + "/" + relativeFilePath;
     }
 }

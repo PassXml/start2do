@@ -8,6 +8,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
@@ -127,6 +128,15 @@ public class DateUtil {
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), offset);
     }
 
+    public static LocalDateTime getMonthStartTime() {
+        return LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0, 0)).withDayOfMonth(1);
+    }
+
+    public static LocalDateTime getMonthEndTime() {
+        return LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59)).plusMonths(1).withDayOfMonth(1)
+            .minus(1, ChronoUnit.DAYS);
+    }
+
     public static class Pattern {
 
         public static final String YYYY_MM_ddHHmmss = "yyyy-MM-dd HH:mm:ss";
@@ -135,5 +145,21 @@ public class DateUtil {
         public static final String HHmm = "HH:mm";
     }
 
+    public static LocalDateTime getWeekStartTime() {
+        LocalDateTime now = LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0));
+        return now.plus(1 - now.getDayOfWeek().getValue(), ChronoUnit.DAYS);
+    }
 
+    public static LocalDateTime getWeekEndTime() {
+        LocalDateTime now = LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59));
+        return now.plus(7 - now.getDayOfWeek().getValue(), ChronoUnit.DAYS);
+    }
+
+    public static LocalDateTime getDayEndTime() {
+        return LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59));
+    }
+
+    public static LocalDateTime getDayStartTime() {
+        return LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0, 0));
+    }
 }
