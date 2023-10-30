@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.util.List;
@@ -21,7 +22,9 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.start2do.dto.BusinessException;
 import org.start2do.ebean.dict.IDictItem;
+import org.start2do.ebean.dto.EnableType;
 import org.start2do.ebean.entity.BaseModel2;
+import org.start2do.ebean.enums.YesOrNoType;
 
 @Setter
 @Getter
@@ -53,6 +56,10 @@ public class SysMenu extends BaseModel2 implements Serializable {
     @Column
     @DbComment("类型")
     private Type type;
+    @DbComment("是否显示")
+    private YesOrNoType isShow;
+    @DbComment("是否启用")
+    private EnableType status;
 
 
     @JoinTable(name = "sys_role_menu", joinColumns = {@JoinColumn(name = "menu_id", referencedColumnName = "id")},
@@ -61,9 +68,11 @@ public class SysMenu extends BaseModel2 implements Serializable {
     private List<SysRole> roles;
 
     public enum Type implements IDictItem {
-        Menu("0", "普通路由(显示)"),
-        HideMenu("1", "隐藏路由"),
+        Directory("0", "目录"),
+        Menu("1", "菜单"),
         Button("2", "按钮"),
+        Link("3", "链接"),
+        Iframe("4", "内嵌"),
         ;
 
         Type(String value, String label) {
@@ -77,6 +86,16 @@ public class SysMenu extends BaseModel2 implements Serializable {
                 }
             }
             throw new BusinessException(String.format("%s未知字典值:%s", "Type", s));
+        }
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (isShow == null) {
+            isShow = YesOrNoType.No;
+        }
+        if (status == null) {
+            status = EnableType.DisEnable;
         }
     }
 }

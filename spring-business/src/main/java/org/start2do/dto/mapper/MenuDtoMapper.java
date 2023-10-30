@@ -19,6 +19,10 @@ public interface MenuDtoMapper {
 
     @Mapping(source = "type.value", target = "type")
     @Mapping(source = "type.label", target = "typeStr")
+    @Mapping(source = "status.label", target = "statusStr")
+    @Mapping(source = "status.value", target = "status")
+    @Mapping(source = "isShow.value", target = "isShow")
+    @Mapping(source = "isShow.label", target = "isShowStr")
     MenuPageResp toMenuPageResp(SysMenu sysMenu);
 
     @IgnoreBaseModel2
@@ -37,6 +41,10 @@ public interface MenuDtoMapper {
 
     @Mapping(source = "type.value", target = "type")
     @Mapping(source = "type.label", target = "typeStr")
+    @Mapping(source = "status.label", target = "statusStr")
+    @Mapping(source = "status.value", target = "status")
+    @Mapping(source = "isShow.value", target = "isShow")
+    @Mapping(source = "isShow.label", target = "isShowStr")
     MenuDetailResp toMenuDetailResp(SysMenu menu);
 
 }

@@ -46,7 +46,12 @@ public class SysLogController {
     public R<Page<LogPageResp>> page(Page page, LogPageReq req) {
         QSysLog qClass = new QSysLog().createTime.desc();
         Where.ready().notEmpty(req.getType(), s -> qClass.type.eq(Type.find(s)))
-            .notNull(req.getStartTime(), qClass.createTime::ge).notNull(req.getEndTime(), qClass.createTime::lt);
+            .notNull(req.getStartTime(), qClass.createTime::ge).notNull(req.getEndTime(), qClass.createTime::lt)
+            .notEmpty(req.getKeyword(), s -> {
+                qClass.or().title.like("%" + s + "%").or().createPerson.like("%" + s + "%").or().responseBody.like(
+                    "%" + s + "%");
+            });
+
         return R.ok(sysLogService.page(qClass, page, SysLogDtoMapper.INSTANCE::LogPageResp));
     }
 

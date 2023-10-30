@@ -28,4 +28,10 @@ public class MenuPageResp {
     private LocalDateTime createTime;
     private String updatePerson;
     private LocalDateTime updateTime;
+    private String status;
+    private String statusStr;
+    private String isShow;
+    private String isShowStr;
+
+
 }

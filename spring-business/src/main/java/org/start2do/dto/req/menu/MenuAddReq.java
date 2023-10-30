@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.start2do.ebean.dto.EnableType;
+import org.start2do.ebean.enums.YesOrNoType;
 
 @Setter
 @Getter
@@ -29,4 +31,8 @@ public class MenuAddReq {
     private Integer parentId;
     @JsonAlias("menuPermission")
     private String permission;
+    private YesOrNoType isShow;
+    private EnableType status;
+
+
 }

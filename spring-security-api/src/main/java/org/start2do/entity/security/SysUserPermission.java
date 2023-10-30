@@ -23,7 +23,7 @@ import lombok.experimental.Accessors;
 public class SysUserPermission extends Model {
 
     @Id
-    @Column(name = "menuId")
+    @Column(name = "menu_id")
     private Integer menuId;
     @Id
     @Column(name = "user_id")

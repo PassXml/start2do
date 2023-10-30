@@ -17,6 +17,7 @@ import org.start2do.dto.R;
 import org.start2do.dto.mapper.UserDtoMapper;
 import org.start2do.dto.req.user.UserAddReq;
 import org.start2do.dto.req.user.UserPageReq;
+import org.start2do.dto.req.user.UserStatusReq;
 import org.start2do.dto.req.user.UserUpdateReq;
 import org.start2do.dto.resp.user.UserDetailResp;
 import org.start2do.dto.resp.user.UserPageResp;
@@ -113,5 +114,17 @@ public class SysUserController {
         }
         resp.setMenus(menuIds);
         return R.ok(resp);
+    }
+
+    /**
+     * 修改状态
+     */
+    @PostMapping("status")
+    public R status(UserStatusReq req) {
+        BeanValidatorUtil.validate(req);
+        SysUser user = sysUserService.getById(req.getId());
+        user.setStatus(req.getType());
+        sysUserService.update(user);
+        return R.ok();
     }
 }

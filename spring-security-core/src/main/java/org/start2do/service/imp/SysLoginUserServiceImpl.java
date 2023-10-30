@@ -13,10 +13,12 @@ import org.springframework.stereotype.Service;
 import org.start2do.dto.BusinessException;
 import org.start2do.dto.UserCredentials;
 import org.start2do.dto.UserRole;
+import org.start2do.ebean.dto.EnableType;
 import org.start2do.ebean.service.AbsService;
 import org.start2do.entity.security.SysRole;
 import org.start2do.entity.security.SysUser;
 import org.start2do.entity.security.SysUser.Status;
+import org.start2do.entity.security.query.QSysRole;
 import org.start2do.entity.security.query.QSysUser;
 import org.start2do.service.SysLoginUserService;
 
@@ -29,7 +31,9 @@ public class SysLoginUserServiceImpl extends AbsService<SysUser> implements SysL
 
     @Override
     public UserCredentials loadUserByUsername(String username) throws UsernameNotFoundException {
-        QSysUser sysUser = new QSysUser().setUseCache(true).menus.fetch().roles.menus.fetch().roles.fetch();
+        QSysUser sysUser = new QSysUser().setUseCache(true).menus.roles.filterMany(
+            new QSysRole().menus.status.eq(EnableType.Enable).getExpressionList()
+        );
         SysUser user = findOne(sysUser.username.eq(username));
         if (user == null) {
             throw new UsernameNotFoundException("用户名不存在");
