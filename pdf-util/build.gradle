@@ -25,6 +25,8 @@ dependencies {
     api("net.sf.jasperreports:jasperreports:$jasperreportsVersion") {
         exclude group: "com.lowagie"
     }
+    implementation group: 'net.sf.jasperreports', name: 'jasperreports-chart-themes', version: jasperreportsVersion
+
     api "commons-codec:commons-codec:1.15"
 
     compileOnly("org.slf4j:slf4j-api:1.7.32")
