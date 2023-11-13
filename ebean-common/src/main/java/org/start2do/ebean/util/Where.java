@@ -1,5 +1,6 @@
 package org.start2do.ebean.util;
 
+import io.ebean.typequery.PEnum;
 import io.ebean.typequery.PLocalDateTime;
 import io.ebean.typequery.PString;
 import java.time.LocalDate;
@@ -81,6 +82,14 @@ public class Where {
         if (startDate != null && endTime != null) {
             between(patten, LocalDateTime.of(startDate, LocalTime.of(0, 0)),
                 LocalDateTime.of(startDate, LocalTime.of(59, 59, 59, 999)));
+        }
+        return where;
+    }
+
+    public Where notNull(Enum status,
+        PEnum entityStatus) {
+        if (status != null) {
+            entityStatus.eq(status);
         }
         return where;
     }

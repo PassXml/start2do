@@ -1,14 +1,18 @@
 package org.start2do.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Getter;
@@ -143,6 +147,29 @@ public class ListUtil {
             }
         }
         return result;
+    }
+
+    public static <T, R> Optional<T> findFirst(Collection<T> list, Function<T, R> get, R eqValue) {
+        return list.stream().filter(t -> Objects.equals(get.apply(t), eqValue)).findFirst();
+    }
+
+    public static <T, R> T findFirst(Collection<T> list, T defaultValue, Function<T, R> get, R eqValue) {
+        return findFirst(list, get, eqValue).orElseGet(() -> defaultValue);
+    }
+
+    public static <T, R, Z> Z findFirst(Collection<T> list, Z defaultValue, Function<T, R> get, R eqValue,
+        Function<T, Z> function) {
+        return findFirst(list, get, eqValue).map(function).orElseGet(() -> defaultValue);
+    }
+
+    public static <T, Z, R> Z findFirstThrow(Collection<T> list, Supplier<RuntimeException> exception, Function<T, R> get,
+        R eqValue,
+        Function<T, Z> function) {
+        return findFirst(list, get, eqValue).map(function).orElseThrow(exception);
+    }
+
+    public static boolean isEmpty(List req) {
+        return req == null || req.size() == 0;
     }
 
 

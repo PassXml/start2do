@@ -17,6 +17,14 @@ public interface MenuDtoMapper {
 
     MenuDtoMapper INSTANCE = Mappers.getMapper(MenuDtoMapper.class);
 
+//    default YesOrNoType str2YesOrNoType(String s) {
+//        return YesOrNoType.get(s);
+//    }
+//
+//    default EnableType str2EnableType(String s) {
+//        return EnableType.get(s);
+//    }
+
     @Mapping(source = "type.value", target = "type")
     @Mapping(source = "type.label", target = "typeStr")
     @Mapping(source = "status.label", target = "statusStr")

@@ -36,6 +36,7 @@ import org.start2do.dto.req.login.JwtRequest;
 import org.start2do.dto.resp.login.AuthRoleMenuResp;
 import org.start2do.dto.resp.login.CodeResp;
 import org.start2do.dto.resp.login.JwtResponse;
+import org.start2do.ebean.dto.EnableType;
 import org.start2do.entity.security.SysMenu;
 import org.start2do.entity.security.query.QSysMenu;
 import org.start2do.service.SysLoginMenuService;
@@ -119,7 +120,7 @@ public class LoginController {
     @GetMapping("menu")
     public R<List<AuthRoleMenuResp>> menu() {
         List<SysMenu> menus = sysLoginMenuService.findAll(
-            new QSysMenu().roles.users.id.eq(JwtTokenUtil.getUserId()));
+            new QSysMenu().status.eq(EnableType.Enable).roles.users.id.eq(JwtTokenUtil.getUserId()));
         return R.ok(menus.stream().map(AuthRoleMenuResp::new).collect(Collectors.toList()));
     }
 

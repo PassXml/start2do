@@ -53,6 +53,7 @@ allprojects {
         testCompileOnly("org.projectlombok:lombok:$lombokVersion")
         compileOnly("org.projectlombok:lombok:$lombokVersion")
         annotationProcessor("org.projectlombok:lombok:$lombokVersion")
+        testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
         compileOnly("org.mapstruct:mapstruct:$mapstructVersion")
         compileOnly("org.slf4j:slf4j-api:1.7.36")
         annotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")

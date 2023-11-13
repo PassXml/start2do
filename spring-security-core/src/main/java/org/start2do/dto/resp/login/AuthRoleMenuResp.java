@@ -21,6 +21,8 @@ public class AuthRoleMenuResp {
     private Integer parentId;
     private String type;
     private String typeStr;
+    private String isShow;
+    private String isShowStr;
 
     public AuthRoleMenuResp(SysMenu menu) {
         this.id = menu.getId();
@@ -32,5 +34,7 @@ public class AuthRoleMenuResp {
         this.parentId = menu.getParentId();
         this.type = menu.getType().getValue();
         this.typeStr = menu.getType().getLabel();
+        this.isShow = menu.getIsShow().value();
+        this.isShowStr = menu.getIsShow().label();
     }
 }

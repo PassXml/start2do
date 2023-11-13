@@ -16,10 +16,13 @@ import org.start2do.dto.Page;
 import org.start2do.dto.R;
 import org.start2do.dto.mapper.UserDtoMapper;
 import org.start2do.dto.req.user.UserAddReq;
+import org.start2do.dto.req.user.UserMenuReq;
+import org.start2do.dto.req.user.UserMenuResp;
 import org.start2do.dto.req.user.UserPageReq;
 import org.start2do.dto.req.user.UserStatusReq;
 import org.start2do.dto.req.user.UserUpdateReq;
 import org.start2do.dto.resp.user.UserDetailResp;
+import org.start2do.dto.resp.user.UserDetailResp.Item;
 import org.start2do.dto.resp.user.UserPageResp;
 import org.start2do.ebean.util.Where;
 import org.start2do.entity.security.SysMenu;
@@ -51,8 +54,7 @@ public class SysUserController {
     @GetMapping("page")
     public R<Page<UserPageResp>> page(UserPageReq req) {
         QSysUser qClass = new QSysUser();
-        Where.ready().like(req.getUsername(), qClass.username::like)
-            .notNull(req.getRole(), qClass.roles.id::eq);
+        Where.ready().like(req.getUsername(), qClass.username::like).notNull(req.getRole(), qClass.roles.id::eq);
         return R.ok(sysUserService.page(qClass, req, UserDtoMapper.INSTANCE::toUserPageResp));
     }
 
@@ -104,13 +106,16 @@ public class SysUserController {
     @GetMapping("detail")
     public R<UserDetailResp> detail(IdReq req) {
         BeanValidatorUtil.validate(req);
-        SysUser user = sysUserService.getOne(new QSysUser().id.eq(req.getId()).roles.fetchQuery());
+        SysUser user = sysUserService.getOne(new QSysUser().id.eq(req.getId()).roles.fetch());
         UserDetailResp resp = UserDtoMapper.INSTANCE.toUserDetailResp(user);
-        List<SysRole> roles = sysRoleService.findAll(new QSysRole().users.id.eq(user.getId()));
+        List<SysRole> roles = sysRoleService.findAll(new QSysRole().menus.fetch().users.id.eq(user.getId()));
         resp.setRoles(roles.stream().map(SysRole::getId).collect(Collectors.toList()));
+        resp.setRolesInfo(roles.stream().map(t -> new Item(
+            t.getId(), t.getName()
+        )).collect(Collectors.toList()));
         List<Integer> menuIds = new ArrayList<>();
         for (SysRole role : user.getRoles()) {
-            menuIds.addAll(role.getMenus().stream().map(SysMenu::getId).collect(Collectors.toList()));
+            menuIds.addAll(role.getMenus().stream().map(SysMenu::getId).toList());
         }
         resp.setMenus(menuIds);
         return R.ok(resp);
@@ -126,5 +131,17 @@ public class SysUserController {
         user.setStatus(req.getType());
         sysUserService.update(user);
         return R.ok();
+    }
+
+    /**
+     * 用户菜单
+     */
+    @GetMapping("menu")
+    public R<List<UserMenuResp>> menu(UserMenuReq req) {
+        QSysUser qClass = new QSysUser();
+        Where.ready().like(req.getRealName(), qClass.realName).like(req.getUsername(), qClass.username);
+        return R.ok(sysUserService.findAll(qClass).stream().map(t -> new UserMenuResp(
+            t.getId(), t.getUsername(), t.getRealName()
+        )).collect(Collectors.toList()));
     }
 }
