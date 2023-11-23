@@ -2,6 +2,7 @@ package org.start2do.dto;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -20,6 +21,7 @@ public class UserCredentials extends User {
     private List<SysMenu> menus;
     private SysDept dept;
     private String realName;
+    private Map<String, Object> customInfo;
 
     public UserCredentials(Integer id, String username, String password, String realName,
         Collection<? extends GrantedAuthority> authorities) {
@@ -27,4 +29,5 @@ public class UserCredentials extends User {
         this.id = id;
         this.realName = realName;
     }
+
 }

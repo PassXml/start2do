@@ -2,8 +2,8 @@ package org.start2do.controller;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,6 +41,7 @@ import org.start2do.util.StringUtils;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/user")
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "user", havingValue = "true")
 public class SysUserController {
 
     private final SysUserService sysUserService;
@@ -62,8 +63,7 @@ public class SysUserController {
      * 添加
      */
     @PostMapping("add")
-    public R add(@RequestBody UserAddReq req) {
-        System.out.println(req.getClass());
+    public R<Void> add(@RequestBody UserAddReq req) {
         BeanValidatorUtil.validate(req);
         if (StringUtils.isEmpty(req.getPassword())) {
             throw new BusinessException("密码不能为空");
@@ -77,7 +77,7 @@ public class SysUserController {
      * 更新
      */
     @PostMapping("update")
-    public R update(@RequestBody UserUpdateReq req) {
+    public R<Void> update(@RequestBody UserUpdateReq req) {
         BeanValidatorUtil.validate(req);
         SysUser user = sysUserService.getById(req.getId());
         UserDtoMapper.INSTANCE.update(user, req);
@@ -94,7 +94,7 @@ public class SysUserController {
      * 删除
      */
     @GetMapping("delete")
-    public R delete(IdReq req) {
+    public R<Void> delete(IdReq req) {
         BeanValidatorUtil.validate(req);
         sysUserService.remove(req.getId());
         return R.ok();
@@ -109,10 +109,10 @@ public class SysUserController {
         SysUser user = sysUserService.getOne(new QSysUser().id.eq(req.getId()).roles.fetch());
         UserDetailResp resp = UserDtoMapper.INSTANCE.toUserDetailResp(user);
         List<SysRole> roles = sysRoleService.findAll(new QSysRole().menus.fetch().users.id.eq(user.getId()));
-        resp.setRoles(roles.stream().map(SysRole::getId).collect(Collectors.toList()));
+        resp.setRoles(roles.stream().map(SysRole::getId).toList());
         resp.setRolesInfo(roles.stream().map(t -> new Item(
             t.getId(), t.getName()
-        )).collect(Collectors.toList()));
+        )).toList());
         List<Integer> menuIds = new ArrayList<>();
         for (SysRole role : user.getRoles()) {
             menuIds.addAll(role.getMenus().stream().map(SysMenu::getId).toList());
@@ -125,7 +125,7 @@ public class SysUserController {
      * 修改状态
      */
     @PostMapping("status")
-    public R status(UserStatusReq req) {
+    public R<Void> status(UserStatusReq req) {
         BeanValidatorUtil.validate(req);
         SysUser user = sysUserService.getById(req.getId());
         user.setStatus(req.getType());
@@ -142,6 +142,6 @@ public class SysUserController {
         Where.ready().like(req.getRealName(), qClass.realName).like(req.getUsername(), qClass.username);
         return R.ok(sysUserService.findAll(qClass).stream().map(t -> new UserMenuResp(
             t.getId(), t.getUsername(), t.getRealName()
-        )).collect(Collectors.toList()));
+        )).toList());
     }
 }

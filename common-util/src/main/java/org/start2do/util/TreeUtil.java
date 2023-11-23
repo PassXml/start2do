@@ -1,5 +1,6 @@
 package org.start2do.util;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -43,7 +44,7 @@ public class TreeUtil {
 
     public <T extends TreeNode> void setChildren(T parent, List<T> nodes) {
         List<T> children = new ArrayList<>();
-        Object parentId = parent.getId();
+        Object parentId = parent.getTreeNodeId();
         for (Iterator<T> ite = nodes.iterator(); ite.hasNext(); ) {
             T node = ite.next();
             if (Objects.equals(node.getParentId(), parentId)) {
@@ -64,7 +65,7 @@ public class TreeUtil {
     }
 
     public <T extends TreeNode<? extends TreeNode>> T findNode(T node, String nodeId) {
-        if (Objects.equals(node.getId(), nodeId)) {
+        if (Objects.equals(node.getTreeNodeId(), nodeId)) {
             return node;
         }
         for (TreeNode child : node.getChildren()) {
@@ -83,9 +84,37 @@ public class TreeUtil {
         return null;
     }
 
+    public static <T extends TreeNode<?>> List<T> findPath(TreeNode<T> root, String targetNodeId) {
+        List<T> path = new ArrayList<>();
+        findPathRecursive((T) root, targetNodeId, path);
+        return path;
+    }
+
+    private static <T extends TreeNode<?>> boolean findPathRecursive(T node, String targetNodeId,
+        List<T> path) {
+        if (node == null) {
+            return false;
+        }
+
+        path.add(node);
+
+        if (Objects.equals(node.getTreeNodeId(), targetNodeId)) {
+            return true;
+        }
+
+        for (Object child : node.getChildren()) {
+            if (findPathRecursive((T) child, targetNodeId, path)) {
+                return true;
+            }
+        }
+        path.remove(path.size() - 1);
+        return false;
+    }
+
+
     public interface TreeNode<T> {
 
-        String getId();
+        String getTreeNodeId();
 
         String getParentId();
 
@@ -94,6 +123,7 @@ public class TreeUtil {
 
         List<T> getChildren();
 
+        @JsonIgnore
         default List<String> getAllChildrenId() {
             return TreeUtil.getAllChildrenId(this);
         }
@@ -104,7 +134,7 @@ public class TreeUtil {
         List<String> result = new ArrayList<>();
         for (T child : tTreeNode.getChildren()) {
             if (child instanceof TreeNode<?>) {
-                String id = ((TreeNode<?>) child).getId();
+                String id = ((TreeNode<?>) child).getTreeNodeId();
                 result.add(id);
                 TreeNode<T> node = (TreeNode<T>) child;
                 if ((node).getChildren() != null) {

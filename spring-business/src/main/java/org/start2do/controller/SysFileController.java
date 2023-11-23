@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +26,7 @@ import org.start2do.service.SysFileService;
  */
 @RestController
 @RequestMapping("/file")
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "file", havingValue = "true")
 public class SysFileController {
 
     private final SysFileService sysFileService;

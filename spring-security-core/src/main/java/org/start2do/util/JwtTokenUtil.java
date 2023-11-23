@@ -8,6 +8,8 @@ import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.crypto.spec.SecretKeySpec;
@@ -26,10 +28,10 @@ public class JwtTokenUtil implements Serializable {
 
     public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
     public static String SECRET = null;
-    private static String USERNAME = "username";
-    private static String ROLES = "roles";
-    private static String MENUS = "menus";
-    public static String AUTHORIZATION = "Authorization";
+    private final static String USERNAME = "username";
+    private final static String ROLES = "roles";
+    private final static String MENUS = "menus";
+    public final static String AUTHORIZATION = "Authorization";
     public static String Bearer = "Bearer ";
     public static int BearerLen = 7;
     public static boolean CheckExpired = true;
@@ -75,6 +77,12 @@ public class JwtTokenUtil implements Serializable {
         map.put(USERNAME, userCredentials.getUsername());
         map.put(MENUS, userCredentials.getMenus());
         map.put(ROLES, userCredentials.getRoles());
+        Map<String, Object> customInfo = userCredentials.getCustomInfo();
+        if (customInfo != null) {
+            for (Entry<String, Object> entry : customInfo.entrySet()) {
+                map.put(entry.getKey(), entry.getValue());
+            }
+        }
         return Jwts.builder().setClaims(map)
             .setIssuedAt(new Date(System.currentTimeMillis()))
             .setSubject(String.valueOf(userCredentials.getId()))
@@ -103,6 +111,9 @@ public class JwtTokenUtil implements Serializable {
             return MockUserId;
         }
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
+        if (ra==null) {
+            return null;
+        }
         ServletRequestAttributes sra = (ServletRequestAttributes) ra;
         HttpServletRequest request = sra.getRequest();
         String header = request.getHeader(AUTHORIZATION);
@@ -116,6 +127,9 @@ public class JwtTokenUtil implements Serializable {
             return MockUserName;
         }
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
+        if (ra==null) {
+            return null;
+        }
         ServletRequestAttributes sra = (ServletRequestAttributes) ra;
         HttpServletRequest request = sra.getRequest();
         String header = request.getHeader(AUTHORIZATION);

@@ -16,9 +16,24 @@ public class BusinessConfig {
 
     private Boolean enable;
     private SysLogConfig sysLog;
+    private Controller controller = new Controller();
 
     private String dateTimePattern = "yyyy-MM-dd HH:mm:ss";
     private String datePattern = "yyyy-MM-dd";
+
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    public static class Controller {
+
+        private boolean user = true;
+        private boolean role = true;
+        private boolean dept = true;
+        private boolean log = true;
+        private boolean file = true;
+
+    }
 
     @Setter
     @Getter

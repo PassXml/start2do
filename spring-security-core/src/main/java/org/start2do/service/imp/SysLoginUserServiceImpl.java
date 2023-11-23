@@ -20,6 +20,7 @@ import org.start2do.entity.security.SysUser;
 import org.start2do.entity.security.SysUser.Status;
 import org.start2do.entity.security.query.QSysRole;
 import org.start2do.entity.security.query.QSysUser;
+import org.start2do.service.ISysLoginUserCustomInfoService;
 import org.start2do.service.SysLoginUserService;
 
 @Service
@@ -28,13 +29,14 @@ import org.start2do.service.SysLoginUserService;
 public class SysLoginUserServiceImpl extends AbsService<SysUser> implements SysLoginUserService<SysUser>,
     UserDetailsService {
 
+    private final ISysLoginUserCustomInfoService sysLoginUserCustomInfoService;
 
     @Override
     public UserCredentials loadUserByUsername(String username) throws UsernameNotFoundException {
-        QSysUser sysUser = new QSysUser().setUseCache(true).menus.roles.filterMany(
+        QSysUser qClass = new QSysUser().setUseCache(true).menus.roles.filterMany(
             new QSysRole().menus.status.eq(EnableType.Enable).getExpressionList()
         );
-        SysUser user = findOne(sysUser.username.eq(username));
+        SysUser user = findOne(qClass.username.eq(username));
         if (user == null) {
             throw new UsernameNotFoundException("用户名不存在");
         }
@@ -45,6 +47,7 @@ public class SysLoginUserServiceImpl extends AbsService<SysUser> implements SysL
         Set<GrantedAuthority> authorities = new HashSet<GrantedAuthority>();
         UserCredentials credentials = new UserCredentials(user.getId(), user.getUsername(), user.getPassword(),
             user.getRealName(), authorities);
+        credentials.setCustomInfo(sysLoginUserCustomInfoService.getCustomInfo(user.getId()));
         credentials.setRoles(
             roles.stream().map(sysRole -> new UserRole(sysRole.getId(), sysRole.getName(), sysRole.getRoleCode()))
                 .collect(Collectors.toList()));

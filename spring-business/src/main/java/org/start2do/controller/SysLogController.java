@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,6 +36,8 @@ import org.start2do.util.BeanValidatorUtil;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/log")
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "log", havingValue = "true")
+
 public class SysLogController {
 
     private final SysLogService sysLogService;

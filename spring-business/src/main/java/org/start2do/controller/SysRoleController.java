@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,6 +44,7 @@ import org.start2do.util.ListUtil;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("role")
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "role", havingValue = "true")
 public class SysRoleController {
 
     private final SysRoleService sysRoleService;
@@ -125,7 +127,7 @@ public class SysRoleController {
 
 
     /**
-      *  根据用户组获取该用户组下面的菜单
+     * 根据用户组获取该用户组下面的菜单
      */
     @GetMapping("users")
     public R<List<RoleUsersResp>> users(Integer roleId) {

@@ -9,11 +9,11 @@ import org.junit.jupiter.api.Test;
 import org.start2do.util.TreeUtil;
 import org.start2do.util.TreeUtil.TreeNode;
 
-public class TreeUtilTest {
+class TreeUtilTest {
 
     @Test
     @Tag("build")
-    public void test() {
+     void test() {
         List<Node> list = new ArrayList<>(
             List.of(
                 new Node("1", null, "1", new ArrayList<>()),
@@ -29,7 +29,7 @@ public class TreeUtilTest {
 
     @Test
     @Tag("findNode")
-    public void test1() {
+    void test1() {
         Node node1 = new Node("4", "2", "4", new ArrayList<>());
         Node node2 = new Node("2", "1", "2", new ArrayList<>());
         List<Node> list = List.of(
@@ -45,6 +45,28 @@ public class TreeUtilTest {
         System.out.println(node3);
     }
 
+    @Test
+    @Tag("keep-NodeId-path(remove other)")
+    void test2() {
+        Node node1 = new Node("4", "2", "4", new ArrayList<>());
+        Node node2 = new Node("2", "1", "2", new ArrayList<>());
+        List<Node> list = List.of(
+            new Node("1", null, "1", new ArrayList<>()),
+            node2,
+            new Node("3", "1", "3", new ArrayList<>()),
+            node1,
+            new Node("5", "3", "5", new ArrayList<>())
+        );
+        List<Node> nodes = TreeUtil.generateTrees(list);
+        System.out.println(nodes);
+        List<Node> path = TreeUtil.findPath(nodes.stream().filter(t -> t.getParentId() == null).findFirst().get(), "2");
+        List<Node> trees = TreeUtil.generateTrees(path);
+        System.out.println(
+            trees
+        );
+    }
+
+
     @Setter
     @Getter
     @NoArgsConstructor
@@ -56,6 +78,10 @@ public class TreeUtilTest {
         private String name;
         private List<Node> children;
 
+        @Override
+        public String getTreeNodeId() {
+            return this.id;
+        }
 
         public Node(String id, String parentId, String name, List<Node> children) {
             this.id = id;

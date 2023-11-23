@@ -43,5 +43,6 @@ public interface UserDtoMapper {
     @Mapping(source = "status.label", target = "statusStr")
     @Mapping(source = "status.value", target = "status")
     @Mapping(source = "dept.name", target = "deptName")
+    @Mapping(target = "rolesInfo", ignore = true)
     UserDetailResp toUserDetailResp(SysUser user);
 }
