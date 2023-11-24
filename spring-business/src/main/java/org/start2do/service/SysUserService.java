@@ -1,11 +1,11 @@
 package org.start2do.service;
 
-import io.ebean.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.start2do.dto.BusinessException;
 import org.start2do.ebean.service.AbsService;
 import org.start2do.entity.security.SysRole;

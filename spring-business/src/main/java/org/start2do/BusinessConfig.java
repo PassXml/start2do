@@ -31,6 +31,7 @@ public class BusinessConfig {
         private boolean role = true;
         private boolean dept = true;
         private boolean log = true;
+        private boolean menu = true;
         private boolean file = true;
 
     }

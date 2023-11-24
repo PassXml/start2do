@@ -1,6 +1,5 @@
 package org.start2do.service;
 
-import io.ebean.annotation.Transactional;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -8,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.start2do.ebean.service.AbsService;
 import org.start2do.entity.security.SysUserRole;
 import org.start2do.entity.security.query.QSysUserRole;

@@ -1,9 +1,9 @@
 package org.start2do.service;
 
-import io.ebean.annotation.Transactional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.start2do.ebean.service.AbsService;
 import org.start2do.entity.business.SysDict;
 import org.start2do.entity.business.query.QSysDictItem;
