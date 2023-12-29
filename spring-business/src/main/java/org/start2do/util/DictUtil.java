@@ -37,7 +37,7 @@ public class DictUtil {
     }
 
 
-    @Scheduled(cron = "0 0/10 0 * * ?")
+    @Scheduled(cron = "0 0/10 * * * ?")
     public void sync() {
         if (concurrentMap == null) {
             init();
