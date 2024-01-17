@@ -16,6 +16,7 @@ public class Start2doSecurityConfig {
 
     private Boolean enable;
     private List<String> whiteList;
+    private WebApplicationType webApplicationType;
 
     private Boolean checkExpired;
 
@@ -24,4 +25,7 @@ public class Start2doSecurityConfig {
     private Integer mockUserId = 1;
     private String mockUserName = "admin";
 
+    public enum WebApplicationType {
+        Servlet, WebFlux
+    }
 }

@@ -7,12 +7,12 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
 
 @Component
-@ConditionalOnProperty(prefix = "start2o", value = "replaceFilter.enable", havingValue = "true")
+@ConditionalOnExpression("${start2do.replaceFilter.enable:false} && '${jwt.web-application-type}'==('servlet')")
 public class ReplaceRequestFilter implements Filter {
 
     @Override

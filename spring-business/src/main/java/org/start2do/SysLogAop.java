@@ -16,6 +16,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -34,6 +35,7 @@ import org.start2do.util.spring.LogAopConfig;
 @Component
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "start2do.business.sys-log", value = "enable", havingValue = "true")
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class SysLogAop {
 
     private final SysLogService sysLogService;

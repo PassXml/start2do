@@ -34,6 +34,9 @@ public class RedisCacheUtil {
     private static RedisCacheUtil redisCacheUtil;
 
     public static List<String> scan(RedisTemplate redisTemplate, String query) {
+        if (redisTemplate == null) {
+            return new ArrayList<>();
+        }
         Set<String> resultKeys = (Set<String>) redisTemplate.execute((RedisCallback<Set<String>>) connection -> {
             ScanOptions scanOptions = ScanOptions.scanOptions().match("*" + query + "*").count(1000).build();
             Cursor<byte[]> scan = connection.scan(scanOptions);
@@ -49,6 +52,9 @@ public class RedisCacheUtil {
     }
 
     public static List<String> scan(String key) {
+        if (RedisCacheUtil.redisCacheUtil == null) {
+            return new ArrayList<>();
+        }
         return scan(RedisCacheUtil.redisCacheUtil.redisTemplate, key);
     }
 

@@ -7,6 +7,10 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -22,12 +26,13 @@ import org.start2do.entity.security.query.QSysRole;
 import org.start2do.entity.security.query.QSysUser;
 import org.start2do.service.ISysLoginUserCustomInfoService;
 import org.start2do.service.SysLoginUserService;
+import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
 public class SysLoginUserServiceImpl extends AbsService<SysUser> implements SysLoginUserService<SysUser>,
-    UserDetailsService {
+    UserDetailsService, ReactiveUserDetailsService {
 
     private final ISysLoginUserCustomInfoService sysLoginUserCustomInfoService;
 
@@ -38,9 +43,13 @@ public class SysLoginUserServiceImpl extends AbsService<SysUser> implements SysL
         );
         SysUser user = findOne(qClass.username.eq(username));
         if (user == null) {
+            ReactiveSecurityContextHolder.clearContext();
+            SecurityContextHolder.clearContext();
             throw new UsernameNotFoundException("用户名不存在");
         }
         if (user.getStatus() == Status.Lock) {
+            ReactiveSecurityContextHolder.clearContext();
+            SecurityContextHolder.clearContext();
             throw new BusinessException("账户被锁定,不能使用");
         }
         List<SysRole> roles = user.getRoles();
@@ -53,5 +62,10 @@ public class SysLoginUserServiceImpl extends AbsService<SysUser> implements SysL
                 .collect(Collectors.toList()));
         credentials.setDept(user.getDept());
         return credentials;
+    }
+
+    @Override
+    public Mono<UserDetails> findByUsername(String username) {
+        return Mono.justOrEmpty(loadUserByUsername(username));
     }
 }

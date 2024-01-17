@@ -38,6 +38,8 @@ dependencies {
     testAnnotationProcessor("io.ebean:querybean-generator:$ebeanVersion")
     api "io.ebean:ebean-spring-txn:$ebeanVersion"
     compileOnly("com.fasterxml.jackson.core:jackson-databind:2.14.2")
+    compileOnly group: 'io.projectreactor', name: 'reactor-core'
+
 }
 
 test {

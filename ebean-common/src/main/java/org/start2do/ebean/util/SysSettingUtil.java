@@ -31,7 +31,8 @@ public class SysSettingUtil implements CommandLineRunner {
         if (StringUtils.isEmpty(key)) {
             return key;
         }
-        return Optional.ofNullable(SysSettingUtil.sysSettingUtil.hashMap.get(type)).map(t -> t.get(key))
+        return Optional.ofNullable(SysSettingUtil.sysSettingUtil).map(t -> t.hashMap).map(map -> map.get(type))
+            .map(t -> t.get(key))
             .orElseGet(() -> key);
     }
 

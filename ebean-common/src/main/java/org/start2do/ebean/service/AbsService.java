@@ -18,7 +18,7 @@ import org.start2do.ebean.EPage;
 
 public abstract class AbsService<T extends Model> implements IService<T> {
 
-    private final Class<T> aclass = getTClass();
+    protected final Class<T> aclass = getTClass();
 
     protected Class getTClass() {
         ParameterizedType parameterizedType = (ParameterizedType) getClass().getGenericSuperclass();

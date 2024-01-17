@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
@@ -24,7 +24,7 @@ import org.start2do.util.JwtTokenUtil;
 @Slf4j
 @RequiredArgsConstructor
 @Configuration
-@ConditionalOnProperty(prefix = "jwt", name = "enable", havingValue = "true")
+@ConditionalOnExpression("${jwt.enable:false} && '${spring.main.web-application-type}'==('servlet')")
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final SecurityContextRepository securityContextRepository;
@@ -44,14 +44,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             } catch (IllegalArgumentException e) {
                 log.warn("Unable to get JWT Token");
             } catch (ExpiredJwtException e) {
-                if (!config.getMockUser()) {
+                if (config.getMockUser() != null && !config.getMockUser()) {
                     log.warn("JWT Token has expired");
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
                     return;
                 }
             }
         }
-        if (config.getMockUser()) {
+        if (config.getMockUser() != null && config.getMockUser()) {
             SecurityContext context = SecurityContextHolder.createEmptyContext();
             UserDetails userDetails = userService.loadUserByUsername(config.getMockUserName());
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,

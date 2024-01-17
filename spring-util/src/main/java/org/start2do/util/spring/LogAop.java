@@ -19,6 +19,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -35,6 +36,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Component
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "start2do.log", value = "enable", havingValue = "true")
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class LogAop {
 
     private Logger log;

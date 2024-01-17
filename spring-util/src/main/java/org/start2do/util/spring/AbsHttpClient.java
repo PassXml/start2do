@@ -3,6 +3,9 @@ package org.start2do.util.spring;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.http.HttpClient;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -13,7 +16,7 @@ import org.springframework.http.client.BufferingClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 public abstract class AbsHttpClient implements ClientHttpRequestInterceptor {
@@ -25,8 +28,8 @@ public abstract class AbsHttpClient implements ClientHttpRequestInterceptor {
     protected RestTemplate restTemplate;
 
     public AbsHttpClient() {
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setOutputStreaming(false);
+        JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(
+            HttpClient.newBuilder().connectTimeout(Duration.of(30, ChronoUnit.SECONDS)).build());
         BufferingClientHttpRequestFactory bufferingClientHttpRequestFactory = new BufferingClientHttpRequestFactory(
             factory);
         this.restTemplate = new RestTemplate(bufferingClientHttpRequestFactory);
@@ -65,7 +68,7 @@ public abstract class AbsHttpClient implements ClientHttpRequestInterceptor {
         ClientHttpResponse response = execution.execute(request, body);
         log.info("URL:{} {} ,Header: {} Request:{} ,ResponseHeader:{} ,ResponseStatus:{} ,ResponseBody:{}",
             request.getURI(), request.getMethod().name(), this.headerToString(request.getHeaders()),
-            new String(body, "UTF-8"), this.headerToString(response.getHeaders()), response.getRawStatusCode(),
+            new String(body, "UTF-8"), this.headerToString(response.getHeaders()), response.getStatusCode(),
             new String(toByteArray(response.getBody()), "UTF-8"));
         return response;
     }

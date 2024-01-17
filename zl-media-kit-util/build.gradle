@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'org.start2do'
-version '3.0.1-SNAPSHOT'
+version '3.0.2-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -15,8 +15,6 @@ dependencies {
     compileOnly(project(":spring-util"))
     compileOnly(project(path: ':spring-common', configuration: 'default'))
     compileOnly("jakarta.annotation:jakarta.annotation-api:2.1.1")
-    api 'com.squareup.okhttp3:okhttp:4.10.0'
-    api("com.squareup.okhttp3:logging-interceptor:4.10.0")
     compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.15.2'
     compileOnly("org.springframework:spring-web:5.3.19")
 

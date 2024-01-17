@@ -38,7 +38,7 @@ public class BusinessAutoConfig {
         return new Converter<String, LocalDate>() {
             @Override
             public LocalDate convert(String source) {
-                if (source.trim().length() == 0) {
+                if (source.trim().isEmpty()) {
                     return null;
                 }
                 try {
@@ -93,5 +93,6 @@ public class BusinessAutoConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
 
 }

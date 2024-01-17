@@ -4,8 +4,10 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScans;
@@ -22,6 +24,7 @@ import org.springframework.security.web.context.DelegatingSecurityContextReposit
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.start2do.Start2doSecurityConfig.WebApplicationType;
 import org.start2do.config.KaptchaConfig;
 import org.start2do.util.JwtTokenUtil;
 import org.start2do.util.StringUtils;
@@ -30,28 +33,25 @@ import org.start2do.util.StringUtils;
 @Import({Start2doSecurityConfig.class, KaptchaConfig.class})
 @AutoConfiguration
 @RequiredArgsConstructor
-@ComponentScans(value = {
-    @ComponentScan(value = "org.start2do"),
-    @ComponentScan(value = "org.start2do.*"),
-    @ComponentScan(value = "org.start2do.controller"),
-})
+@ComponentScans(value = {@ComponentScan(value = "org.start2do"), @ComponentScan(value = "org.start2do.*"),
+    @ComponentScan(value = "org.start2do.controller"),})
 public class SecurityAutoConfiguration {
 
     private final Start2doSecurityConfig start2doSecurityConfig;
 
 
     @Bean
-    @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
+    @ConditionalOnWebApplication(type = Type.SERVLET)
+    @ConditionalOnExpression("${jwt.enable:false}")
     SecurityContextRepository securityContextRepository() {
-        return new DelegatingSecurityContextRepository(
-            new RequestAttributeSecurityContextRepository(),
-            new HttpSessionSecurityContextRepository()
-        );
+        return new DelegatingSecurityContextRepository(new RequestAttributeSecurityContextRepository(),
+            new HttpSessionSecurityContextRepository());
     }
 
 
     @Bean
-    @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
+    @ConditionalOnWebApplication(type = Type.SERVLET)
+    @ConditionalOnExpression("${jwt.enable:false}")
     public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
         PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -60,16 +60,18 @@ public class SecurityAutoConfiguration {
         return authProvider;
     }
 
-    @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
     @Bean
+    @ConditionalOnWebApplication(type = Type.SERVLET)
+    @ConditionalOnExpression("${jwt.enable:false}")
     public AuthenticationManager authenticationManager(HttpSecurity http, BCryptPasswordEncoder bCryptPasswordEncoder,
         UserDetailsService userDetailService, AuthenticationProvider authenticationProvider) throws Exception {
-        return http.getSharedObject(AuthenticationManagerBuilder.class).userDetailsService(userDetailService)
-            .passwordEncoder(bCryptPasswordEncoder).and().authenticationProvider(authenticationProvider).build();
+        AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class)
+            .authenticationProvider(authenticationProvider);
+        builder.userDetailsService(userDetailService).passwordEncoder(bCryptPasswordEncoder);
+        return builder.build();
     }
 
 
-    @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
     @Bean
     @ConditionalOnMissingBean(value = {PasswordEncoder.class})
     public PasswordEncoder passwordEncoder() {
@@ -88,6 +90,7 @@ public class SecurityAutoConfiguration {
         JwtTokenUtil.MockUser = start2doSecurityConfig.getMockUser();
         JwtTokenUtil.MockUserId = start2doSecurityConfig.getMockUserId();
         JwtTokenUtil.MockUserName = start2doSecurityConfig.getMockUserName();
+        JwtTokenUtil.IsServlet = start2doSecurityConfig.getWebApplicationType() == WebApplicationType.Servlet;
 
     }
 }

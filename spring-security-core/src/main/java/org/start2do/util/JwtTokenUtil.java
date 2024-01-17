@@ -3,6 +3,7 @@ package org.start2do.util;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 import java.security.Key;
 import java.util.Base64;
@@ -13,13 +14,13 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.crypto.spec.SecretKeySpec;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.experimental.UtilityClass;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.start2do.dto.UserCredentials;
+import reactor.core.publisher.Mono;
 
 @UtilityClass
 public class JwtTokenUtil implements Serializable {
@@ -32,9 +33,11 @@ public class JwtTokenUtil implements Serializable {
     private final static String ROLES = "roles";
     private final static String MENUS = "menus";
     public final static String AUTHORIZATION = "Authorization";
+    public final static String AUTHORIZATIONStr = "AuthorizationStr";
     public static String Bearer = "Bearer ";
     public static int BearerLen = 7;
     public static boolean CheckExpired = true;
+    public static boolean IsServlet = true;
     public static boolean MockUser = false;
     public static String MockUserName = "admin";
     public static Integer MockUserId = 1;
@@ -111,7 +114,7 @@ public class JwtTokenUtil implements Serializable {
             return MockUserId;
         }
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
-        if (ra==null) {
+        if (ra == null) {
             return null;
         }
         ServletRequestAttributes sra = (ServletRequestAttributes) ra;
@@ -122,12 +125,28 @@ public class JwtTokenUtil implements Serializable {
         ).orElse(null);
     }
 
+    public Mono<Integer> getUserIdReactive() {
+        return Mono.deferContextual(ctx -> Mono.just(ctx.get(JwtTokenUtil.AUTHORIZATION)))
+            .cast(UserCredentials.class).map(
+                UserCredentials::getId);
+    }
+
+    public Mono<String> getUserNameReactive() {
+        return Mono.deferContextual(ctx -> Mono.just(ctx.get(JwtTokenUtil.AUTHORIZATION))).cast(UserDetails.class)
+            .map(UserDetails::getUsername);
+    }
+
+    public Mono<String> getRealNameReactive() {
+        return Mono.deferContextual(ctx -> Mono.just(ctx.get(JwtTokenUtil.AUTHORIZATION))).cast(UserCredentials.class)
+            .map(UserCredentials::getRealName);
+    }
+
     public String getUserName() {
         if (MockUser) {
             return MockUserName;
         }
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
-        if (ra==null) {
+        if (ra == null) {
             return null;
         }
         ServletRequestAttributes sra = (ServletRequestAttributes) ra;

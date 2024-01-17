@@ -2,35 +2,26 @@ package org.start2do;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import jakarta.annotation.PostConstruct;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.HttpUrl;
-import okhttp3.Request.Builder;
-import okhttp3.Response;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 import org.start2do.config.ZLMediaKitConfig;
 import org.start2do.dto.BaseResp;
 import org.start2do.dto.req.AddStreamProxy;
-import org.start2do.util.spring.AbsOKHttpClient;
+import org.start2do.util.spring.AbsHttpClient;
 
 @Slf4j
 @Import(ZLMediaKitConfig.class)
 @Component
 @ConditionalOnProperty(prefix = "zl-media-kit", value = "enable", havingValue = "true")
 @RequiredArgsConstructor
-public class ZLMediaKitUtil extends AbsOKHttpClient {
+public class ZLMediaKitUtil extends AbsHttpClient {
 
     private final ZLMediaKitConfig config;
     private final ObjectMapper objectMapper;
-
-    @PostConstruct
-    public void init() {
-        build("ZLMediaKitUtil", 3000, 3000, 3000, 5, 5);
-    }
 
     public String getWebSocketFlv(AddStreamProxy req) {
         return config.isSsl() ? "wss://"
@@ -39,35 +30,29 @@ public class ZLMediaKitUtil extends AbsOKHttpClient {
     }
 
     public void addRtspProxy(AddStreamProxy req) {
-        try {
-            HttpUrl httpUrl = HttpUrl.get(config.getServerHost() + AddStreamProxy.URL).newBuilder()
-                .addQueryParameter("secret", config.getSecret()).addQueryParameter("vhost", config.getVHost())
-                .addQueryParameter("app", req.getApp()).addQueryParameter("stream", req.getStream())
-                .addQueryParameter("modify_stamp", "1").addQueryParameter("url", req.getUrl())
-                .addQueryParameter("enable_rtmp", "1").addQueryParameter("enable_ts", "1")
-                .addQueryParameter("enable_fmp4", "1").build();
-            log.info("添加流地址:{}", httpUrl);
-            Response response = okHttpClient.newCall(new Builder().url(httpUrl).get().build()).execute();
-            BaseResp resp = objectMapper.readValue(response.body().byteStream(), BaseResp.class);
-            if (resp.getCode() != 0) {
-                throw new RuntimeException(resp.getMsg());
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        Map<Object, Object> map = Map.of("secret", config.getSecret(), "vhost", config.getVHost(), "app", req.getApp(),
+            "stream", req.getStream(), "modify_stamp", "1", "url", req.getUrl(), "enable_rtmp", "1", "enable_ts", "1",
+            "enable_fmp4", "1"
+        );
+        BaseResp resp = restTemplate.getForObject(config.getServerHost() + AddStreamProxy.URL, BaseResp.class, map);
+        if (resp.getCode() != 0) {
+            throw new RuntimeException(resp.getMsg());
         }
     }
 
     public void closeRtspProxy(String key) {
-        try {
-            HttpUrl httpUrl = HttpUrl.get(config.getServerHost() + "/index/api/delStreamProxy").newBuilder()
-                .addQueryParameter("secret", config.getSecret()).addQueryParameter("key", key).build();
-            Response response = okHttpClient.newCall(new Builder().url(httpUrl).get().build()).execute();
-            BaseResp resp = objectMapper.readValue(response.body().byteStream(), BaseResp.class);
-            if (resp.getCode() != 0) {
-                throw new RuntimeException(resp.getMsg());
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        Map<Object, Object> map = Map.of("secret", config.getSecret(), "key", key);
+        BaseResp resp = restTemplate.getForObject(
+            config.getServerHost() + "/index/api/delStreamProxy", BaseResp.class,
+            map
+        );
+        if (resp.getCode() != 0) {
+            throw new RuntimeException(resp.getMsg());
         }
+    }
+
+    @Override
+    public String getLoggerName() {
+        return "ZLMediaKitUtil";
     }
 }
