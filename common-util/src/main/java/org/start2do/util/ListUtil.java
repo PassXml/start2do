@@ -58,6 +58,19 @@ public class ListUtil {
 
     public <T, R> void diff(List<T> addSourceList, List<R> sourceList, Compare<T, R> eq, Consumer<List<T>> addFunction,
         Consumer<List<EqValue<T, R>>> updateFunction, Consumer<List<R>> removeFunction) {
+        DiffDTO<T, R> diff = diff(addSourceList, sourceList, eq);
+        if (addFunction != null) {
+            addFunction.accept(diff.getAddList());
+        }
+        if (updateFunction != null) {
+            updateFunction.accept(diff.getEqValues());
+        }
+        if (removeFunction != null) {
+            removeFunction.accept(diff.getRemoveList());
+        }
+    }
+
+    public <T, R> DiffDTO<T, R> diff(List<T> addSourceList, List<R> sourceList, Compare<T, R> eq) {
         List<T> addList = new ArrayList<>();
         List<EqValue<T, R>> eqList = new ArrayList<>();
         List<R> removeList = new ArrayList<>();
@@ -93,15 +106,9 @@ public class ListUtil {
                 }
             }
         }
-        if (addFunction != null) {
-            addFunction.accept(addList);
-        }
-        if (updateFunction != null) {
-            updateFunction.accept(eqList);
-        }
-        if (removeFunction != null) {
-            removeFunction.accept(removeList);
-        }
+        return new DiffDTO<T, R>(
+            addList, eqList, removeList
+        );
     }
 
     public <T, R> void fillInValue(List<T> source, List<R> items, Compare<T, R> compare, Runner<T, R> runner) {
@@ -162,7 +169,8 @@ public class ListUtil {
         return findFirst(list, get, eqValue).map(function).orElseGet(() -> defaultValue);
     }
 
-    public static <T, Z, R> Z findFirstThrow(Collection<T> list, Supplier<RuntimeException> exception, Function<T, R> get,
+    public static <T, Z, R> Z findFirstThrow(Collection<T> list, Supplier<RuntimeException> exception,
+        Function<T, R> get,
         R eqValue,
         Function<T, Z> function) {
         return findFirst(list, get, eqValue).map(function).orElseThrow(exception);
@@ -188,6 +196,7 @@ public class ListUtil {
         void run(T spList);
     }
 
+
     @Setter
     @Getter
     @Accessors(chain = true)
@@ -200,6 +209,23 @@ public class ListUtil {
         public EqValue(T add, R source) {
             this.p1 = add;
             this.p2 = source;
+        }
+    }
+
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    public static class DiffDTO<T, R> {
+
+        private List<T> addList;
+        private List<EqValue<T, R>> eqValues;
+        private List<R> removeList;
+
+        public DiffDTO(List<T> addList, List<EqValue<T, R>> eqValues, List<R> removeList) {
+            this.addList = addList;
+            this.eqValues = eqValues;
+            this.removeList = removeList;
         }
     }
 

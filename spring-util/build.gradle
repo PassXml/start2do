@@ -27,6 +27,7 @@ dependencies {
     compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.15.2'
     compileOnly("org.springframework.boot:spring-boot-starter-data-redis:$springBootVersion")
     compileOnly group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.15.2'
+    compileOnly(project(":common-util"))
 }
 
 

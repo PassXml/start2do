@@ -3,6 +3,7 @@ package org.start2do;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -24,7 +25,6 @@ import org.springframework.security.web.context.DelegatingSecurityContextReposit
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
-import org.start2do.Start2doSecurityConfig.WebApplicationType;
 import org.start2do.config.KaptchaConfig;
 import org.start2do.util.JwtTokenUtil;
 import org.start2do.util.StringUtils;
@@ -90,7 +90,6 @@ public class SecurityAutoConfiguration {
         JwtTokenUtil.MockUser = start2doSecurityConfig.getMockUser();
         JwtTokenUtil.MockUserId = start2doSecurityConfig.getMockUserId();
         JwtTokenUtil.MockUserName = start2doSecurityConfig.getMockUserName();
-        JwtTokenUtil.IsServlet = start2doSecurityConfig.getWebApplicationType() == WebApplicationType.Servlet;
-
+        JwtTokenUtil.IsWebFlux = WebApplicationType.REACTIVE == start2doSecurityConfig.getWebApplicationType();
     }
 }

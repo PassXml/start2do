@@ -10,15 +10,18 @@ import java.util.stream.Collectors;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.start2do.entity.business.SysDict;
 import org.start2do.entity.business.SysDictItem;
-import org.start2do.service.SysDictItemService;
-import org.start2do.service.SysDictService;
+import org.start2do.service.servlet.SysDictItemService;
+import org.start2do.service.servlet.SysDictService;
 
 @Component
 @RequiredArgsConstructor
+@ConditionalOnWebApplication(type = Type.SERVLET)
 public class DictUtil {
 
     private final SysDictService DICT_SERVICE;

@@ -25,7 +25,7 @@ import org.start2do.dto.BusinessException;
 import org.start2do.dto.annotation.SysLogSetting;
 import org.start2do.entity.business.SysLog;
 import org.start2do.entity.business.SysLog.Type;
-import org.start2do.service.SysLogService;
+import org.start2do.service.servlet.SysLogService;
 import org.start2do.util.StringUtils;
 import org.start2do.util.spring.LogAop;
 import org.start2do.util.spring.LogAopConfig;

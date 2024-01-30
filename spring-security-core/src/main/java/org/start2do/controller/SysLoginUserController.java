@@ -6,8 +6,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.R;
+import org.start2do.dto.UserCredentials;
 import org.start2do.dto.resp.login.JwtResponse;
-import org.start2do.service.imp.SysLoginUserServiceImpl;
+import org.start2do.ebean.util.ReactiveUtil;
+import org.start2do.service.imp.SysLoginUserReactiveServiceImpl;
 import org.start2do.util.JwtTokenUtil;
 import reactor.core.publisher.Mono;
 
@@ -20,15 +22,17 @@ import reactor.core.publisher.Mono;
 @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
 public class SysLoginUserController {
 
-    private final SysLoginUserServiceImpl sysUserService;
+    private final SysLoginUserReactiveServiceImpl sysUserService;
 
     /**
      * 用户信息
      */
     @GetMapping("info")
     public Mono<R<JwtResponse>> userInfo() {
-        return Mono.from(JwtTokenUtil.getUserNameReactive()).map(sysUserService::loadUserByUsername)
-            .map(userCredentials -> R.ok(new JwtResponse(userCredentials, null)));
+        return JwtTokenUtil.getUserNameReactive().flatMap(sysUserService::findByUsername)
+            .cast(UserCredentials.class)
+            .flatMap(userCredentials -> ReactiveUtil.injectTokenInfo(() -> new JwtResponse(userCredentials, null)))
+            .map(R::ok);
     }
 
 

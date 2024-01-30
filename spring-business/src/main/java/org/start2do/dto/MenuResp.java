@@ -10,7 +10,7 @@ import lombok.experimental.Accessors;
 import org.start2do.ebean.dict.IDictItem;
 import org.start2do.entity.business.SysDictItem;
 import org.start2do.entity.business.query.QSysDictItem;
-import org.start2do.service.SysDictItemService;
+import org.start2do.service.servlet.SysDictItemService;
 import org.start2do.util.spring.SpringBeanUtil;
 
 @Setter

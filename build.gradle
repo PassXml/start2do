@@ -28,7 +28,7 @@ allprojects {
         lombokVersion = '1.18.22'
         jasperreportsVersion = '6.19.1'
         mapstructVersion = "1.4.2.Final"
-        ebeanVersion = "13.25.1-jakarta"
+        ebeanVersion = "13.26.0-jakarta"
         vertxVersion = '4.3.4'
         springBootVersion = '3.2.1'
         springVersion = '6.2.1'

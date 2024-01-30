@@ -6,6 +6,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,6 +33,7 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
+@ConditionalOnWebApplication(type = Type.SERVLET)
 public class SysLoginUserServiceImpl extends AbsService<SysUser> implements SysLoginUserService<SysUser>,
     UserDetailsService, ReactiveUserDetailsService {
 

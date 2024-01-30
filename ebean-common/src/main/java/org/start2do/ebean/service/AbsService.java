@@ -42,8 +42,19 @@ public abstract class AbsService<T extends Model> implements IService<T> {
     }
 
     @Override
+    public void update(T entity, Transaction transaction) {
+        entity.update(transaction);
+    }
+
+
+    @Override
     public boolean delete(T obj) {
         return obj.delete();
+    }
+
+    @Override
+    public boolean delete(T obj, Transaction transaction) {
+        return obj.delete(transaction);
     }
 
     @Override

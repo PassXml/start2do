@@ -37,10 +37,10 @@ public class JwtTokenUtil implements Serializable {
     public static String Bearer = "Bearer ";
     public static int BearerLen = 7;
     public static boolean CheckExpired = true;
-    public static boolean IsServlet = true;
     public static boolean MockUser = false;
     public static String MockUserName = "admin";
     public static Integer MockUserId = 1;
+    public static boolean IsWebFlux = true;
 
 
     public String getUsernameFromToken(String token) {
@@ -86,8 +86,7 @@ public class JwtTokenUtil implements Serializable {
                 map.put(entry.getKey(), entry.getValue());
             }
         }
-        return Jwts.builder().setClaims(map)
-            .setIssuedAt(new Date(System.currentTimeMillis()))
+        return Jwts.builder().setClaims(map).setIssuedAt(new Date(System.currentTimeMillis()))
             .setSubject(String.valueOf(userCredentials.getId()))
             .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
             .signWith(SignatureAlgorithm.HS512, SECRET).compact();
@@ -120,15 +119,13 @@ public class JwtTokenUtil implements Serializable {
         ServletRequestAttributes sra = (ServletRequestAttributes) ra;
         HttpServletRequest request = sra.getRequest();
         String header = request.getHeader(AUTHORIZATION);
-        return Optional.ofNullable(getClaimFromToken(header.substring(BearerLen), Claims::getSubject)).map(
-            Integer::parseInt
-        ).orElse(null);
+        return Optional.ofNullable(getClaimFromToken(header.substring(BearerLen), Claims::getSubject))
+            .map(Integer::parseInt).orElse(null);
     }
 
     public Mono<Integer> getUserIdReactive() {
-        return Mono.deferContextual(ctx -> Mono.just(ctx.get(JwtTokenUtil.AUTHORIZATION)))
-            .cast(UserCredentials.class).map(
-                UserCredentials::getId);
+        return Mono.deferContextual(ctx -> Mono.just(ctx.get(JwtTokenUtil.AUTHORIZATION))).cast(UserCredentials.class)
+            .map(UserCredentials::getId);
     }
 
     public Mono<String> getUserNameReactive() {
@@ -154,4 +151,6 @@ public class JwtTokenUtil implements Serializable {
         String header = request.getHeader(AUTHORIZATION);
         return getUsernameFromToken(header.substring(BearerLen));
     }
+
+
 }

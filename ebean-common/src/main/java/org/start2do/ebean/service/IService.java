@@ -1,6 +1,7 @@
 package org.start2do.ebean.service;
 
 import io.ebean.Model;
+import io.ebean.Transaction;
 import io.ebean.typequery.TQRootBean;
 import java.util.Collection;
 import java.util.List;
@@ -18,7 +19,11 @@ public interface IService<T extends Model> {
 
     void update(T entity);
 
+    void update(T entity, Transaction transaction);
+
     boolean delete(T obj);
+
+    boolean delete(T obj, Transaction transaction);
 
     int deleteById(Object id);
 

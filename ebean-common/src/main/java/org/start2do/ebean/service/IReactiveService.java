@@ -24,17 +24,17 @@ public interface IReactiveService<T extends Model> {
 
     Mono<T> findOneByIdUseCache(Object id);
 
-    Mono<Boolean> update(T entity);
+    Mono<T> update(T entity);
 
     Mono<Tuple2<Optional<Transaction>, Boolean>> delete(T obj);
 
-    Mono<Integer> deleteById(Object id);
+    Mono<Boolean> deleteById(Object id);
 
-    Mono<Integer> handDeleteById(Object id);
+    Mono<Boolean> handDeleteById(Object id);
 
     <S extends TQRootBean> Mono<Tuple2<Optional<Transaction>, Boolean>> handDelete(TQRootBean<T, S> bean);
 
-    Mono<Boolean> save(T entity);
+    Mono<T> save(T entity);
 
     <S extends TQRootBean> Mono<T> getOne(TQRootBean<T, S> bean);
 
