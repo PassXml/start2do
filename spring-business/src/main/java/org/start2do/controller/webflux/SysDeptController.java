@@ -90,9 +90,10 @@ public class SysDeptController {
      * 部门菜单
      */
     @GetMapping("menu/dept")
-    public Mono<List<MenuResp>> menu() {
+    public Mono<R<List<MenuResp>>> menu() {
         return Mono.from(sysDeptService.findAll()).map(
-            sysDepts -> sysDepts.stream().map(sysDept -> new MenuResp(sysDept.getName(), sysDept.getId())).toList());
+                sysDepts -> sysDepts.stream().map(sysDept -> new MenuResp(sysDept.getName(), sysDept.getId())).toList())
+            .map(R::ok);
     }
 
     /**

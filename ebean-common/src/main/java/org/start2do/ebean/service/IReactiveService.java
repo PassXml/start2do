@@ -17,6 +17,7 @@ public interface IReactiveService<T extends Model> {
 
     String TokenKey = "_TOKEN_KEY_";
     String TransactionKey = "_Transaction_";
+    String UserNameKey = "_USERNAME_";
 
 
     Mono<T> findOneById(Object id);

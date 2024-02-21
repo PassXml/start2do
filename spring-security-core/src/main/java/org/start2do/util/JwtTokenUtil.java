@@ -29,9 +29,9 @@ public class JwtTokenUtil implements Serializable {
 
     public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
     public static String SECRET = null;
-    private final static String USERNAME = "username";
-    private final static String ROLES = "roles";
-    private final static String MENUS = "menus";
+    public final static String USERNAME = "username";
+    public final static String ROLES = "roles";
+    public final static String MENUS = "menus";
     public final static String AUTHORIZATION = "Authorization";
     public final static String AUTHORIZATIONStr = "AuthorizationStr";
     public static String Bearer = "Bearer ";
@@ -153,4 +153,8 @@ public class JwtTokenUtil implements Serializable {
     }
 
 
+    public static Integer getUserId(String jwtStr) {
+        return Optional.ofNullable(getClaimFromToken(jwtStr, Claims::getSubject))
+            .map(Integer::parseInt).orElse(null);
+    }
 }

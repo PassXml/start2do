@@ -1,5 +1,8 @@
 package org.start2do.ebean.util;
 
+import io.ebean.DB;
+import io.ebean.Transaction;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -7,50 +10,36 @@ import org.start2do.dto.BusinessException;
 import org.start2do.dto.DataNotFoundException;
 import org.start2do.dto.PermissionException;
 import org.start2do.ebean.service.IReactiveService;
+import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Scheduler;
-import reactor.core.scheduler.Schedulers;
 
 @Slf4j
 @UtilityClass
 public class ReactiveUtil {
 
-    public static final ThreadLocal TokenTreadLocal = new ThreadLocal<>();
-
     /**
-     * 调度器，使用单一线程，并且在切换的时候设置线程变量，完成后移除
+     * 租户或者用户id
      */
-    public static <T> Mono<T> single(Mono<T> mono) {
-        //调度器，使用单一线程
-        Scheduler scheduler = Schedulers.single();
-        return Mono.deferContextual(
-                contextView -> Mono.just(contextView.getOrEmpty(IReactiveService.TokenKey)))
-            .doOnNext(o -> {
-                o.ifPresent(TokenTreadLocal::set);
-            }).publishOn(scheduler).flatMap(o -> mono).doOnError(throwable -> TokenTreadLocal.remove())
-            .doFinally(signalType -> TokenTreadLocal.remove());
-    }
+    public static final ThreadLocal TokenTreadLocal = new InheritableThreadLocal();
 
-    public static <T> Mono<T> injectTokenInfoSingle(Supplier<T> supplier) {
-        //调度器，使用单一线程
-        Scheduler scheduler = Schedulers.single();
-        return Mono.deferContextual(contextView -> Mono.just(contextView.getOrEmpty(IReactiveService.TokenKey)))
-            .doOnNext(o -> {
-                o.ifPresent(TokenTreadLocal::set);
-            }).publishOn(scheduler).map(o -> supplier.get()).doOnError(throwable -> TokenTreadLocal.remove())
-            .doFinally(signalType -> TokenTreadLocal.remove());
-    }
 
-    public static <T> Mono<T> injectTokenInfo(Supplier<T> supplier) {
+    public static Mono<Boolean> transaction(Consumer<Transaction> supplier) {
         return Mono.deferContextual(
-            contextView -> Mono.just(contextView.getOrEmpty(IReactiveService.TokenKey)).map(o -> {
-                o.ifPresent(TokenTreadLocal::set);
-                try {
-                    return supplier.get();
-                } finally {
+            contextView -> Mono.zip(Mono.just(contextView.getOrEmpty(IReactiveService.TokenKey)),
+                Mono.just(contextView.<Transaction>getOrEmpty(IReactiveService.TransactionKey))).map(o -> {
+                Transaction transaction = o.getT2().orElseGet(DB::beginTransaction);
+                o.getT1().ifPresent(TokenTreadLocal::set);
+                return Mono.fromCallable(() -> {
+                    supplier.accept(transaction);
+                    return true;
+                }).doFinally(signalType -> {
+                    transaction.close();
                     TokenTreadLocal.remove();
-                }
-            }));
+                }).doOnError(throwable -> {
+                    log.error(throwable.getMessage(), throwable);
+                    transaction.rollback(throwable);
+                }).doOnSuccess(t -> transaction.commit());
+            })).flatMap(tMono -> tMono);
     }
 
     public static <T> Mono<T> injectTokenInfo(Supplier<T> supplier, int i) {
@@ -71,6 +60,16 @@ public class ReactiveUtil {
             return Mono.error(throwable);
         }
         return Mono.error(exception.get());
+    }
+
+    public static void enableAutomaticContextPropagation(Runnable runnable) {
+        Hooks.enableAutomaticContextPropagation();
+        /**
+         * implementation 'io.micrometer:context-propagation:1.1.1'
+         *  ContextRegistry.getInstance()
+         *                 .registerThreadLocalAccessor(IReactiveService.TokenKey, ReactiveUtil.TokenTreadLocal);
+         */
+        runnable.run();
     }
 
 

@@ -23,7 +23,6 @@ import org.start2do.ebean.dto.EnableType;
 import org.start2do.ebean.entity.SysSetting;
 import org.start2do.ebean.entity.query.QSysSetting;
 import org.start2do.ebean.service.SysSettingService;
-import org.start2do.ebean.util.ReactiveUtil;
 import org.start2do.ebean.util.Where;
 import org.start2do.util.BeanValidatorUtil;
 import reactor.core.publisher.Mono;
@@ -48,8 +47,7 @@ public class SysSettingController {
         QSysSetting qClass = new QSysSetting();
         Where.ready().like(req.getKey(), qClass.key::like).notEmpty(req.getType(), qClass.type::eq)
             .like(req.getValue(), qClass.value::like);
-        return ReactiveUtil.injectTokenInfo(
-            () -> R.ok(settingService.page(qClass, req, SettingDtoMapper.INSTANCE::toSettingResp)));
+        return Mono.just(settingService.page(qClass, req, SettingDtoMapper.INSTANCE::toSettingResp)).map(R::ok);
     }
 
     /**
@@ -58,11 +56,10 @@ public class SysSettingController {
     @PostMapping("add")
     public Mono<R<Boolean>> add(@RequestBody SettingAddReq req) {
         BeanValidatorUtil.validate(req);
-        return ReactiveUtil.injectTokenInfo(() -> {
-                settingService.save(SettingDtoMapper.INSTANCE.toEntity(req));
-                return true;
-            })
-            .map(R::ok);
+        return Mono.fromCallable(() -> {
+            settingService.save(SettingDtoMapper.INSTANCE.toEntity(req));
+            return true;
+        }).map(R::ok);
     }
 
     /**
@@ -71,7 +68,7 @@ public class SysSettingController {
     @PostMapping("update")
     public Mono<R<Boolean>> update(@RequestBody SettingUpdateReq req) {
         BeanValidatorUtil.validate(req);
-        return ReactiveUtil.injectTokenInfo(() -> {
+        return Mono.fromCallable(() -> {
             SysSetting setting = settingService.getById(req.getId());
             SettingDtoMapper.INSTANCE.update(setting, req);
             settingService.update(setting);
@@ -85,7 +82,7 @@ public class SysSettingController {
     @GetMapping("delete")
     public Mono<R<Integer>> delete(IdReq req) {
         BeanValidatorUtil.validate(req);
-        return ReactiveUtil.injectTokenInfo(() -> settingService.deleteById(req.getId())).map(R::ok);
+        return Mono.fromCallable(() -> settingService.deleteById(req.getId())).map(R::ok);
     }
 
     /**
@@ -94,7 +91,7 @@ public class SysSettingController {
     @GetMapping("detail")
     public Mono<R<SettingDetailResp>> detail(IdReq req) {
         BeanValidatorUtil.validate(req);
-        return ReactiveUtil.injectTokenInfo(
+        return Mono.fromCallable(
             () -> SettingDtoMapper.INSTANCE.toDetail(settingService.getById(req.getId()))).map(R::ok);
     }
 
@@ -103,7 +100,7 @@ public class SysSettingController {
      */
     @GetMapping("all")
     public Mono<R<List<SettingMenuResp>>> all() {
-        return ReactiveUtil.injectTokenInfo(
+        return Mono.fromCallable(
             () -> settingService.findAll(new QSysSetting().enable.eq(EnableType.Enable)).stream()
                 .map(SettingDtoMapper.INSTANCE::toSettingMenuResp).toList()).map(R::ok);
     }

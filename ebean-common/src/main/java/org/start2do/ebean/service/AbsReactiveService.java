@@ -21,7 +21,6 @@ import org.start2do.dto.DataNotFoundException;
 import org.start2do.dto.Page;
 import org.start2do.ebean.EPage;
 import org.start2do.ebean.service.AbsService.Runner;
-import org.start2do.ebean.util.ReactiveUtil;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;
@@ -53,13 +52,15 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     public <TT> Mono<TT> transactionOf(Mono<TT> mono, Transaction transaction) {
-
         return mono.contextWrite(context -> {
-            if (context.hasKey(TransactionKey)) {
-                return context;
-            }
+//            if (context.hasKey(TransactionKey)) {
+//                return context;
+//            }
             return context.put(TransactionKey, transaction);
-        }).doOnError(transaction::rollback).doFinally(signalType -> transaction.commit());
+        }).doOnError(throwable -> {
+            logger.error(throwable.getMessage(), throwable);
+            transaction.rollback(throwable);
+        }).doOnSuccess(tt -> transaction.commit()).doFinally(signalType -> transaction.close());
     }
 
     public <TT> Flux<TT> transactionOf(Flux<TT> flux, Transaction transaction) {
@@ -68,7 +69,10 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
                 return context;
             }
             return context.put(TransactionKey, transaction);
-        }).doOnError(transaction::rollback).doFinally(signalType -> transaction.commit());
+        }).doOnError(throwable -> {
+            logger.error(throwable.getMessage(), throwable);
+            transaction.rollback(throwable);
+        }).doFinally(signalType -> transaction.commit());
     }
 
 
@@ -76,13 +80,13 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     public Mono<T> findOneById(Object id) {
         return Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey)))
             .zipWith(Mono.just(id)).handle((objects, sink) -> {
-                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
                     sink.next(DB.find(aclass).setId(id).findOne());
                 } catch (Exception e) {
                     sink.error(e);
                 } finally {
-                    ReactiveUtil.TokenTreadLocal.remove();
+//                    ReactiveUtil.TokenTreadLocal.remove();
                 }
             });
     }
@@ -92,13 +96,13 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
         return Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey)))
             .zipWith(Mono.just(id))
             .handle((BiConsumer<? super Tuple2<Optional<TokenType>, Object>, SynchronousSink<T>>) (objects, sink) -> {
-                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
                     sink.next(DB.find(aclass, id));
                 } catch (Exception e) {
                     sink.error(e);
                 } finally {
-                    ReactiveUtil.TokenTreadLocal.remove();
+//                    ReactiveUtil.TokenTreadLocal.remove();
                 }
             }).cache(Duration.ofSeconds(10));
     }
@@ -108,7 +112,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
         return Mono.zip(Mono.<Optional<Transaction>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TransactionKey))),
                 Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))), Mono.just(entity))
             .handle((objects, sink) -> {
-                objects.getT2().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//                objects.getT2().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
                     Optional<Transaction> optional = objects.getT1();
                     if (optional.isPresent()) {
@@ -120,7 +124,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
                 } catch (Exception e) {
                     sink.error(e);
                 } finally {
-                    ReactiveUtil.TokenTreadLocal.remove();
+//                    ReactiveUtil.TokenTreadLocal.remove();
                 }
             });
     }
@@ -131,7 +135,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
                 Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
                 Mono.<Optional<Transaction>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TransactionKey))))
             .handle((objects, sink) -> {
-                objects.getT2().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//                objects.getT2().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 Optional<Transaction> optional = objects.getT3();
                 try {
                     Boolean aBoolean = optional.map(transaction -> objects.getT1().delete(transaction))
@@ -140,7 +144,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
                 } catch (Exception e) {
                     sink.error(e);
                 } finally {
-                    ReactiveUtil.TokenTreadLocal.remove();
+//                    ReactiveUtil.TokenTreadLocal.remove();
                 }
             });
     }
@@ -150,7 +154,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.<Optional<Transaction>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TransactionKey))),
             Mono.just(id)).handle((objects, sink) -> {
-            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
             try {
                 Object _id = objects.getT3();
                 Boolean result = objects.getT2()
@@ -165,7 +169,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
             } catch (Exception e) {
                 sink.error(e);
             } finally {
-                ReactiveUtil.TokenTreadLocal.remove();
+//                ReactiveUtil.TokenTreadLocal.remove();
             }
         });
     }
@@ -175,7 +179,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
         return Mono.zip(Mono.<Optional<Transaction>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TransactionKey))),
                 Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))), Mono.just(id))
             .handle((objects, sink) -> {
-                objects.getT2().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//                objects.getT2().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
                     Optional<Transaction> optional = objects.getT1();
                     Object _id = objects.getT3();
@@ -190,7 +194,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
                 } catch (Exception e) {
                     sink.error(e);
                 } finally {
-                    ReactiveUtil.TokenTreadLocal.remove();
+//                    ReactiveUtil.TokenTreadLocal.remove();
                 }
             });
     }
@@ -200,7 +204,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.<Optional<Transaction>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TransactionKey))),
             Mono.just(bean.findOne())).handle((objects, sink) -> {
-            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
             try {
                 T t3 = objects.getT3();
                 Optional<Transaction> optional = objects.getT2();
@@ -215,7 +219,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
             } catch (Exception e) {
                 sink.error(e);
             } finally {
-                ReactiveUtil.TokenTreadLocal.remove();
+//                ReactiveUtil.TokenTreadLocal.remove();
             }
         });
     }
@@ -226,7 +230,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
             Mono.<Optional<Transaction>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TransactionKey))),
             Mono.just(entity)).handle((objects, sink) -> {
             try {
-                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 Optional<Transaction> optional = objects.getT2();
                 if (optional.isPresent()) {
                     entity.save(optional.get());
@@ -237,7 +241,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
             } catch (Exception e) {
                 sink.error(e);
             } finally {
-                ReactiveUtil.TokenTreadLocal.remove();
+//                ReactiveUtil.TokenTreadLocal.remove();
             }
         });
     }
@@ -246,9 +250,10 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     public <S extends TQRootBean> Mono<T> getOne(TQRootBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).mapNotNull(objects -> {
-            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
             return Optional.ofNullable(objects.getT2().findOne()).orElseThrow(DataNotFoundException::new);
-        }).doFinally(signalType -> ReactiveUtil.TokenTreadLocal.remove());
+        });
+//            .doFinally(signalType -> ReactiveUtil.TokenTreadLocal.remove());
     }
 
 
@@ -256,13 +261,13 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     public Mono<T> getById(Object id) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(id)).handle((objects, sink) -> {
-            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
             try {
                 sink.next(DB.find(aclass).setId(id).findOne());
             } catch (Exception e) {
                 sink.error(e);
             } finally {
-                ReactiveUtil.TokenTreadLocal.remove();
+//                ReactiveUtil.TokenTreadLocal.remove();
             }
         });
     }
@@ -273,12 +278,12 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
                 Mono.just(id))
             .handle((BiConsumer<Tuple2<Optional<TokenType>, Object>, SynchronousSink<T>>) (objects, sink) -> {
                 try {
-                    objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//                    objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                     DB.find(aclass, id);
                 } catch (Exception e) {
                     sink.error(e);
                 } finally {
-                    ReactiveUtil.TokenTreadLocal.remove();
+//                    ReactiveUtil.TokenTreadLocal.remove();
                 }
             }).cache(Duration.ofSeconds(10));
     }
@@ -287,13 +292,13 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     public Mono<List<T>> findAll() {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(aclass)).handle((objects, sink) -> {
-            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
             try {
                 sink.next(DB.find(aclass).findList());
             } catch (Exception exception) {
                 sink.error(exception);
             } finally {
-                ReactiveUtil.TokenTreadLocal.remove();
+//                ReactiveUtil.TokenTreadLocal.remove();
             }
         });
     }
@@ -302,7 +307,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     public <S extends TQRootBean> Mono<T> findOne(TQRootBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).handle((objects, sink) -> {
-            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
             try {
                 T one = objects.getT2().findOne();
                 if (one == null) {
@@ -313,7 +318,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
                 sink.error(exception);
                 logger.error(exception.getMessage(), exception);
             } finally {
-                ReactiveUtil.TokenTreadLocal.remove();
+//                ReactiveUtil.TokenTreadLocal.remove();
             }
         });
     }
@@ -328,13 +333,13 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).handle(
             (BiConsumer<? super Tuple2<Optional<TokenType>, TQRootBean<T, S>>, SynchronousSink<List<T>>>) (objects, sink) -> {
-                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
                     sink.next(objects.getT2().findList());
                 } catch (Exception exception) {
                     sink.error(exception);
                 } finally {
-                    ReactiveUtil.TokenTreadLocal.remove();
+//                    ReactiveUtil.TokenTreadLocal.remove();
                 }
             });
     }
@@ -349,19 +354,16 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.<Optional<Transaction>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TransactionKey))),
             Mono.just(bean)).<Boolean>handle((objects, sink) -> {
-            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
             try {
                 TQRootBean<T, S> rootBean = objects.getT3();
                 objects.getT2().ifPresent(rootBean::usingTransaction);
-                if (rootBean.delete() > 0) {
-                    sink.next(true);
-                } else {
-                    sink.error(new BusinessException("删除失败"));
-                }
+                int delete = rootBean.delete();
+                sink.next(true);
             } catch (Exception e) {
                 sink.error(e);
             } finally {
-                ReactiveUtil.TokenTreadLocal.remove();
+//                ReactiveUtil.TokenTreadLocal.remove();
             }
         });
     }
@@ -371,7 +373,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(
             (BiConsumer<? super Tuple3<Optional<TokenType>, TQRootBean<T, S>, Page>, SynchronousSink<PagedList<T>>>) (objects, sink) -> {
-                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
                     TQRootBean<T, S> rootBean = objects.getT2();
                     rootBean.setMaxRows(objects.getT3().getSize()).setFirstRow(objects.getT3().getOffset());
@@ -379,7 +381,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
                 } catch (Exception e) {
                     sink.error(e);
                 } finally {
-                    ReactiveUtil.TokenTreadLocal.remove();
+//                    ReactiveUtil.TokenTreadLocal.remove();
                 }
             }).map(EPage::new);
     }
@@ -397,7 +399,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(
             (BiConsumer<? super Tuple3<Optional<TokenType>, TQRootBean<T, S>, Page>, SynchronousSink<Tuple2<PagedList<T>, Optional<TokenType>>>>) (objects, sink) -> {
-                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
                     TQRootBean<T, S> rootBean = objects.getT2();
                     rootBean.setMaxRows(objects.getT3().getSize()).setFirstRow(objects.getT3().getOffset());
@@ -405,14 +407,14 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
                 } catch (Exception e) {
                     sink.error(e);
                 } finally {
-                    ReactiveUtil.TokenTreadLocal.remove();
+//                    ReactiveUtil.TokenTreadLocal.remove();
                 }
             }).zipWith(Mono.just(mapper)).map(objects -> {
-            objects.getT1().getT2().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//            objects.getT1().getT2().ifPresent(ReactiveUtil.TokenTreadLocal::set);
             try {
                 return new EPage<>(objects.getT1().getT1(), objects.getT2());
             } finally {
-                ReactiveUtil.TokenTreadLocal.remove();
+//                ReactiveUtil.TokenTreadLocal.remove();
             }
         });
     }
@@ -429,7 +431,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(
             (BiConsumer<? super Tuple3<Optional<TokenType>, TQRootBean<T, S>, Page>, SynchronousSink<Tuple2<PagedList<T>, Optional<TokenType>>>>) (objects, sink) -> {
-                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
                     TQRootBean<T, S> rootBean = objects.getT2();
                     rootBean.setMaxRows(objects.getT3().getSize()).setFirstRow(objects.getT3().getOffset());
@@ -437,10 +439,10 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
                 } catch (Exception e) {
                     sink.error(e);
                 } finally {
-                    ReactiveUtil.TokenTreadLocal.remove();
+//                    ReactiveUtil.TokenTreadLocal.remove();
                 }
             }).zipWith(Mono.zip(Mono.just(function), Mono.just(mapper))).map(objects -> {
-            objects.getT1().getT2().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//            objects.getT1().getT2().ifPresent(ReactiveUtil.TokenTreadLocal::set);
             try {
                 Consumer<Collection<T>> consumer = objects.getT2().getT1();
                 Function<? super T, ? extends R> t2 = objects.getT2().getT2();
@@ -448,7 +450,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
                 consumer.accept(list.getList());
                 return new EPage<>(list, t2);
             } finally {
-                ReactiveUtil.TokenTreadLocal.remove();
+//                ReactiveUtil.TokenTreadLocal.remove();
             }
         });
     }
@@ -459,13 +461,13 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).handle(
             (BiConsumer<? super Tuple2<Optional<TokenType>, TQRootBean<T, S>>, SynchronousSink<Integer>>) (objects, sink) -> {
-                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
                     sink.next(bean.findCount());
                 } catch (Exception e) {
                     sink.error(e);
                 } finally {
-                    ReactiveUtil.TokenTreadLocal.remove();
+//                    ReactiveUtil.TokenTreadLocal.remove();
                 }
             });
     }
@@ -481,13 +483,13 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).handle(
             (BiConsumer<? super Tuple2<Optional<TokenType>, TQRootBean<T, S>>, SynchronousSink<Boolean>>) (objects, sink) -> {
-                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
                     sink.next(bean.exists());
                 } catch (Exception e) {
                     sink.error(e);
                 } finally {
-                    ReactiveUtil.TokenTreadLocal.remove();
+//                    ReactiveUtil.TokenTreadLocal.remove();
                 }
             });
     }
@@ -498,7 +500,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(
             (BiConsumer<? super Tuple3<Optional<TokenType>, TQRootBean<T, S>, Page>, SynchronousSink<PagedList<T>>>) (objects, sink) -> {
-                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
                     TQRootBean<T, S> rootBean = objects.getT2();
                     rootBean.setMaxRows(objects.getT3().getSize()).setFirstRow(objects.getT3().getOffset());
@@ -506,7 +508,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
                 } catch (Exception e) {
                     sink.error(e);
                 } finally {
-                    ReactiveUtil.TokenTreadLocal.remove();
+//                    ReactiveUtil.TokenTreadLocal.remove();
                 }
             }).zipWith(Mono.zip(Mono.just(function), Mono.just(mapper))).map(objects -> {
             PagedList<T> list = objects.getT1();
@@ -524,7 +526,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(
             (BiConsumer<? super Tuple3<Optional<TokenType>, TQRootBean<T, S>, Page>, SynchronousSink<Tuple2<PagedList<T>, Optional<TokenType>>>>) (objects, sink) -> {
-                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
                     TQRootBean<T, S> rootBean = objects.getT2();
                     rootBean.setMaxRows(objects.getT3().getSize()).setFirstRow(objects.getT3().getOffset());
@@ -532,24 +534,24 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
                 } catch (Exception e) {
                     sink.error(e);
                 } finally {
-                    ReactiveUtil.TokenTreadLocal.remove();
+//                    ReactiveUtil.TokenTreadLocal.remove();
                 }
             }).zipWith(Mono.just(mapper)).map(objects -> {
-            objects.getT1().getT2().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//            objects.getT1().getT2().ifPresent(ReactiveUtil.TokenTreadLocal::set);
             try {
                 PagedList<T> list = objects.getT1().getT1();
                 return Tuples.of(new EPage<R>(list, objects.getT2()), list, objects.getT1().getT2());
             } finally {
-                ReactiveUtil.TokenTreadLocal.remove();
+//                ReactiveUtil.TokenTreadLocal.remove();
             }
         }).zipWith(Mono.just(function2)).map(objects -> {
-            objects.getT1().getT3().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+//            objects.getT1().getT3().ifPresent(ReactiveUtil.TokenTreadLocal::set);
             try {
                 Tuple2<EPage<R>, PagedList<T>> tuple2 = objects.getT1();
                 objects.getT2().run(tuple2.getT2().getList(), tuple2.getT1().getRecords());
                 return tuple2.getT1();
             } finally {
-                ReactiveUtil.TokenTreadLocal.remove();
+//                ReactiveUtil.TokenTreadLocal.remove();
             }
         });
     }

@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.Cursor;
@@ -19,6 +20,7 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.Topic;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "start2do.util.redis", value = "enable", havingValue = "true")
@@ -55,7 +57,12 @@ public class RedisCacheUtil {
         if (RedisCacheUtil.redisCacheUtil == null) {
             return new ArrayList<>();
         }
-        return scan(RedisCacheUtil.redisCacheUtil.redisTemplate, key);
+        try {
+            return scan(RedisCacheUtil.redisCacheUtil.redisTemplate, key);
+        } catch (IllegalStateException e) {
+            log.error(e.getMessage(), e);
+            return List.of();
+        }
     }
 
     public static void zset(String key, Object id, int size) {

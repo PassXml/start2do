@@ -28,7 +28,6 @@ import org.start2do.dto.req.login.JwtRequest;
 import org.start2do.dto.resp.login.AuthRoleMenuResp;
 import org.start2do.dto.resp.login.JwtResponse;
 import org.start2do.ebean.dto.EnableType;
-import org.start2do.ebean.util.ReactiveUtil;
 import org.start2do.entity.security.query.QSysMenu;
 import org.start2do.filter.JwtRequestWebFluxFilter.CustomContextInfo;
 import org.start2do.service.SysLoginMenuReactiveService;
@@ -68,22 +67,22 @@ public class WebFluxLoginController {
     public Mono<R<JwtResponse>> createAuthenticationToken(@RequestBody JwtRequest req) {
         BeanValidatorUtil.validate(req);
         return customContextInfo.loadUserBefore(Mono.fromCallable(() -> {
-            if (config.getEnable() != null && config.getEnable()) {
-                if (StringUtils.isEmpty(req.getKaptchaCode()) || StringUtils.isEmpty(req.getKaptchaKey())) {
-                    throw new BusinessException("验证码不能为空");
+                if (config.getEnable() != null && config.getEnable()) {
+                    if (StringUtils.isEmpty(req.getKaptchaCode()) || StringUtils.isEmpty(req.getKaptchaKey())) {
+                        throw new BusinessException("验证码不能为空");
+                    }
+                    String kaptcha = Optional.ofNullable(RedisCacheUtil.get(KaptchaController.KEY + req.getKaptchaKey()))
+                        .map(Object::toString).orElseThrow(() -> new BusinessException("验证码已超时,请重新刷新验证码"));
+                    if (!req.getKaptchaCode().equals(kaptcha)) {
+                        throw new BusinessException("验证码不正确");
+                    }
+                    authenticate(req.getUsername(), req.getPassword());
                 }
-                String kaptcha = Optional.ofNullable(RedisCacheUtil.get(KaptchaController.KEY + req.getKaptchaKey()))
-                    .map(Object::toString).orElseThrow(() -> new BusinessException("验证码已超时,请重新刷新验证码"));
-                if (!req.getKaptchaCode().equals(kaptcha)) {
-                    throw new BusinessException("验证码不正确");
-                }
-                authenticate(req.getUsername(), req.getPassword());
-            }
-            return req;
-        }).then(
-            userDetailsService.findByUsername(req.getUsername()).cast(UserCredentials.class)
-                .flatMap(userCredentials -> ReactiveUtil.injectTokenInfo(
-                    () -> new JwtResponse(userCredentials, JwtTokenUtil.generateToken(userCredentials))))).map(R::ok));
+                return req;
+            }).then(
+                userDetailsService.findByUsername(req.getUsername()).cast(UserCredentials.class)
+                    .map(userCredentials -> new JwtResponse(userCredentials, JwtTokenUtil.generateToken(userCredentials))))
+            .map(R::ok));
     }
 
     /**

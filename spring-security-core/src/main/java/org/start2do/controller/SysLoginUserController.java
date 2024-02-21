@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.R;
 import org.start2do.dto.UserCredentials;
 import org.start2do.dto.resp.login.JwtResponse;
-import org.start2do.ebean.util.ReactiveUtil;
 import org.start2do.service.imp.SysLoginUserReactiveServiceImpl;
 import org.start2do.util.JwtTokenUtil;
 import reactor.core.publisher.Mono;
@@ -31,7 +30,7 @@ public class SysLoginUserController {
     public Mono<R<JwtResponse>> userInfo() {
         return JwtTokenUtil.getUserNameReactive().flatMap(sysUserService::findByUsername)
             .cast(UserCredentials.class)
-            .flatMap(userCredentials -> ReactiveUtil.injectTokenInfo(() -> new JwtResponse(userCredentials, null)))
+            .map(userCredentials -> new JwtResponse(userCredentials, null))
             .map(R::ok);
     }
 
