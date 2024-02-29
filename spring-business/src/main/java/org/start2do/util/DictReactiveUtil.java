@@ -20,6 +20,7 @@ import org.start2do.entity.business.SysDictItem;
 import org.start2do.service.webflux.SysDictItemReactiveService;
 import org.start2do.service.webflux.SysDictReactiveService;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Component
 @RequiredArgsConstructor
@@ -48,7 +49,8 @@ public class DictReactiveUtil {
             init();
         }
         concurrentMap.clear();
-        Mono.delay(Duration.ofSeconds(60)).then(Mono.zip(DICT_SERVICE.findAll(), SYS_DICT_ITEM_SERVICE.findAll()))
+        Mono.delay(Duration.ofSeconds(60)).publishOn(Schedulers.newParallel("Task"))
+            .then(Mono.zip(DICT_SERVICE.findAll(), SYS_DICT_ITEM_SERVICE.findAll()))
             .subscribe(objects -> {
                 List<SysDict> dicts = objects.getT1();
                 List<SysDictItem> items = objects.getT2();
