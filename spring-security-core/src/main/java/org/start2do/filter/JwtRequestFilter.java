@@ -20,6 +20,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.start2do.Start2doSecurityConfig;
 import org.start2do.service.imp.SysLoginUserServiceImpl;
 import org.start2do.util.JwtTokenUtil;
+import org.start2do.util.StringUtils;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -39,6 +40,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String jwtToken = null;
         if (requestTokenHeader != null && requestTokenHeader.startsWith(JwtTokenUtil.Bearer)) {
             jwtToken = requestTokenHeader.substring(JwtTokenUtil.BearerLen);
+            if ("undefined".equals(jwtToken) || StringUtils.isEmpty(jwtToken)) {
+                chain.doFilter(request, response);
+                return;
+            }
             try {
                 username = JwtTokenUtil.getUsernameFromToken(jwtToken);
             } catch (IllegalArgumentException e) {

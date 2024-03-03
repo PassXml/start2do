@@ -106,9 +106,14 @@ public class WebFluxLoginController {
      */
     @GetMapping("menu")
     public Mono<R<List<AuthRoleMenuResp>>> menu() {
-        return sysLoginMenuService.findAll(
-            new QSysMenu().status.eq(EnableType.Enable).roles.users.id.eq(JwtTokenUtil.getUserId())).flatMapMany(
-            Flux::fromIterable).map(AuthRoleMenuResp::new).collectList().map(R::ok);
+        return Mono.deferContextual(contextView ->
+            Mono.just(contextView.<String>get(JwtTokenUtil.AUTHORIZATIONStr))
+        ).flatMap(jwtStr -> {
+            Integer userId = JwtTokenUtil.getUserId(jwtStr);
+            return sysLoginMenuService.findAll(
+                new QSysMenu().status.eq(EnableType.Enable).roles.users.id.eq(userId)).flatMapMany(
+                Flux::fromIterable).map(AuthRoleMenuResp::new).collectList();
+        }).map(R::ok);
     }
 
 

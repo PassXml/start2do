@@ -14,10 +14,16 @@ public class SysFileUploadResp {
 
     private UUID id;
     private String relativeFilePath;
-
+    private String url;
 
     public SysFileUploadResp(UUID id, String relativeFilePath) {
         this.id = id;
         this.relativeFilePath=relativeFilePath;
+    }
+
+    public SysFileUploadResp(UUID id, String relativeFilePath, String url) {
+        this.id = id;
+        this.relativeFilePath = relativeFilePath;
+        this.url = url;
     }
 }

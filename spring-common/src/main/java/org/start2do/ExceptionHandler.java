@@ -76,6 +76,13 @@ public class ExceptionHandler {
     }
 
     @ResponseBody
+    @org.springframework.web.bind.annotation.ExceptionHandler(MethodArgumentNotValidException.class)
+    public R Exception(MethodArgumentNotValidException e) {
+        log(e);
+        return R.failed(5000, e.getMessage());
+    }
+
+    @ResponseBody
     @org.springframework.web.bind.annotation.ExceptionHandler(value = MethodArgumentNotValidException.class)
     public R handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         List<ObjectError> allErrors = e.getBindingResult().getAllErrors();

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.start2do.dto.R;
 
 
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint, Serializable {
@@ -15,6 +16,9 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint, Se
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
         AuthenticationException authException) throws IOException {
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+//        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setHeader("Content-Type", "application/json");
+        response.getWriter().write(R.failed(401, "Unauthorized").toJson());
     }
 }
