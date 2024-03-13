@@ -23,7 +23,7 @@ import org.start2do.entity.security.SysUser;
 import org.start2do.entity.security.SysUser.Status;
 import org.start2do.entity.security.query.QSysRole;
 import org.start2do.entity.security.query.QSysUser;
-import org.start2do.service.ISysLoginUserCustomInfoReactiveService;
+import org.start2do.service.reactive.ISysLoginUserCustomInfoReactiveService;
 import reactor.core.publisher.Mono;
 
 @Service

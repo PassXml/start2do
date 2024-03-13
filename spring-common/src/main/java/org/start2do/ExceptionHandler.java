@@ -1,15 +1,14 @@
 package org.start2do;
 
-import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.support.WebExchangeBindException;
 import org.start2do.dto.BusinessException;
 import org.start2do.dto.DataNotFoundException;
 import org.start2do.dto.PermissionException;
@@ -18,6 +17,7 @@ import org.start2do.util.ValidateException;
 
 @Slf4j
 @ControllerAdvice
+@RestControllerAdvice
 @RequiredArgsConstructor
 @Import(SpringCommonConfig.class)
 public class ExceptionHandler {
@@ -81,13 +81,14 @@ public class ExceptionHandler {
         log(e);
         return R.failed(5000, e.getMessage());
     }
-
     @ResponseBody
-    @org.springframework.web.bind.annotation.ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public R handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        List<ObjectError> allErrors = e.getBindingResult().getAllErrors();
-        String message = allErrors.stream().map(DefaultMessageSourceResolvable::getDefaultMessage)
-            .collect(Collectors.joining(";"));
-        return R.failed(message);
+    @org.springframework.web.bind.annotation.ExceptionHandler(WebExchangeBindException.class)
+    public R handleWebExchangeBindException(WebExchangeBindException e) {
+        log(e);
+        String msg = e.getFieldErrors().stream()
+            .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
+            .collect(Collectors.joining(", "));
+                return R.failed(msg);
     }
+
 }

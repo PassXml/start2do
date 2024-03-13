@@ -18,7 +18,7 @@ import org.start2do.entity.security.SysUserRole;
 import org.start2do.entity.security.query.QSysRole;
 import org.start2do.entity.security.query.QSysUser;
 import org.start2do.entity.security.query.QSysUserRole;
-import org.start2do.service.SysLoginRoleReactiveService;
+import org.start2do.service.reactive.SysLoginRoleReactiveService;
 import org.start2do.util.ListUtil;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

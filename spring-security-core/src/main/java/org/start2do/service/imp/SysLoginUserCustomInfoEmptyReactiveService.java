@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.stereotype.Service;
-import org.start2do.service.ISysLoginUserCustomInfoReactiveService;
+import org.start2do.service.reactive.ISysLoginUserCustomInfoReactiveService;
 import reactor.core.publisher.Mono;
 
 @Service

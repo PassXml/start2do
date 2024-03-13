@@ -24,6 +24,9 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
 import org.start2do.Start2doSecurityConfig;
 import org.start2do.filter.JwtRequestWebFluxFilter;
+import org.start2do.handle.AccessDeniedHandler;
+import org.start2do.handle.AuthManagerHandler;
+import org.start2do.service.reactive.SysPermissionReactiveService;
 import org.start2do.util.JwtTokenUtil;
 
 
@@ -36,6 +39,13 @@ import org.start2do.util.JwtTokenUtil;
 public class WebFluxSecurityConfiguration {
 
     private final Start2doSecurityConfig config;
+    private final AccessDeniedHandler accessDeniedHandler;
+
+    @Bean
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
+    public AuthManagerHandler authManagerHandler(SysPermissionReactiveService permissionReactiveService) {
+        return new AuthManagerHandler(permissionReactiveService);
+    }
 
     @Bean
     public ReactiveAuthenticationManager authenticationManager(ReactiveUserDetailsService userDetailsService,
@@ -70,8 +80,8 @@ public class WebFluxSecurityConfiguration {
                 .httpBasic(HttpBasicSpec::disable)
                 .exceptionHandling(ctx -> {
                     ctx.authenticationEntryPoint(
-                        new HttpStatusServerEntryPoint(org.springframework.http.HttpStatus.UNAUTHORIZED));
-
+                            new HttpStatusServerEntryPoint(org.springframework.http.HttpStatus.UNAUTHORIZED))
+                        .accessDeniedHandler(accessDeniedHandler);
                 })
                 .authorizeExchange(ctx -> {
                     ctx.pathMatchers(config.getWhiteList().toArray(new String[]{})).permitAll().anyExchange()

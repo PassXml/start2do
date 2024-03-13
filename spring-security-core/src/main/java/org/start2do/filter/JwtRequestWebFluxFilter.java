@@ -1,6 +1,6 @@
 package org.start2do.filter;
 
-import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -16,7 +16,7 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import org.start2do.Start2doSecurityConfig;
-import org.start2do.ebean.util.ReactiveUtil;
+import org.start2do.dto.R;
 import org.start2do.service.imp.SysLoginUserReactiveServiceImpl;
 import org.start2do.util.JwtTokenUtil;
 import reactor.core.publisher.Mono;
@@ -73,10 +73,12 @@ public class JwtRequestWebFluxFilter implements WebFilter {
                                         objects.getT2()));
                             }
                         );
-                } catch (ExpiredJwtException e) {
-                    log.debug(e.getMessage(), e);
-                } finally {
-                    ReactiveUtil.TokenTreadLocal.remove();
+                } catch (JwtException e) {
+                    exchange.getResponse().setRawStatusCode(401);
+                    exchange.getResponse().writeWith(Mono.just(
+                        exchange.getResponse().bufferFactory()
+                            .wrap(R.failed(401, e.getMessage()).toJson().getBytes())));
+                    return Mono.empty();
                 }
             }
         }

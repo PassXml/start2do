@@ -118,7 +118,7 @@ public class RedisCacheUtil {
     }
 
     public static <T> Optional<T> tryLock(String key, Supplier<T> o) {
-        if (redisCacheUtil.redisTemplate.hasKey(key)) {
+        if (Boolean.TRUE.equals(redisCacheUtil.redisTemplate.hasKey(key))) {
             return Optional.empty();
         }
         set(key, 1, 5, TimeUnit.SECONDS);
@@ -132,8 +132,26 @@ public class RedisCacheUtil {
         }
         return Optional.ofNullable(t);
 
+    public static void tryLock(String key, Integer time, TimeUnit timeUnit, Runnable run, RuntimeException exception) {
+        if (Boolean.TRUE.equals(redisCacheUtil.redisTemplate.hasKey(key))) {
+            if (exception != null) {
+                throw exception;
+            }
+        }
+        set(key, 1, time, timeUnit);
+        try {
+            run.run();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw e;
+        } finally {
+            remove(key);
+        }
     }
 
+    public static void tryLock(String key, Runnable run, RuntimeException exception) {
+        tryLock(key, 5, TimeUnit.SECONDS, run, exception);
+    }
 
     public static void set(String key, Object obj) {
         redisCacheUtil.redisTemplate.opsForValue().set(key, obj);

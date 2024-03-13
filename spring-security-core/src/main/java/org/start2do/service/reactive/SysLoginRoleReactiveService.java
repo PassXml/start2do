@@ -1,4 +1,4 @@
-package org.start2do.service;
+package org.start2do.service.reactive;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
