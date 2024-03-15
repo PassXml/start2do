@@ -29,6 +29,8 @@ dependencies {
     compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.15.2'
     compileOnly group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.13.4'
     api 'com.alibaba:easyexcel:3.2.0'
+    compileOnly group: 'io.projectreactor', name: 'reactor-core'
+
 }
 
 test {

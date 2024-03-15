@@ -4,7 +4,6 @@ import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -116,21 +115,6 @@ public class RedisCacheUtil {
             return result;
         }
     }
-
-    public static <T> Optional<T> tryLock(String key, Supplier<T> o) {
-        if (Boolean.TRUE.equals(redisCacheUtil.redisTemplate.hasKey(key))) {
-            return Optional.empty();
-        }
-        set(key, 1, 5, TimeUnit.SECONDS);
-        T t = null;
-        try {
-            t = o.get();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            remove(key);
-        }
-        return Optional.ofNullable(t);
 
     public static void tryLock(String key, Integer time, TimeUnit timeUnit, Runnable run, RuntimeException exception) {
         if (Boolean.TRUE.equals(redisCacheUtil.redisTemplate.hasKey(key))) {

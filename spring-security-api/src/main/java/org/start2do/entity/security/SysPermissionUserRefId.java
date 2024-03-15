@@ -18,10 +18,8 @@ import lombok.experimental.Accessors;
 @Embeddable
 public class SysPermissionUserRefId implements Serializable {
 
-    @Id
     @Column(name = "permission_id")
     private Integer permissionId;
-    @Id
     @Column(name = "user_id")
     private Integer userId;
 
