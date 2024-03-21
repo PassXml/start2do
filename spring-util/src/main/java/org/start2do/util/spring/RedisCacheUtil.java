@@ -18,6 +18,7 @@ import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.Topic;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
@@ -113,6 +114,45 @@ public class RedisCacheUtil {
                 redisCacheUtil.redisTemplate.opsForValue().set(key, result, time, timeUnit);
             }
             return result;
+        }
+    }
+
+    public static <T> Mono<T> tryLockReactive(String key, Integer time, TimeUnit timeUnit, Runnable run,
+        RuntimeException exception) {
+        if (Boolean.TRUE.equals(redisCacheUtil.redisTemplate.hasKey(key))) {
+            if (exception != null) {
+                Mono.error(exception);
+            }
+        }
+        return Mono.create(sink -> {
+            set(key, 1, time, timeUnit);
+            try {
+                run.run();
+                sink.success();
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                sink.error(e);
+            } finally {
+                remove(key);
+            }
+        });
+    }
+
+    public static <T> T tryLock(String key, Integer time, TimeUnit timeUnit, Supplier<T> run,
+        RuntimeException exception) {
+        if (Boolean.TRUE.equals(redisCacheUtil.redisTemplate.hasKey(key))) {
+            if (exception != null) {
+                throw exception;
+            }
+        }
+        set(key, 1, time, timeUnit);
+        try {
+            return run.get();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw e;
+        } finally {
+            remove(key);
         }
     }
 

@@ -1,7 +1,7 @@
 package org.start2do.filter;
 
-import java.util.Set;
 import java.util.StringJoiner;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
+import org.start2do.SysLogReactiveAop;
+import org.start2do.config.SysLogUrlPatternService;
 import org.start2do.entity.business.SysLog;
 import org.start2do.entity.business.SysLog.Type;
 import org.start2do.util.JwtTokenUtil;
@@ -21,9 +23,12 @@ import reactor.util.context.Context;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "start2do.business.sys-log", value = "enable", havingValue = "true")
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
 public class SysLogRequestWebFilter implements WebFilter {
+
+    private final SysLogUrlPatternService urlPatternService;
 
     private String getIP(ServerHttpRequest request) {
         String[] headers = new String[]{"X-Forwarded-For", "X-Real-IP", "Proxy-Client-IP", "WL-Proxy-Client-IP",
@@ -69,15 +74,19 @@ public class SysLogRequestWebFilter implements WebFilter {
         return getMultistageReverseProxyIp(ip);
     }
 
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
+        if (!urlPatternService.isMatch(request.getPath().toString())) {
+            return chain.filter(exchange);
+        }
+        HttpHeaders headers = request.getHeaders();
         SysLog sysLog = new SysLog();
         sysLog.setType(Type.Info);
         sysLog.setRemoteAddr(getIP(request));
         sysLog.setRequestUri(request.getPath().toString());
         sysLog.setMethod(request.getMethod().name());
-        HttpHeaders headers = request.getHeaders();
         sysLog.setUserAgent(headers.getFirst(HttpHeaders.USER_AGENT));
         StringJoiner params = new StringJoiner("&");
         request.getQueryParams().forEach((s, strings) -> {
@@ -86,27 +95,15 @@ public class SysLogRequestWebFilter implements WebFilter {
             }
         });
         sysLog.setParams(params.toString());
-        StringJoiner joiner = new StringJoiner("");
-        Set<String> keySet = headers.keySet();
+        sysLog.setRequestHeader(SysLogReactiveAop.getHeader(headers));
         try {
-            for (String headerKey : keySet) {
-                for (String headerValue : headers.get(headerKey)) {
-                    joiner.add(headerKey).add("=").add(headerValue);
-                }
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-        sysLog.setRequestHeader(joiner.toString());
-        try {
-            String jwtStr = request.getHeaders().getFirst(JwtTokenUtil.AUTHORIZATION).substring(JwtTokenUtil.BearerLen);
+            String jwtStr = headers.getFirst(JwtTokenUtil.AUTHORIZATION).substring(JwtTokenUtil.BearerLen);
             String username = JwtTokenUtil.getUsernameFromToken(jwtStr);
             sysLog.setUpdatePerson(username);
             sysLog.setCreatePerson(username);
         } catch (Exception e) {
             sysLog.setExceptionInfo(e.getMessage());
         }
-
         return DataBufferUtils.join(request.getBody()).map(dataBuffer -> {
             int byteCount = dataBuffer.readableByteCount();
             byte[] bytes = new byte[byteCount];

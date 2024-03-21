@@ -72,18 +72,20 @@ public class SysLogReactiveAop {
                 value.setUseTime(System.currentTimeMillis() - startTime);
                 value.setTitle(sysLog.value());
                 boolean skip = false;
-                for (Class clazz : config.getSkinClazz()) {
-                    //判断返回值是class是否是clazz类或子类
-                    if (clazz.isAssignableFrom(result.getClass())) {
-                        skip = true;
-                        break;
+                if (result != null) {
+                    for (Class clazz : config.getSkinClazz()) {
+                        //判断返回值是class是否是clazz类或子类
+                        if (clazz.isAssignableFrom(result.getClass())) {
+                            skip = true;
+                            break;
+                        }
                     }
-                }
-                if (!skip) {
-                    try {
-                        value.setResponseBody(json.toJson(result));
-                    } catch (Exception e) {
-                        value.setExceptionInfo(e.getMessage());
+                    if (!skip) {
+                        try {
+                            value.setResponseBody(json.toJson(result));
+                        } catch (Exception e) {
+                            value.setExceptionInfo(e.getMessage());
+                        }
                     }
                 }
                 return logReactiveService.save(value).map(ctx -> result)

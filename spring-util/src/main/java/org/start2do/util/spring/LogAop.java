@@ -69,6 +69,9 @@ public class LogAop {
             HttpServletRequest request = sra.getRequest();
             executorService.submit(() -> {
                 String requestURI = request.getRequestURI();
+                if (logAopConfig.getSkipUrl().contains(requestURI)) {
+                    return;
+                }
                 StringJoiner headerString = new StringJoiner(",");
                 Enumeration<String> headerNames = request.getHeaderNames();
                 while (headerNames.hasMoreElements()) {

@@ -9,7 +9,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -31,11 +33,15 @@ public class LogAopConfig {
 
     private List<Class> skinClazz;
     private String name;
+    private Set<String> skipUrl;
 
     @PostConstruct
     public void init() {
         if (skinClazz == null) {
             skinClazz = new ArrayList<>();
+        }
+        if (skipUrl == null) {
+            skipUrl = new HashSet<>();
         }
         skinClazz.addAll(Arrays.asList(HttpServletRequest.class, HttpServletResponse.class, ServletResponse.class,
             ServletRequest.class, OutputStream.class, ByteArrayOutputStream.class, MultipartFile.class));

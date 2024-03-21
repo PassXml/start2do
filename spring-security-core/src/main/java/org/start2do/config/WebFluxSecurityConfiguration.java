@@ -25,8 +25,6 @@ import org.springframework.security.web.server.authentication.HttpStatusServerEn
 import org.start2do.Start2doSecurityConfig;
 import org.start2do.filter.JwtRequestWebFluxFilter;
 import org.start2do.handle.AccessDeniedHandler;
-import org.start2do.handle.AuthManagerHandler;
-import org.start2do.service.reactive.SysPermissionReactiveService;
 import org.start2do.util.JwtTokenUtil;
 
 
@@ -41,11 +39,11 @@ public class WebFluxSecurityConfiguration {
     private final Start2doSecurityConfig config;
     private final AccessDeniedHandler accessDeniedHandler;
 
-    @Bean
-    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
-    public AuthManagerHandler authManagerHandler(SysPermissionReactiveService permissionReactiveService) {
-        return new AuthManagerHandler(permissionReactiveService);
-    }
+//    @Bean
+//    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
+//    public AuthManagerHandler authManagerHandler(SysPermissionReactiveService permissionReactiveService) {
+//        return new AuthManagerHandler(permissionReactiveService);
+//    }
 
     @Bean
     public ReactiveAuthenticationManager authenticationManager(ReactiveUserDetailsService userDetailsService,
