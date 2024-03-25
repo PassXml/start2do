@@ -2,6 +2,7 @@ package org.start2do.config;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import jakarta.annotation.Resource;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Map;
@@ -9,6 +10,7 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
@@ -31,7 +33,9 @@ public class SysLogUrlPatternService implements CommandLineRunner {
     private Set<PathPattern> url = new HashSet<>();
     private Set<String> filterUrl = new HashSet<>();
     private final LogAopConfig config;
-    private final RequestMappingHandlerMapping requestMappingHandlerMapping;
+    @Resource
+    @Qualifier("requestMappingHandlerMapping")
+    private RequestMappingHandlerMapping requestMappingHandlerMapping;
     private final LoadingCache<String, Boolean> cache = Caffeine.newBuilder()
         .maximumSize(50_000)
         .expireAfterAccess(Duration.ofMinutes(5))
