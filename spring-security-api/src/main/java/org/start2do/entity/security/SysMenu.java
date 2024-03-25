@@ -1,5 +1,6 @@
 package org.start2do.entity.security;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbComment;
 import io.ebean.annotation.Identity;
@@ -79,6 +80,7 @@ public class SysMenu extends BaseModel2 implements Serializable {
             putItemBean(value, label);
         }
 
+        @JsonCreator
         public static Type find(String s) {
             for (Type value : values()) {
                 if (value.getValue().equals(s)) {

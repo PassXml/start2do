@@ -1,5 +1,6 @@
 package org.start2do.entity.security;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbDefault;
@@ -93,6 +94,7 @@ public class SysUser extends BaseModel2 implements Serializable {
             putItemBean(value, label);
         }
 
+        @JsonCreator
         public static Status find(String s) {
             for (Status value : values()) {
                 if (value.getValue().equals(s)) {

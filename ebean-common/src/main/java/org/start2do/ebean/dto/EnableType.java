@@ -1,5 +1,6 @@
 package org.start2do.ebean.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.start2do.dto.BusinessException;
 import org.start2do.ebean.dict.IDictItem;
 
@@ -12,6 +13,7 @@ public enum EnableType implements IDictItem {
         putItemBean(value, label);
     }
 
+    @JsonCreator
     public static EnableType find(String s) {
         for (EnableType value : values()) {
             if (value != null && value.getValue().equals(s)) {
