@@ -9,8 +9,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.connection.MessageListener;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -23,8 +28,9 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @ConditionalOnProperty(prefix = "start2do.util.redis", value = "enable", havingValue = "true")
-public class RedisCacheUtil {
+public class RedisCacheUtil implements CommandLineRunner {
 
     public static RedisTemplate<String, Object> getRedisTemplate() {
         return redisCacheUtil.redisTemplate;
@@ -77,12 +83,6 @@ public class RedisCacheUtil {
         return redisCacheUtil.redisTemplate.opsForZSet().reverseRange(key, start, end);
     }
 
-
-    @PostConstruct
-    public void init() {
-        RedisCacheUtil.redisCacheUtil = this;
-        container.setConnectionFactory(this.redisTemplate.getConnectionFactory());
-    }
 
     public static <T> T get(String key) {
         Object o = redisCacheUtil.redisTemplate.opsForValue().get(key);
@@ -224,5 +224,20 @@ public class RedisCacheUtil {
         container.addMessageListener(listener, topic);
     }
 
+    @PostConstruct
+    public void init() {
+        RedisCacheUtil.redisCacheUtil = this;
+        RedisConnectionFactory connectionFactory = this.redisTemplate.getConnectionFactory();
+        if (connectionFactory instanceof LettuceConnectionFactory) {
+            ((LettuceConnectionFactory) connectionFactory).setValidateConnection(true);
+            ((LettuceConnectionFactory) connectionFactory).afterPropertiesSet();
+        }
+        container.setConnectionFactory(connectionFactory);
+    }
 
+
+    @Override
+    public void run(String... args) throws Exception {
+        init();
+    }
 }
