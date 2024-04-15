@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Map;
+import lombok.Getter;
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
@@ -21,6 +22,7 @@ import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 
 public final class PDFUtil {
 
+    @Getter
     protected JasperReport jasperReport;
 
     public PDFUtil(InputStream jrxmlFileInputSteam) {

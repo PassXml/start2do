@@ -182,7 +182,11 @@ public class RedisCacheUtil implements CommandLineRunner {
     }
 
     public static void set(String key, Object obj, long time, TimeUnit timeUnit) {
-        redisCacheUtil.redisTemplate.opsForValue().set(key, obj, time, timeUnit);
+        if (time < 0) {
+            redisCacheUtil.redisTemplate.opsForValue().set(key, obj);
+        } else {
+            redisCacheUtil.redisTemplate.opsForValue().set(key, obj, time, timeUnit);
+        }
     }
 
     public static Boolean expire(String key, long time, TimeUnit timeUnit) {
