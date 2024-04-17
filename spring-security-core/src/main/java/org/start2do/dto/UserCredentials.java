@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.start2do.entity.security.SysDept;
 import org.start2do.entity.security.SysMenu;
 
@@ -30,4 +31,12 @@ public class UserCredentials extends User {
         this.realName = realName;
     }
 
+    public UserCredentials(UserDetails userDetails, Integer mockUserId) {
+        super(
+            userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities()
+        );
+        this.id = mockUserId;
+        this.realName = userDetails.getUsername();
+
+    }
 }

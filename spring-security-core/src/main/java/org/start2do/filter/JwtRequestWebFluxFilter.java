@@ -17,6 +17,7 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import org.start2do.Start2doSecurityConfig;
 import org.start2do.dto.R;
+import org.start2do.dto.UserCredentials;
 import org.start2do.service.imp.SysLoginUserReactiveServiceImpl;
 import org.start2do.util.JwtTokenUtil;
 import reactor.core.publisher.Mono;
@@ -33,6 +34,7 @@ public class JwtRequestWebFluxFilter implements WebFilter {
     private final Start2doSecurityConfig config;
 
     private final CustomContextInfo customContextInfo;
+    private static String mockJwtStr;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
@@ -43,7 +45,13 @@ public class JwtRequestWebFluxFilter implements WebFilter {
                 .zipWith(customContextInfo.injectOtherInfo(null)).flatMap(
                     objects -> {
                         UserDetails userDetails = objects.getT1();
+                        if (mockJwtStr == null) {
+                            mockJwtStr = JwtTokenUtil.generateToken(
+                                new UserCredentials(userDetails, config.getMockUserId())
+                            );
+                        }
                         return chain.filter(exchange).contextWrite(Context.of(JwtTokenUtil.AUTHORIZATION, userDetails))
+                            .contextWrite(Context.of(JwtTokenUtil.AUTHORIZATIONStr, mockJwtStr))
                             .contextWrite(ReactiveSecurityContextHolder.withAuthentication(
                                 new UsernamePasswordAuthenticationToken(userDetails, null,
                                     userDetails.getAuthorities())))
