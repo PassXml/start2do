@@ -1,5 +1,6 @@
 package org.start2do.entity.business;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbComment;
 import io.ebean.annotation.DbEnumValue;
@@ -64,6 +65,7 @@ public class SysDict extends BaseModel2 {
         public String getLabel() {
             return label;
         }
+        @JsonCreator
 
         public static Type find(String s) {
             for (Type value : values()) {

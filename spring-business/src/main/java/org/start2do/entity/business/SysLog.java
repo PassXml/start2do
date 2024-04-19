@@ -1,6 +1,7 @@
 package org.start2do.entity.business;
 
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import io.ebean.Model;
 import io.ebean.annotation.DbComment;
 import io.ebean.annotation.DbDefault;
@@ -175,6 +176,7 @@ public class SysLog extends Model {
         public String getLabel() {
             return label;
         }
+        @JsonCreator
 
         public static Type find(String s) {
             for (Type value : values()) {

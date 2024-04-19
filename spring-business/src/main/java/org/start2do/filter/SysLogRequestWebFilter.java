@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -78,6 +79,10 @@ public class SysLogRequestWebFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
+        if (!ReReadRequestBodyFilter.isHandle(request)) {
+            return chain.filter(exchange);
+        }
+        HttpMethod method = request.getMethod();
         if (!urlPatternService.isMatch(request.getPath().toString())) {
             return chain.filter(exchange);
         }
@@ -86,7 +91,7 @@ public class SysLogRequestWebFilter implements WebFilter {
         sysLog.setType(Type.Info);
         sysLog.setRemoteAddr(getIP(request));
         sysLog.setRequestUri(request.getPath().toString());
-        sysLog.setMethod(request.getMethod().name());
+        sysLog.setMethod(method.name());
         sysLog.setUserAgent(headers.getFirst(HttpHeaders.USER_AGENT));
         StringJoiner params = new StringJoiner("&");
         request.getQueryParams().forEach((s, strings) -> {
@@ -106,6 +111,9 @@ public class SysLogRequestWebFilter implements WebFilter {
         }
         return DataBufferUtils.join(request.getBody()).map(dataBuffer -> {
             int byteCount = dataBuffer.readableByteCount();
+            if (byteCount == 0) {
+                return true;
+            }
             byte[] bytes = new byte[byteCount];
             dataBuffer.read(bytes, 0, byteCount);
             sysLog.setRequestBody(new String(bytes));

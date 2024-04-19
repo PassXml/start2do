@@ -23,6 +23,12 @@ import reactor.core.publisher.Mono;
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
 public class ReReadRequestBodyFilter implements WebFilter, Ordered {
 
+    /**
+     * 是否处理
+     */
+    public static boolean isHandle(ServerHttpRequest request) {
+        return MediaType.APPLICATION_JSON_VALUE.equals(request.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
+    }
     @Override
     public int getOrder() {
         return Ordered.HIGHEST_PRECEDENCE;
@@ -57,8 +63,7 @@ public class ReReadRequestBodyFilter implements WebFilter, Ordered {
 //        return chain.filter(exchange);
         ServerHttpRequest request = exchange.getRequest();
         Flux<DataBuffer> body = request.getBody();
-        if (MediaType.APPLICATION_JSON_VALUE.equals(request.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE))
-            && request.getMethod().matches("POST")) {
+        if (isHandle(request)) {
             return DataBufferUtils.join(body).map(dataBuffer -> {
                 byte[] bytes = new byte[dataBuffer.readableByteCount()];
                 dataBuffer.read(bytes);
