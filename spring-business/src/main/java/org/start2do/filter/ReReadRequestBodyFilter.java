@@ -78,7 +78,9 @@ public class ReReadRequestBodyFilter implements WebFilter, Ordered {
                 };
                 ServerWebExchange modifiedExchange = exchange.mutate().request(modifiedRequest).build();
                 return chain.filter(modifiedExchange);
-            }).flatMap(result -> result);
+            }).flatMap(result -> result).switchIfEmpty(
+                chain.filter(exchange)
+            );
         }
         return chain.filter(exchange);
     }
