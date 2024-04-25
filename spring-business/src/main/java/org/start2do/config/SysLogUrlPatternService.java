@@ -42,11 +42,10 @@ public class SysLogUrlPatternService implements CommandLineRunner {
         .build(urlStr -> {
             for (PathPattern pathPattern : this.url) {
                 if (pathPattern.matches(PathContainer.parsePath(urlStr))) {
-                    return true;
+                    return false;
                 }
             }
-            return false;
-
+            return true;
         });
 
     @Override

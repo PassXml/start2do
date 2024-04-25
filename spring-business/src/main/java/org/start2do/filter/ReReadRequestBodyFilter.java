@@ -1,5 +1,6 @@
 package org.start2do.filter;
 
+import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -27,7 +28,9 @@ public class ReReadRequestBodyFilter implements WebFilter, Ordered {
      * 是否处理
      */
     public static boolean isHandle(ServerHttpRequest request) {
-        return MediaType.APPLICATION_JSON_VALUE.equals(request.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
+        HttpHeaders headers = request.getHeaders();
+        return MediaType.APPLICATION_JSON_VALUE.equals(headers.getFirst(HttpHeaders.CONTENT_TYPE))
+            && headers.getContentLength() > 0;
     }
     @Override
     public int getOrder() {
@@ -67,7 +70,7 @@ public class ReReadRequestBodyFilter implements WebFilter, Ordered {
             return DataBufferUtils.join(body).map(dataBuffer -> {
                 byte[] bytes = new byte[dataBuffer.readableByteCount()];
                 dataBuffer.read(bytes);
-                DataBufferUtils.release(dataBuffer);
+//                DataBufferUtils.release(dataBuffer);
                 return bytes;
             }).map(bytes -> {
                 ServerHttpRequest modifiedRequest = new ServerHttpRequestDecorator(request) {
@@ -78,9 +81,7 @@ public class ReReadRequestBodyFilter implements WebFilter, Ordered {
                 };
                 ServerWebExchange modifiedExchange = exchange.mutate().request(modifiedRequest).build();
                 return chain.filter(modifiedExchange);
-            }).flatMap(result -> result).switchIfEmpty(
-                chain.filter(exchange)
-            );
+            }).flatMap(Function.identity());
         }
         return chain.filter(exchange);
     }

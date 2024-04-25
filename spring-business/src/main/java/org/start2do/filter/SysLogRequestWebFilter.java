@@ -79,13 +79,10 @@ public class SysLogRequestWebFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
-        if (!ReReadRequestBodyFilter.isHandle(request)) {
+        if (!ReReadRequestBodyFilter.isHandle(request) || urlPatternService.isMatch(request.getPath().toString())) {
             return chain.filter(exchange);
         }
         HttpMethod method = request.getMethod();
-        if (!urlPatternService.isMatch(request.getPath().toString())) {
-            return chain.filter(exchange);
-        }
         HttpHeaders headers = request.getHeaders();
         SysLog sysLog = new SysLog();
         sysLog.setType(Type.Info);
