@@ -4,7 +4,7 @@ import io.ebean.DB;
 import io.ebean.Model;
 import io.ebean.PagedList;
 import io.ebean.Transaction;
-import io.ebean.typequery.TQRootBean;
+import io.ebean.typequery.QueryBean;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.Duration;
@@ -200,7 +200,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends TQRootBean> Mono<Tuple2<Optional<Transaction>, Boolean>> handDelete(TQRootBean<T, S> bean) {
+    public <S extends QueryBean> Mono<Tuple2<Optional<Transaction>, Boolean>> handDelete(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.<Optional<Transaction>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TransactionKey))),
             Mono.just(bean.findOne())).handle((objects, sink) -> {
@@ -247,7 +247,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends TQRootBean> Mono<T> getOne(TQRootBean<T, S> bean) {
+    public <S extends QueryBean> Mono<T> getOne(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).mapNotNull(objects -> {
 //            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
@@ -304,7 +304,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends TQRootBean> Mono<T> findOne(TQRootBean<T, S> bean) {
+    public <S extends QueryBean> Mono<T> findOne(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).handle((objects, sink) -> {
 //            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
@@ -324,15 +324,15 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends TQRootBean> Mono<T> findOneUseCache(TQRootBean<T, S> bean) {
+    public <S extends QueryBean> Mono<T> findOneUseCache(QueryBean<T, S> bean) {
         return findOne(bean).cache(Duration.ofSeconds(10));
     }
 
     @Override
-    public <S extends TQRootBean> Mono<List<T>> findAll(TQRootBean<T, S> bean) {
+    public <S extends QueryBean> Mono<List<T>> findAll(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).handle(
-            (BiConsumer<? super Tuple2<Optional<TokenType>, TQRootBean<T, S>>, SynchronousSink<List<T>>>) (objects, sink) -> {
+            (BiConsumer<? super Tuple2<Optional<TokenType>, QueryBean<T, S>>, SynchronousSink<List<T>>>) (objects, sink) -> {
 //                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
                     sink.next(objects.getT2().findList());
@@ -345,18 +345,18 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends TQRootBean> Mono<List<T>> findAllUseCache(TQRootBean<T, S> bean) {
+    public <S extends QueryBean> Mono<List<T>> findAllUseCache(QueryBean<T, S> bean) {
         return findAll(bean).cache(Duration.ofSeconds(10));
     }
 
     @Override
-    public <S extends TQRootBean> Mono<Boolean> delete(TQRootBean<T, S> bean) {
+    public <S extends QueryBean> Mono<Boolean> delete(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.<Optional<Transaction>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TransactionKey))),
             Mono.just(bean)).<Boolean>handle((objects, sink) -> {
 //            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
             try {
-                TQRootBean<T, S> rootBean = objects.getT3();
+                QueryBean<T, S> rootBean = objects.getT3();
                 objects.getT2().ifPresent(rootBean::usingTransaction);
                 int delete = rootBean.delete();
                 sink.next(true);
@@ -369,13 +369,13 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends TQRootBean> Mono<Page<T>> page(TQRootBean<T, S> bean, Page page) {
+    public <S extends QueryBean> Mono<Page<T>> page(QueryBean<T, S> bean, Page page) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(
-            (BiConsumer<? super Tuple3<Optional<TokenType>, TQRootBean<T, S>, Page>, SynchronousSink<PagedList<T>>>) (objects, sink) -> {
+            (BiConsumer<? super Tuple3<Optional<TokenType>, QueryBean<T, S>, Page>, SynchronousSink<PagedList<T>>>) (objects, sink) -> {
 //                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
-                    TQRootBean<T, S> rootBean = objects.getT2();
+                    QueryBean<T, S> rootBean = objects.getT2();
                     rootBean.setMaxRows(objects.getT3().getSize()).setFirstRow(objects.getT3().getOffset());
                     sink.next(rootBean.findPagedList());
                 } catch (Exception e) {
@@ -387,21 +387,21 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends TQRootBean> Mono<Page<T>> pageUseCache(TQRootBean<T, S> bean, Page page) {
+    public <S extends QueryBean> Mono<Page<T>> pageUseCache(QueryBean<T, S> bean, Page page) {
         return page(bean, page).cache(Duration.ofSeconds(10));
     }
 
 
     @Override
-    public <S extends TQRootBean, R> Mono<Page<R>> page(TQRootBean<T, S> bean, Page page,
+    public <S extends QueryBean, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(
-            (BiConsumer<? super Tuple3<Optional<TokenType>, TQRootBean<T, S>, Page>, SynchronousSink<Tuple2<PagedList<T>, Optional<TokenType>>>>) (objects, sink) -> {
+            (BiConsumer<? super Tuple3<Optional<TokenType>, QueryBean<T, S>, Page>, SynchronousSink<Tuple2<PagedList<T>, Optional<TokenType>>>>) (objects, sink) -> {
 //                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
-                    TQRootBean<T, S> rootBean = objects.getT2();
+                    QueryBean<T, S> rootBean = objects.getT2();
                     rootBean.setMaxRows(objects.getT3().getSize()).setFirstRow(objects.getT3().getOffset());
                     sink.next(Tuples.of(rootBean.findPagedList(), objects.getT1()));
                 } catch (Exception e) {
@@ -420,20 +420,20 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends TQRootBean, R> Mono<? extends Page<? extends R>> pageUseCache(TQRootBean<T, S> bean, Page page,
+    public <S extends QueryBean, R> Mono<? extends Page<? extends R>> pageUseCache(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper) {
         return page(bean, page, mapper).cache(Duration.ofSeconds(10));
     }
 
     @Override
-    public <S extends TQRootBean, R> Mono<Page<R>> page(TQRootBean<T, S> bean, Page page,
+    public <S extends QueryBean, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
         Consumer<Collection<T>> function, Function<? super T, ? extends R> mapper) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(
-            (BiConsumer<? super Tuple3<Optional<TokenType>, TQRootBean<T, S>, Page>, SynchronousSink<Tuple2<PagedList<T>, Optional<TokenType>>>>) (objects, sink) -> {
+            (BiConsumer<? super Tuple3<Optional<TokenType>, QueryBean<T, S>, Page>, SynchronousSink<Tuple2<PagedList<T>, Optional<TokenType>>>>) (objects, sink) -> {
 //                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
-                    TQRootBean<T, S> rootBean = objects.getT2();
+                    QueryBean<T, S> rootBean = objects.getT2();
                     rootBean.setMaxRows(objects.getT3().getSize()).setFirstRow(objects.getT3().getOffset());
                     sink.next(Tuples.of(rootBean.findPagedList(), objects.getT1()));
                 } catch (Exception e) {
@@ -457,10 +457,10 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
 
 
     @Override
-    public <S extends TQRootBean> Mono<Integer> count(TQRootBean<T, S> bean) {
+    public <S extends QueryBean> Mono<Integer> count(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).handle(
-            (BiConsumer<? super Tuple2<Optional<TokenType>, TQRootBean<T, S>>, SynchronousSink<Integer>>) (objects, sink) -> {
+            (BiConsumer<? super Tuple2<Optional<TokenType>, QueryBean<T, S>>, SynchronousSink<Integer>>) (objects, sink) -> {
 //                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
                     sink.next(bean.findCount());
@@ -473,16 +473,16 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends TQRootBean> Mono<Integer> countUseCache(TQRootBean<T, S> bean) {
+    public <S extends QueryBean> Mono<Integer> countUseCache(QueryBean<T, S> bean) {
         return count(bean).cache(Duration.ofSeconds(10));
     }
 
 
     @Override
-    public <S> Mono<Boolean> exists(TQRootBean<T, S> bean) {
+    public <S> Mono<Boolean> exists(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).handle(
-            (BiConsumer<? super Tuple2<Optional<TokenType>, TQRootBean<T, S>>, SynchronousSink<Boolean>>) (objects, sink) -> {
+            (BiConsumer<? super Tuple2<Optional<TokenType>, QueryBean<T, S>>, SynchronousSink<Boolean>>) (objects, sink) -> {
 //                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
                     sink.next(bean.exists());
@@ -495,14 +495,14 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends TQRootBean, R> Mono<Page<R>> page(TQRootBean<T, S> bean, Page page,
+    public <S extends QueryBean, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
         Consumer<Collection<T>> function, Function<? super T, ? extends R> mapper, Consumer<Collection<R>> function2) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(
-            (BiConsumer<? super Tuple3<Optional<TokenType>, TQRootBean<T, S>, Page>, SynchronousSink<PagedList<T>>>) (objects, sink) -> {
+            (BiConsumer<? super Tuple3<Optional<TokenType>, QueryBean<T, S>, Page>, SynchronousSink<PagedList<T>>>) (objects, sink) -> {
 //                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
-                    TQRootBean<T, S> rootBean = objects.getT2();
+                    QueryBean<T, S> rootBean = objects.getT2();
                     rootBean.setMaxRows(objects.getT3().getSize()).setFirstRow(objects.getT3().getOffset());
                     sink.next(rootBean.findPagedList());
                 } catch (Exception e) {
@@ -521,14 +521,14 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends TQRootBean, R> Mono<Page<R>> page(TQRootBean<T, S> bean, Page page,
+    public <S extends QueryBean, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper, Runner<T, R> function2) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(
-            (BiConsumer<? super Tuple3<Optional<TokenType>, TQRootBean<T, S>, Page>, SynchronousSink<Tuple2<PagedList<T>, Optional<TokenType>>>>) (objects, sink) -> {
+            (BiConsumer<? super Tuple3<Optional<TokenType>, QueryBean<T, S>, Page>, SynchronousSink<Tuple2<PagedList<T>, Optional<TokenType>>>>) (objects, sink) -> {
 //                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
-                    TQRootBean<T, S> rootBean = objects.getT2();
+                    QueryBean<T, S> rootBean = objects.getT2();
                     rootBean.setMaxRows(objects.getT3().getSize()).setFirstRow(objects.getT3().getOffset());
                     sink.next(Tuples.of(rootBean.findPagedList(), objects.getT1()));
                 } catch (Exception e) {

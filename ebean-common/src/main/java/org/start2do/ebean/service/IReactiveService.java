@@ -2,7 +2,7 @@ package org.start2do.ebean.service;
 
 import io.ebean.Model;
 import io.ebean.Transaction;
-import io.ebean.typequery.TQRootBean;
+import io.ebean.typequery.QueryBean;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -33,11 +33,11 @@ public interface IReactiveService<T extends Model> {
 
     Mono<Boolean> handDeleteById(Object id);
 
-    <S extends TQRootBean> Mono<Tuple2<Optional<Transaction>, Boolean>> handDelete(TQRootBean<T, S> bean);
+    <S extends QueryBean> Mono<Tuple2<Optional<Transaction>, Boolean>> handDelete(QueryBean<T, S> bean);
 
     Mono<T> save(T entity);
 
-    <S extends TQRootBean> Mono<T> getOne(TQRootBean<T, S> bean);
+    <S extends QueryBean> Mono<T> getOne(QueryBean<T, S> bean);
 
     Mono<T> getById(Object id);
 
@@ -45,42 +45,42 @@ public interface IReactiveService<T extends Model> {
 
     Mono<List<T>> findAll();
 
-    <S extends TQRootBean> Mono<T> findOne(TQRootBean<T, S> bean);
+    <S extends QueryBean> Mono<T> findOne(QueryBean<T, S> bean);
 
-    <S extends TQRootBean> Mono<T> findOneUseCache(TQRootBean<T, S> bean);
+    <S extends QueryBean> Mono<T> findOneUseCache(QueryBean<T, S> bean);
 
-    <S extends TQRootBean> Mono<List<T>> findAll(TQRootBean<T, S> bean);
+    <S extends QueryBean> Mono<List<T>> findAll(QueryBean<T, S> bean);
 
-    <S extends TQRootBean> Mono<List<T>> findAllUseCache(TQRootBean<T, S> bean);
+    <S extends QueryBean> Mono<List<T>> findAllUseCache(QueryBean<T, S> bean);
 
-    <S extends TQRootBean> Mono<Boolean> delete(TQRootBean<T, S> bean);
+    <S extends QueryBean> Mono<Boolean> delete(QueryBean<T, S> bean);
 
-    <S extends TQRootBean> Mono<Page<T>> page(TQRootBean<T, S> bean, Page page);
+    <S extends QueryBean> Mono<Page<T>> page(QueryBean<T, S> bean, Page page);
 
-    <S extends TQRootBean> Mono<Page<T>> pageUseCache(TQRootBean<T, S> bean, Page page);
+    <S extends QueryBean> Mono<Page<T>> pageUseCache(QueryBean<T, S> bean, Page page);
 
-    <S extends TQRootBean, R> Mono<Page<R>> page(TQRootBean<T, S> bean, Page page,
+    <S extends QueryBean, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper);
 
-    <S extends TQRootBean, R> Mono<? extends Page<? extends R>> pageUseCache(TQRootBean<T, S> bean, Page page,
+    <S extends QueryBean, R> Mono<? extends Page<? extends R>> pageUseCache(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper);
 
-    //    public <S extends TQRootBean, R> Page<R> page(TQRootBean<T, S> bean, Page page, Consumer<Collection<T>> function,
+    //    public <S extends QueryBean, R> Page<R> page(QueryBean<T, S> bean, Page page, Consumer<Collection<T>> function,
 //        Function<? super T, ? extends R> mapper)
-    <S extends TQRootBean, R> Mono<Page<R>> page(TQRootBean<T, S> bean, Page page,
+    <S extends QueryBean, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
         Consumer<Collection<T>> function,
         Function<? super T, ? extends R> mapper);
 
-    <S extends TQRootBean> Mono<Integer> count(TQRootBean<T, S> bean);
+    <S extends QueryBean> Mono<Integer> count(QueryBean<T, S> bean);
 
-    <S extends TQRootBean> Mono<Integer> countUseCache(TQRootBean<T, S> bean);
+    <S extends QueryBean> Mono<Integer> countUseCache(QueryBean<T, S> bean);
 
-    <S> Mono<Boolean> exists(TQRootBean<T, S> bean);
+    <S> Mono<Boolean> exists(QueryBean<T, S> bean);
 
-    <S extends TQRootBean, R> Mono<Page<R>> page(TQRootBean<T, S> bean, Page page,
+    <S extends QueryBean, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
         Consumer<Collection<T>> function,
         Function<? super T, ? extends R> mapper, Consumer<Collection<R>> function2);
 
-    <S extends TQRootBean, R> Mono<Page<R>> page(TQRootBean<T, S> bean, Page page,
+    <S extends QueryBean, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper, Runner<T, R> function2);
 }
