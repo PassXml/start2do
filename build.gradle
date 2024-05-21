@@ -4,11 +4,11 @@ plugins {
 //    id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'java-library'
     id 'idea'
-    id "io.ebean" version "13.20.1" apply(false)
+    id "io.ebean" version "14.3.0" apply(false)
 }
 group 'org.start2do'
 
-version '2.0.7-SNAPSHOT'
+version '2.0.8-SNAPSHOT'
 allprojects {
     apply {
         plugin 'java'
@@ -31,7 +31,7 @@ allprojects {
         lombokVersion = '1.18.22'
         jasperreportsVersion = '6.20.6'
         mapstructVersion = "1.4.2.Final"
-        ebeanVersion = "13.20.1"
+        ebeanVersion = "14.3.0-javax"
         vertxVersion = '4.3.4'
         curVersion = project.version == 'unspecified' ? this.rootProject.version : project.version
         jdkVersion = ["ebean-common"        : JavaVersion.VERSION_11,

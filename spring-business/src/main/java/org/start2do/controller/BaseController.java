@@ -1,7 +1,7 @@
 package org.start2do.controller;
 
 import io.ebean.Model;
-import io.ebean.typequery.TQRootBean;
+import io.ebean.typequery.QueryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +12,7 @@ import org.start2do.dto.R;
 import org.start2do.ebean.service.AbsService;
 import org.start2do.util.BeanValidatorUtil;
 
-public abstract class BaseController<Entity extends Model, QClass extends TQRootBean<Entity, QClass>, SERVICE extends AbsService<Entity>, PageResp, PageReq, Add, Edit, Delete, DetailReq, DetailResp> {
+public abstract class BaseController<Entity extends Model, QClass extends QueryBean<Entity, QClass>, SERVICE extends AbsService<Entity>, PageResp, PageReq, Add, Edit, Delete, DetailReq, DetailResp> {
 
     @Autowired
     @Lazy

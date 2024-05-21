@@ -109,9 +109,9 @@ public class SysLogAop {
         sysLog.setParams(params.toString());
         StringJoiner joiner = new StringJoiner("");
         Iterator<String> iterator = request.getHeaderNames().asIterator();
-        String s = null;
         try {
-            while ((s = iterator.next()) != null) {
+            while (iterator.hasNext()) {
+                String s = iterator.next();
                 joiner.add(s).add("=").add(request.getHeader(s));
             }
         } catch (Exception e) {

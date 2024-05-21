@@ -1,7 +1,7 @@
 package org.start2do.ebean.service;
 
 import io.ebean.Model;
-import io.ebean.typequery.TQRootBean;
+import io.ebean.typequery.QueryBean;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
@@ -24,11 +24,11 @@ public interface IService<T extends Model> {
 
     int handDeleteById(Object id);
 
-    <S extends TQRootBean> boolean handDelete(TQRootBean<T, S> bean);
+    <S extends QueryBean> boolean handDelete(QueryBean<T, S> bean);
 
     void save(T entity);
 
-    <S extends TQRootBean> T getOne(TQRootBean<T, S> bean);
+    <S extends QueryBean> T getOne(QueryBean<T, S> bean);
 
     T getById(Object id);
 
@@ -36,39 +36,39 @@ public interface IService<T extends Model> {
 
     List<T> findAll();
 
-    <S extends TQRootBean> T findOne(TQRootBean<T, S> bean);
+    <S extends QueryBean> T findOne(QueryBean<T, S> bean);
 
-    <S extends TQRootBean> T findOneUseCache(TQRootBean<T, S> bean);
+    <S extends QueryBean> T findOneUseCache(QueryBean<T, S> bean);
 
-    <S extends TQRootBean> List<T> findAll(TQRootBean<T, S> bean);
+    <S extends QueryBean> List<T> findAll(QueryBean<T, S> bean);
 
-    <S extends TQRootBean> List<T> findAllUseCache(TQRootBean<T, S> bean);
+    <S extends QueryBean> List<T> findAllUseCache(QueryBean<T, S> bean);
 
-    <S extends TQRootBean> void delete(TQRootBean<T, S> bean);
+    <S extends QueryBean> void delete(QueryBean<T, S> bean);
 
-    <S extends TQRootBean> Page<T> page(TQRootBean<T, S> bean, Page page);
+    <S extends QueryBean> Page<T> page(QueryBean<T, S> bean, Page page);
 
-    <S extends TQRootBean> Page<T> pageUseCache(TQRootBean<T, S> bean, Page page);
+    <S extends QueryBean> Page<T> pageUseCache(QueryBean<T, S> bean, Page page);
 
-    <S extends TQRootBean, R> Page<R> page(TQRootBean<T, S> bean, Page page,
+    <S extends QueryBean, R> Page<R> page(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper);
 
-    <S extends TQRootBean, R> Page<R> pageUseCache(TQRootBean<T, S> bean, Page page,
+    <S extends QueryBean, R> Page<R> pageUseCache(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper);
 
-    <S extends TQRootBean, R> Page<R> page(TQRootBean<T, S> bean, Page page, Consumer<Collection<T>> function,
+    <S extends QueryBean, R> Page<R> page(QueryBean<T, S> bean, Page page, Consumer<Collection<T>> function,
         Function<? super T, ? extends R> mapper);
 
-    <S extends TQRootBean> int count(TQRootBean<T, S> bean);
+    <S extends QueryBean> int count(QueryBean<T, S> bean);
 
 
-    <S extends TQRootBean> int countUseCache(TQRootBean<T, S> bean);
+    <S extends QueryBean> int countUseCache(QueryBean<T, S> bean);
 
-    <S> boolean exists(TQRootBean<T, S> bean);
+    <S> boolean exists(QueryBean<T, S> bean);
 
-    <S extends TQRootBean, R> Page<R> page(TQRootBean<T, S> bean, Page page, Consumer<Collection<T>> function,
+    <S extends QueryBean, R> Page<R> page(QueryBean<T, S> bean, Page page, Consumer<Collection<T>> function,
         Function<? super T, ? extends R> mapper, Consumer<Collection<R>> function2);
 
-    <S extends TQRootBean, R> Page<R> page(TQRootBean<T, S> bean, Page page,
+    <S extends QueryBean, R> Page<R> page(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper, Runner<T, R> function2);
 }

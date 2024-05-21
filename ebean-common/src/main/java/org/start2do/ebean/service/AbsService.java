@@ -3,7 +3,7 @@ package org.start2do.ebean.service;
 import io.ebean.DB;
 import io.ebean.Model;
 import io.ebean.PagedList;
-import io.ebean.typequery.TQRootBean;
+import io.ebean.typequery.QueryBean;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -56,7 +56,7 @@ public abstract class AbsService<T extends Model> implements IService<T> {
     }
 
     @Override
-    public <S extends TQRootBean> boolean handDelete(TQRootBean<T, S> bean) {
+    public <S extends QueryBean> boolean handDelete(QueryBean<T, S> bean) {
         return DB.deletePermanent(bean.findOne());
     }
 
@@ -66,7 +66,7 @@ public abstract class AbsService<T extends Model> implements IService<T> {
     }
 
     @Override
-    public <S extends TQRootBean> T getOne(TQRootBean<T, S> bean) {
+    public <S extends QueryBean> T getOne(QueryBean<T, S> bean) {
         return bean.findOneOrEmpty().orElseThrow(DataNotFoundException::new);
     }
 
@@ -87,39 +87,39 @@ public abstract class AbsService<T extends Model> implements IService<T> {
     }
 
     @Override
-    public <S extends TQRootBean> T findOne(TQRootBean<T, S> bean) {
+    public <S extends QueryBean> T findOne(QueryBean<T, S> bean) {
         return bean.findOne();
     }
 
     @Override
-    public <S extends TQRootBean> T findOneUseCache(TQRootBean<T, S> bean) {
+    public <S extends QueryBean> T findOneUseCache(QueryBean<T, S> bean) {
         bean.setUseQueryCache(true);
         return bean.findOne();
     }
 
     @Override
-    public <S extends TQRootBean> List<T> findAll(TQRootBean<T, S> bean) {
+    public <S extends QueryBean> List<T> findAll(QueryBean<T, S> bean) {
         return bean.findList();
     }
 
     @Override
-    public <S extends TQRootBean> List<T> findAllUseCache(TQRootBean<T, S> bean) {
+    public <S extends QueryBean> List<T> findAllUseCache(QueryBean<T, S> bean) {
         return bean.findList();
     }
 
     @Override
-    public <S extends TQRootBean> void delete(TQRootBean<T, S> bean) {
+    public <S extends QueryBean> void delete(QueryBean<T, S> bean) {
         bean.delete();
     }
 
     @Override
-    public <S extends TQRootBean> Page<T> page(TQRootBean<T, S> bean, Page page) {
+    public <S extends QueryBean> Page<T> page(QueryBean<T, S> bean, Page page) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         return new EPage<T>(bean.findPagedList());
     }
 
     @Override
-    public <S extends TQRootBean> Page<T> pageUseCache(TQRootBean<T, S> bean, Page page) {
+    public <S extends QueryBean> Page<T> pageUseCache(QueryBean<T, S> bean, Page page) {
         bean.setUseQueryCache(true);
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         return new EPage<T>(bean.findPagedList());
@@ -127,14 +127,14 @@ public abstract class AbsService<T extends Model> implements IService<T> {
 
 
     @Override
-    public <S extends TQRootBean, R> Page<R> page(TQRootBean<T, S> bean, Page page,
+    public <S extends QueryBean, R> Page<R> page(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         return new EPage<R>(bean.findPagedList(), mapper);
     }
 
     @Override
-    public <S extends TQRootBean, R> Page<R> pageUseCache(TQRootBean<T, S> bean, Page page,
+    public <S extends QueryBean, R> Page<R> pageUseCache(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper) {
         bean.setUseQueryCache(true);
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
@@ -142,7 +142,7 @@ public abstract class AbsService<T extends Model> implements IService<T> {
     }
 
     @Override
-    public <S extends TQRootBean, R> Page<R> page(TQRootBean<T, S> bean, Page page, Consumer<Collection<T>> function,
+    public <S extends QueryBean, R> Page<R> page(QueryBean<T, S> bean, Page page, Consumer<Collection<T>> function,
         Function<? super T, ? extends R> mapper) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         PagedList<T> list = bean.findPagedList();
@@ -154,23 +154,23 @@ public abstract class AbsService<T extends Model> implements IService<T> {
 
 
     @Override
-    public <S extends TQRootBean> int count(TQRootBean<T, S> bean) {
+    public <S extends QueryBean> int count(QueryBean<T, S> bean) {
         return bean.findCount();
     }
 
     @Override
-    public <S extends TQRootBean> int countUseCache(TQRootBean<T, S> bean) {
+    public <S extends QueryBean> int countUseCache(QueryBean<T, S> bean) {
         return bean.findCount();
     }
 
 
     @Override
-    public <S> boolean exists(TQRootBean<T, S> bean) {
+    public <S> boolean exists(QueryBean<T, S> bean) {
         return bean.exists();
     }
 
     @Override
-    public <S extends TQRootBean, R> Page<R> page(TQRootBean<T, S> bean, Page page, Consumer<Collection<T>> function,
+    public <S extends QueryBean, R> Page<R> page(QueryBean<T, S> bean, Page page, Consumer<Collection<T>> function,
         Function<? super T, ? extends R> mapper, Consumer<Collection<R>> function2) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         PagedList<T> list = bean.findPagedList();
@@ -185,7 +185,7 @@ public abstract class AbsService<T extends Model> implements IService<T> {
     }
 
     @Override
-    public <S extends TQRootBean, R> Page<R> page(TQRootBean<T, S> bean, Page page,
+    public <S extends QueryBean, R> Page<R> page(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper, Runner<T, R> function2) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         PagedList<T> list = bean.findPagedList();
