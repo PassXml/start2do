@@ -26,7 +26,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
-@Import(EbeanClickHouseConfig.class)
+@Import(ClickHouseConfig.class)
 @ConditionalOnProperty(prefix = "start2do.click-house", name = "enable", havingValue = "true")
 @RequiredArgsConstructor
 public class EbeanClickHouseAutoConfig {
@@ -40,6 +40,7 @@ public class EbeanClickHouseAutoConfig {
         DatabaseConfig databaseConfig = new DatabaseConfig();
         databaseConfig.setName(ClickHouseEbeanDatabase);
         databaseConfig.setDataSource(dataSource);
+        databaseConfig.setDefaultServer(false);
         databaseConfig.setExternalTransactionManager(new SpringJdbcTransactionManager());
         databaseConfig.setDatabasePlatform(new ClickHousePlatform());
         databaseConfig.setCurrentUserProvider(currentUserProvider);
@@ -47,21 +48,16 @@ public class EbeanClickHouseAutoConfig {
     }
 
     @Bean("ClickHouseDatabase")
-    public DataSource cLickHouseDataSource(EbeanClickHouseConfig config) throws SQLException {
-//        return DataSourceBuilder.create().url(config.getUrl()).username(config.getUsername())
-//            .password(config.getPassword()).driverClassName(config.getDriveClass()).build();
+    public DataSource cLickHouseDataSource(ClickHouseConfig config) throws SQLException {
         Properties properties = new Properties();
         properties.setProperty(ClickHouseDefaults.USER.getKey(), config.getUsername());
         properties.setProperty(ClickHouseDefaults.PASSWORD.getKey(), config.getPassword());
-        // properties.setProperty("ssl", "true");
-// properties.setProperty("sslmode", "NONE"); // NONE to trust all servers; STRICT for trusted only
-        ClickHouseDataSource dataSource = new ClickHouseDataSource(config.getUrl(), properties);
-        return dataSource;
+        return new ClickHouseDataSource(config.getUrl(), properties);
     }
 
     @Bean("ClickHouseSessionFactory")
     public SqlSessionFactory clickHouseSessionFactory(@Qualifier("ClickHouseDatabase") DataSource dataSource,
-        EbeanClickHouseConfig config) throws Exception {
+        ClickHouseConfig config) throws Exception {
         SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
         bean.setDataSource(dataSource);
         // mapper的xml形式文件位置必须要配置，不然将报错：no statement （这种错误也可能是mapper的xml中，namespace与项目的路径不一致导致）

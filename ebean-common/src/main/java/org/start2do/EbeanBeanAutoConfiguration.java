@@ -1,6 +1,5 @@
 package org.start2do;
 
-import io.ebean.Database;
 import io.ebean.DatabaseFactory;
 import io.ebean.config.CurrentUserProvider;
 import io.ebean.config.DatabaseConfig;
@@ -62,7 +61,7 @@ public class EbeanBeanAutoConfiguration {
     }
 
     @Bean(name = "Database")
-    @ConditionalOnMissingBean(Database.class)
+//    @ConditionalOnMissingBean(Database.class)
     @ConditionalOnBean(value = {DatabaseConfig.class})
     public io.ebean.Database database(DatabaseConfig config) {
         return DatabaseFactory.create(config);

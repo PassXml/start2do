@@ -9,7 +9,7 @@ version '2.0.8-SNAPSHOT'
 dependencies {
     api(project(':spring-common'))
     api(project(':bean-valiate'))
-    api project(path: ':ebean-clickhouse', configuration: 'default')
+    api project(path: ':clickhouse-dataSource', configuration: 'default')
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'

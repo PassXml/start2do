@@ -11,7 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Accessors(chain = true)
 @NoArgsConstructor
 @ConfigurationProperties(prefix = "start2do.click-house")
-public class EbeanClickHouseConfig {
+public class ClickHouseConfig {
 
     private Boolean enable;
     private String name;
