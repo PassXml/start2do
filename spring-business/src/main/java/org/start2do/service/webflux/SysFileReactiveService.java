@@ -1,11 +1,9 @@
 package org.start2do.service.webflux;
 
-import com.qiniu.storage.model.DefaultPutRet;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,7 +21,6 @@ import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import org.start2do.BusinessConfig;
 import org.start2do.BusinessConfig.FileSetting;
 import org.start2do.ebean.service.AbsReactiveService;
@@ -35,7 +32,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
 @Service
 @RequiredArgsConstructor
@@ -71,46 +67,31 @@ public class SysFileReactiveService extends AbsReactiveService<SysFile, Integer>
         return fileName.substring(fileName.lastIndexOf(".") + 1);
     }
 
-    public Mono<SysFile> uploadFile(String fileName, ByteArrayInputStream inputStream) {
-        String md5 = Md5Util.md5(inputStream);
-        return findOne(new QSysFile().fileMd5.eq(md5)).switchIfEmpty(Mono.fromCallable(() -> {
+    public Mono<SysFile> uploadFile(String md5, String fileName, ByteArrayInputStream inputStream) {
+        String finalMd5;
+        if (md5 == null) {
+            finalMd5 = Md5Util.md5(inputStream);
+        } else {
+            finalMd5 = md5;
+        }
+        return findOne(new QSysFile().fileMd5.eq(finalMd5)).switchIfEmpty(Mono.fromCallable(() -> {
             String uploadDir = businessConfig.getFileSetting().getUploadDir();
             String subfix = getSubFix(fileName);
             Path path = Paths.get(
                 uploadDir + File.separator + DateUtil.LocalDateToString(LocalDate.now(), "yyyyMMdd") + File.separator
-                    + md5 + "." + subfix);
+                    + finalMd5 + "." + subfix);
             Files.createDirectories(path.getParent());
             byte[] bytes = inputStream.readAllBytes();
             Files.write(path, bytes);
             String relativeFilePath = getRelativeFilePath(path);
-            return new SysFile(fileName, relativeFilePath, relativeFilePath, md5,
+            return new SysFile(fileName, relativeFilePath, relativeFilePath, finalMd5,
                 businessConfig.getFileSetting().getHost(), (long) bytes.length, subfix);
         }).zipWhen(super::save).map(Tuple2::getT1));
     }
 
-    public String getRelativeFilePath(Path path) {
+    private String getRelativeFilePath(Path path) {
         String string = uploadPath.relativize(path).toString();
         return string.replaceAll("\\\\", "/");
-    }
-
-    public Mono<SysFile> uploadFile(MultipartFile file) throws IOException {
-        InputStream inputStream = file.getInputStream();
-        String md5 = Md5Util.md5(inputStream);
-        return Mono.just(file).filter(multipartFile -> multipartFile.getSize() > 1)
-            .switchIfEmpty(Mono.error(new RuntimeException("不加上传大小为空的文件")))
-            .flatMap(objects -> findOne(new QSysFile().fileMd5.eq(md5))).switchIfEmpty(Mono.fromCallable(() -> {
-                String filename = file.getOriginalFilename();
-                String uploadDir = businessConfig.getFileSetting().getUploadDir();
-                String subfix = filename.substring(filename.lastIndexOf(".") + 1);
-                Path path = Paths.get(
-                    uploadDir + File.separator + DateUtil.LocalDateToString(LocalDate.now(), "yyyyMMdd")
-                        + File.separator + md5 + "." + subfix);
-                Files.createDirectories(path.getParent());
-                file.transferTo(path);
-                String relativeFilePath = getRelativeFilePath(path);
-                return new SysFile(filename, relativeFilePath, relativeFilePath, md5,
-                    businessConfig.getFileSetting().getHost(), file.getSize(), subfix);
-            }).zipWhen(super::save).map(Tuple2::getT1));
     }
 
     public static <R> Mono<DataBuffer> fileToBytes(FilePart part) {
@@ -150,9 +131,7 @@ public class SysFileReactiveService extends AbsReactiveService<SysFile, Integer>
         switch (businessConfig.getFileSetting().getType()) {
             case local -> {
                 for (FilePart part : file) {
-                    Mono<SysFile> mono = fileToBytes(part).map(DataBuffer::asByteBuffer).map(ByteBuffer::array)
-                        .flatMap(bytes -> uploadFile(part.filename(), new ByteArrayInputStream(bytes)));
-                    result.add(mono);
+                    result.add(uploadByLocal(part));
                 }
             }
             case qn -> {
@@ -172,23 +151,25 @@ public class SysFileReactiveService extends AbsReactiveService<SysFile, Integer>
     }
 
     private Mono<SysFile> uploadByQn(FilePart part) {
-        return fileToBytes(part).map(DataBuffer::asByteBuffer).map(ByteBuffer::array).zipWhen(
-                bytes -> Mono.fromCallable(
-                    () -> Tuples.of(Md5Util.md5(bytes), bytes.length, getSubFix(part.filename()))))
-            .map(objects -> {
+        return Mono.from(fileToBytes(part).map(DataBuffer::asByteBuffer).map(ByteBuffer::array)).flatMap(bytes -> {
+            String md5 = Md5Util.md5(bytes);
+            long size = bytes.length;
+            String subFix = getSubFix(part.filename());
+            return super.findOne(new QSysFile().fileMd5.eq(md5)).switchIfEmpty(Mono.fromCallable(() -> {
                 String dateStr = DateUtil.LocalDateStr("yyyy/MM/dd");
-                byte[] bytes = objects.getT1();
-                return Tuples.of(qiNiuService.upload(bytes,
-                        String.format("%s/%s.%s", dateStr, objects.getT2().getT1(), objects.getT2().getT3())),
-                    objects.getT2());
-            }).flatMap(objects -> {
-                String Md5 = objects.getT2().getT1();
-                long size = objects.getT2().getT2();
-                String subFix = objects.getT2().getT3();
-                DefaultPutRet resp = objects.getT1();
-                return save(new SysFile(part.filename(), resp.key, resp.key, Md5,
-                    businessConfig.getFileSetting().getHost(), size, subFix));
-            });
+                return qiNiuService.upload(bytes, String.format("%s/%s.%s", dateStr, md5, subFix));
+            }).flatMap(resp -> save(
+                new SysFile(part.filename(), resp.key, resp.key, md5, businessConfig.getFileSetting().getHost(), size,
+                    subFix))));
+        });
+    }
+
+    private Mono<SysFile> uploadByLocal(FilePart part) {
+        return Mono.from(fileToBytes(part).map(DataBuffer::asByteBuffer).map(ByteBuffer::array)).flatMap(bytes -> {
+            String md5 = Md5Util.md5(bytes);
+            return super.findOne(new QSysFile().fileMd5.eq(md5))
+                .switchIfEmpty(uploadFile(md5, part.filename(), new ByteArrayInputStream(bytes)));
+        });
     }
 
 
