@@ -30,6 +30,7 @@ dependencies {
     compileOnly group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.13.4'
     api 'com.alibaba:easyexcel:3.2.0'
     compileOnly group: 'io.projectreactor', name: 'reactor-core'
+    compileOnly 'com.qiniu:qiniu-java-sdk:7.15.1'
 
 }
 

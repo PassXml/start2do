@@ -46,7 +46,7 @@ public class BusinessConfig {
 
     }
 
-    private FileSetting fileSetting;
+    private FileSetting fileSetting=new FileSetting();
 
     @Setter
     @Getter
@@ -66,7 +66,8 @@ public class BusinessConfig {
         }
     }
 
+
     public enum FileSettingType {
-        local
+        local,qn
     }
 }

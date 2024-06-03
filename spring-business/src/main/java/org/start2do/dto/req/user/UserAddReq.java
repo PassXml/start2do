@@ -1,5 +1,6 @@
 package org.start2do.dto.req.user;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -44,6 +45,7 @@ public class UserAddReq {
      */
 
     private String password;
+    private LocalDateTime pwExpirationTime;
     @NotNull
     private Integer deptId;
     @NotEmpty

@@ -4,9 +4,7 @@ import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -93,27 +91,6 @@ public class JwtRequestWebFluxFilter implements WebFilter {
         return chain.filter(exchange);
     }
 
-    @Bean
-    @ConditionalOnMissingBean(CustomContextInfo.class)
-    public CustomContextInfo customContextInfo() {
-        return new CustomContextInfo() {
-
-            @Override
-            public <R> Mono<R> loadUserBefore(Mono<R> mono) {
-                return mono;
-            }
-
-            @Override
-            public Context injectContext(Context context, String jwtStr, Integer tenantId, Object otherInfo) {
-                return context;
-            }
-
-            @Override
-            public Mono<Object> injectOtherInfo(String jwtStr) {
-                return Mono.just("");
-            }
-        };
-    }
 
     public interface CustomContextInfo {
 

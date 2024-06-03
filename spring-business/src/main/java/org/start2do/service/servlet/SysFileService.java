@@ -16,6 +16,7 @@ import org.start2do.BusinessConfig.FileSetting;
 import org.start2do.ebean.service.AbsService;
 import org.start2do.entity.business.SysFile;
 import org.start2do.entity.business.query.QSysFile;
+import org.start2do.service.webflux.QiNiuService;
 import org.start2do.util.DateUtil;
 import org.start2do.util.Md5Util;
 
@@ -23,10 +24,12 @@ import org.start2do.util.Md5Util;
 public class SysFileService extends AbsService<SysFile> {
 
     private final BusinessConfig businessConfig;
+    private final QiNiuService qiNiuService;
     private Path uploadPath;
 
-    public SysFileService(BusinessConfig config) {
+    public SysFileService(BusinessConfig config, QiNiuService qiNiuService) {
         this.businessConfig = config;
+        this.qiNiuService = qiNiuService;
         if (config.getFileSetting() == null) {
             config.setFileSetting(new FileSetting());
         }
@@ -97,17 +100,6 @@ public class SysFileService extends AbsService<SysFile> {
         SysFile entity = new SysFile(filename, relativeFilePath, relativeFilePath, md5,
             businessConfig.getFileSetting().getHost(), size, subfix);
         super.save(entity);
-//        Path path = Paths.get(
-//            uploadDir + File.separator + DateUtil.LocalDateToString(LocalDate.now(), "yyyyMMdd") + File.separator + md5
-//                + "." + subfix);
-//        Files.createDirectories(path.getParent());
-//        file.transferTo(path);
-//        String relativeFilePath = path.toAbsolutePath().toString().substring(uploadDir.length());
-//        relativeFilePath = relativeFilePath.replaceAll("\\\\", "/");
-//        SysFile entity = new SysFile(filename, relativeFilePath, relativeFilePath, md5,
-//            businessConfig.getFileSetting().getHost(), size, subfix);
-//
-//        super.save(entity);
         return entity;
     }
 }

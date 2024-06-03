@@ -3,6 +3,7 @@ package org.start2do.entity.security;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.annotation.Cache;
+import io.ebean.annotation.DbComment;
 import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.Identity;
 import io.ebean.annotation.IdentityType;
@@ -16,6 +17,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -54,6 +56,10 @@ public class SysUser extends BaseModel2 implements Serializable {
     private String phone;
     @Column(name = "dept_id")
     private Integer deptId;
+
+    @DbComment("密码过期时间")
+    @Column(name = "pw_expiration_time")
+    private LocalDateTime pwExpirationTime;
     @JoinColumn(name = "dept_id", insertable = false, updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
@@ -76,6 +82,7 @@ public class SysUser extends BaseModel2 implements Serializable {
     private List<SysMenu> menus;
 
     public SysUser(String username, String realName, String password, String email, String phone, Integer deptId,
+        LocalDateTime pwExpirationTime,
         List<SysRole> roles, List<SysMenu> menus) {
         this.username = username;
         this.realName = realName;
@@ -85,6 +92,9 @@ public class SysUser extends BaseModel2 implements Serializable {
         this.deptId = deptId;
         this.roles = roles;
         this.menus = menus;
+        if (pwExpirationTime == null) {
+            this.pwExpirationTime = LocalDateTime.now().plusYears(2);
+        }
     }
 
     public enum Status implements IDictItem {

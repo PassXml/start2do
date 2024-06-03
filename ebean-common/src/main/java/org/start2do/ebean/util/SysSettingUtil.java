@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -13,8 +14,9 @@ import org.start2do.ebean.entity.query.QSysSetting;
 import org.start2do.ebean.service.SysSettingService;
 import org.start2do.util.StringUtils;
 
-@RequiredArgsConstructor
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class SysSettingUtil implements CommandLineRunner {
 
     private final SysSettingService sysSettingService;
@@ -43,16 +45,20 @@ public class SysSettingUtil implements CommandLineRunner {
 
     @Scheduled(cron = "0 0/10 0 * * ?")
     public void sync() {
-        for (SysSetting dto : sysSettingService.findAll(new QSysSetting().enable.eq(EnableType.Enable))) {
-            if (dto.getType() == null) {
-                continue;
+        try {
+            for (SysSetting dto : sysSettingService.findAll(new QSysSetting().enable.eq(EnableType.Enable))) {
+                if (dto.getType() == null) {
+                    continue;
+                }
+                ConcurrentHashMap<String, String> map = SysSettingUtil.sysSettingUtil.hashMap.get(dto.getType());
+                if (map == null) {
+                    map = new ConcurrentHashMap<>();
+                }
+                map.put(dto.getKey(), dto.getValue());
+                SysSettingUtil.sysSettingUtil.hashMap.put(dto.getType(), map);
             }
-            ConcurrentHashMap<String, String> map = SysSettingUtil.sysSettingUtil.hashMap.get(dto.getType());
-            if (map == null) {
-                map = new ConcurrentHashMap<>();
-            }
-            map.put(dto.getKey(), dto.getValue());
-            SysSettingUtil.sysSettingUtil.hashMap.put(dto.getType(), map);
+        } catch (Exception e) {
+            log.error("读取系统设置表失败：{}", e.getMessage());
         }
     }
 

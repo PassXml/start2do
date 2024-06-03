@@ -108,6 +108,18 @@ public class DateUtil {
         return LocalDateTimeToString(LocalDateTime.now(), Pattern.YYYY_MM_ddHHmmss);
     }
 
+    public static String LocalDateTimeStr(String pattern) {
+        return LocalDateTimeToString(LocalDateTime.now(), pattern);
+    }
+
+    public static String LocalDateStr() {
+        return LocalDateToString(LocalDate.now(), Pattern.YYYY_MM_dd);
+    }
+
+    public static String LocalDateStr(String pattern) {
+        return LocalDateToString(LocalDate.now(), pattern);
+    }
+
     public static LocalTime toLocalTime(String string, String hHmmss) {
         return LocalTime.parse(string, getPattern(hHmmss));
     }
