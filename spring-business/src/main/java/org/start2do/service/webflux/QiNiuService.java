@@ -32,7 +32,7 @@ public class QiNiuService implements CommandLineRunner {
     private BucketManager bucketManager;
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         auth = Auth.create(config.getAccessKey(), config.getSecretKey());
         Configuration cfg = new Configuration(Region.autoRegion());
         cfg.resumableUploadAPIVersion = Configuration.ResumableUploadAPIVersion.V2;

@@ -13,9 +13,18 @@ public class JsonUtil implements CommandLineRunner {
 
     public static ObjectMapper objectMapper;
 
-    public static byte[] toJsonStr(Object object) {
+    public static byte[] toJsonByte(Object object) {
         try {
             return objectMapper.writeValueAsBytes(object);
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String toJsonStr(Object object) {
+        try {
+            return objectMapper.writeValueAsString(object);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);

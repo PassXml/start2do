@@ -93,7 +93,7 @@ public class SysFileController {
     @PostMapping("upload")
     @ResponseBody
     public Mono<R<SysFileUploadResp>> upload(FilePart file) throws IOException {
-        return sysFileService.uploadFile(file).flatMapIterable(Function.identity())
+        return sysFileService.uploadFile(true, file).flatMapIterable(Function.identity())
             .map(entity -> new SysFileUploadResp(entity.getId(), entity.getRelativeFilePath())).collectList()
             .map(reps -> reps.stream().findFirst().get()).map(R::ok);
     }

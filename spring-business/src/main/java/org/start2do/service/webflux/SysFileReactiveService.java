@@ -126,7 +126,7 @@ public class SysFileReactiveService extends AbsReactiveService<SysFile, Integer>
         });
     }
 
-    public Mono<List<SysFile>> uploadFile(FilePart... file) {
+    public Mono<List<SysFile>> uploadFile(Boolean checkExist, FilePart... file) {
         List<Mono<SysFile>> result = new ArrayList<>();
         switch (businessConfig.getFileSetting().getType()) {
             case local -> {
@@ -136,7 +136,7 @@ public class SysFileReactiveService extends AbsReactiveService<SysFile, Integer>
             }
             case qn -> {
                 for (FilePart part : file) {
-                    result.add(uploadByQn(part));
+                    result.add(uploadByQn(part, checkExist));
                 }
             }
         }
@@ -150,17 +150,19 @@ public class SysFileReactiveService extends AbsReactiveService<SysFile, Integer>
         });
     }
 
-    private Mono<SysFile> uploadByQn(FilePart part) {
+    private Mono<SysFile> uploadByQn(FilePart part, boolean checkExist) {
         return Mono.from(fileToBytes(part).map(DataBuffer::asByteBuffer).map(ByteBuffer::array)).flatMap(bytes -> {
             String md5 = Md5Util.md5(bytes);
             long size = bytes.length;
             String subFix = getSubFix(part.filename());
-            return super.findOne(new QSysFile().fileMd5.eq(md5)).switchIfEmpty(Mono.fromCallable(() -> {
-                String dateStr = DateUtil.LocalDateStr("yyyy/MM/dd");
-                return qiNiuService.upload(bytes, String.format("%s/%s.%s", dateStr, md5, subFix));
-            }).flatMap(resp -> save(
-                new SysFile(part.filename(), resp.key, resp.key, md5, businessConfig.getFileSetting().getHost(), size,
-                    subFix))));
+            return Mono.just(checkExist).filter(aBoolean -> aBoolean)
+                .flatMap(aBoolean -> super.findOne(new QSysFile().fileMd5.eq(md5)))
+                .switchIfEmpty(Mono.fromCallable(() -> {
+                    String dateStr = DateUtil.LocalDateStr("yyyy/MM/dd");
+                    return qiNiuService.upload(bytes, String.format("%s/%s.%s", dateStr, md5, subFix));
+                }).flatMap(resp -> save(
+                    new SysFile(part.filename(), resp.key, resp.key, md5, businessConfig.getFileSetting().getHost(),
+                        size, subFix))));
         });
     }
 
