@@ -5,9 +5,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.json.Json;
 import io.vertx.core.spi.logging.LogDelegate;
-import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.client.impl.HttpContext;
@@ -64,7 +64,7 @@ public abstract class AbsWebClient implements Handler<HttpContext<?>> {
                 ctx.set(requestStr, value);
                 break;
             case DISPATCH_RESPONSE:
-                HttpResponse<?> response = ctx.response();
+                HttpClientResponse response = ctx.clientResponse();
                 String string = (String) ctx.get(requestStr);
                 log.info("{} ResponseHeader:{} ,ResponseStatus:{} ,ResponseBody:{}", string,
                     headerToString(response.headers()), response.statusCode(), response.body());

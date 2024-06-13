@@ -1,5 +1,9 @@
 package org.start2do.util;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,4 +79,23 @@ public final class StringUtils {
         return sb.toString();
     }
 
+    public static Map<String, String> getQueryMap(String url) {
+        Map<String, String> map = new HashMap<>();
+        try {
+            String[] parts = url.split("\\?");
+            if (parts.length > 1) {
+                String query = parts[1];
+                String[] pairs = query.split("&");
+                for (String pair : pairs) {
+                    String[] keyValue = pair.split("=");
+                    String key = URLDecoder.decode(keyValue[0], "UTF-8");
+                    String value = URLDecoder.decode(keyValue[1], "UTF-8");
+                    map.put(key, value);
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return map;
+    }
 }

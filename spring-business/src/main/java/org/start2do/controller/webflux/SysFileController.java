@@ -58,7 +58,7 @@ public class SysFileController {
      * 下载
      */
     @GetMapping("download")
-    public Mono<Void> download(ServerHttpResponse response, @RequestParam String fileId) {
+    public Mono<Boolean> download(ServerHttpResponse response, @RequestParam String fileId) {
         return sysFileService.download(response, fileId);
 
     }

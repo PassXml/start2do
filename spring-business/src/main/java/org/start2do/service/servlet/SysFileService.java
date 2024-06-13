@@ -9,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.start2do.BusinessConfig;
@@ -16,20 +18,18 @@ import org.start2do.BusinessConfig.FileSetting;
 import org.start2do.ebean.service.AbsService;
 import org.start2do.entity.business.SysFile;
 import org.start2do.entity.business.query.QSysFile;
-import org.start2do.service.webflux.QiNiuService;
 import org.start2do.util.DateUtil;
 import org.start2do.util.Md5Util;
 
 @Service
+@ConditionalOnWebApplication(type = Type.SERVLET)
 public class SysFileService extends AbsService<SysFile> {
 
     private final BusinessConfig businessConfig;
-    private final QiNiuService qiNiuService;
     private Path uploadPath;
 
-    public SysFileService(BusinessConfig config, QiNiuService qiNiuService) {
+    public SysFileService(BusinessConfig config) {
         this.businessConfig = config;
-        this.qiNiuService = qiNiuService;
         if (config.getFileSetting() == null) {
             config.setFileSetting(new FileSetting());
         }
