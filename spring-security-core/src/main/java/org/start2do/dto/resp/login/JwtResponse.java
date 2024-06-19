@@ -1,6 +1,7 @@
 package org.start2do.dto.resp.login;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,12 +36,14 @@ public class JwtResponse {
      * jwt Token
      */
     private String jwt;
+    private Map<String, Object> extInfo;
 
     public JwtResponse(UserCredentials userCredentials, String jwt) {
         this.id = userCredentials.getId();
         this.username = userCredentials.getUsername();
         this.realName= userCredentials.getRealName();
         this.jwt = jwt;
+        this.extInfo = userCredentials.getUserExtInfo();
         this.roles = userCredentials.getRoles();
         Optional<SysDept> optional = Optional.ofNullable(userCredentials.getDept());
         this.deptId = optional.map(SysDept::getId).orElse(null);

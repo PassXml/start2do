@@ -5,5 +5,5 @@ import reactor.core.publisher.Mono;
 
 public interface ISysLoginUserCustomInfoReactiveService {
 
-    Mono<Map<String, Object>> getCustomInfo(Integer userId);
+    Mono<Map<String, Object>> getUserExtInfo(Integer userId);
 }

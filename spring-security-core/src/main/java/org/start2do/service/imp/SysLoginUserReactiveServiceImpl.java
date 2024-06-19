@@ -54,10 +54,10 @@ public class SysLoginUserReactiveServiceImpl extends AbsReactiveService<SysUser,
                                 .toList());
                             credentials.setDept(user.getDept());
                             sink.next(credentials);
-                    })).zipWhen(userCredentials -> sysLoginUserCustomInfoService.getCustomInfo(userCredentials.getId()))
+                    })).zipWhen(userCredentials -> sysLoginUserCustomInfoService.getUserExtInfo(userCredentials.getId()))
             .map(objects -> {
                 UserCredentials credentials = objects.getT1();
-                credentials.setCustomInfo(objects.getT2());
+                credentials.setUserExtInfo(objects.getT2());
                 return credentials;
             });
 

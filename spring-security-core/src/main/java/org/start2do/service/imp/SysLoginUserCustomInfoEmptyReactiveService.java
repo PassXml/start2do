@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 public class SysLoginUserCustomInfoEmptyReactiveService implements ISysLoginUserCustomInfoReactiveService {
 
     @Override
-    public Mono<Map<String, Object>> getCustomInfo(Integer userId) {
+    public Mono<Map<String, Object>> getUserExtInfo(Integer userId) {
         return Mono.just(Map.of());
     }
 }

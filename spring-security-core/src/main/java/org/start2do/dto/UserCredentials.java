@@ -22,7 +22,10 @@ public class UserCredentials extends User {
     private List<SysMenu> menus;
     private SysDept dept;
     private String realName;
-    private Map<String, Object> customInfo;
+    /**
+     * 用户额外信息
+     */
+    private Map<String, Object> userExtInfo;
 
     public UserCredentials(Integer id, String username, String password, String realName,
         Collection<? extends GrantedAuthority> authorities) {

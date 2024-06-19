@@ -80,7 +80,7 @@ public class JwtTokenUtil implements Serializable {
         map.put(USERNAME, userCredentials.getUsername());
         map.put(MENUS, userCredentials.getMenus());
         map.put(ROLES, userCredentials.getRoles());
-        Map<String, Object> customInfo = userCredentials.getCustomInfo();
+        Map<String, Object> customInfo = userCredentials.getUserExtInfo();
         if (customInfo != null) {
             for (Entry<String, Object> entry : customInfo.entrySet()) {
                 map.put(entry.getKey(), entry.getValue());
