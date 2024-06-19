@@ -15,6 +15,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -92,9 +94,6 @@ public class SysUser extends BaseModel2 implements Serializable {
         this.deptId = deptId;
         this.roles = roles;
         this.menus = menus;
-        if (pwExpirationTime == null) {
-            this.pwExpirationTime = LocalDateTime.now().plusYears(2);
-        }
     }
 
     public enum Status implements IDictItem {
@@ -112,6 +111,14 @@ public class SysUser extends BaseModel2 implements Serializable {
                 }
             }
             throw new BusinessException(String.format("%s未知字典值:%s", "Status", s));
+        }
+    }
+
+    @PrePersist
+    @PreUpdate
+    public void initPwExpirationTime() {
+        if (pwExpirationTime == null) {
+            this.pwExpirationTime = LocalDateTime.now().plusYears(2);
         }
     }
 }

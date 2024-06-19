@@ -27,6 +27,7 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.start2do.config.KaptchaConfig;
+import org.start2do.dto.req.login.JwtRequest;
 import org.start2do.filter.JwtRequestWebFluxFilter.CustomContextInfo;
 import org.start2do.service.imp.SysLoginUserCustomInfoEmptyReactiveService;
 import org.start2do.service.reactive.ISysLoginUserCustomInfoReactiveService;
@@ -112,6 +113,11 @@ public class SecurityAutoConfiguration {
     @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
     public CustomContextInfo customContextInfo() {
         return new CustomContextInfo() {
+
+            @Override
+            public void loadReqBefore(JwtRequest request) {
+
+            }
 
             @Override
             public <R> Mono<R> loadUserBefore(Mono<R> mono) {

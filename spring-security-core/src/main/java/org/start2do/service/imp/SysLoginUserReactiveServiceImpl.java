@@ -17,7 +17,6 @@ import org.start2do.dto.UserRole;
 import org.start2do.ebean.dto.EnableType;
 import org.start2do.ebean.service.AbsReactiveService;
 import org.start2do.ebean.service.IReactiveService;
-import org.start2do.ebean.util.ReactiveUtil;
 import org.start2do.entity.security.SysRole;
 import org.start2do.entity.security.SysUser;
 import org.start2do.entity.security.SysUser.Status;
@@ -38,16 +37,14 @@ public class SysLoginUserReactiveServiceImpl extends AbsReactiveService<SysUser,
 
     @Override
     public Mono<UserDetails> findByUsername(String username) {
-        return Mono.just(new QSysUser().setUseCache(true).username.eq(username).menus.roles.filterMany(
-                new QSysRole().menus.status.eq(EnableType.Enable).getExpressionList())).flatMap(this::findOne)
+        return findOne(new QSysUser().setUseCache(true).username.eq(username).menus.roles.filterMany(
+            new QSysRole().menus.status.eq(EnableType.Enable).getExpressionList()))
             .switchIfEmpty(Mono.error(new UsernameNotFoundException("用户名不存在")))
             .filter(sysUser -> sysUser.getStatus() != Status.Lock)
             .switchIfEmpty(Mono.error(new BusinessException("账户被锁定,不能使用"))).flatMap(
                 user -> Mono.deferContextual(
                         contextView -> Mono.just(contextView.getOrEmpty(IReactiveService.TokenKey)))
                     .<UserCredentials>handle((o, sink) -> {
-                        o.ifPresent(ReactiveUtil.TokenTreadLocal::set);
-                        try {
                             List<SysRole> roles = user.getRoles();
                             Set<GrantedAuthority> authorities = new HashSet<>();
                             UserCredentials credentials = new UserCredentials(user.getId(), user.getUsername(),
@@ -57,17 +54,7 @@ public class SysLoginUserReactiveServiceImpl extends AbsReactiveService<SysUser,
                                 .toList());
                             credentials.setDept(user.getDept());
                             sink.next(credentials);
-                        } catch (Exception e) {
-                            logger.debug(e.getMessage(), e);
-                            sink.error(e);
-                        } finally {
-                            ReactiveUtil.TokenTreadLocal.remove();
-                        }
-                    })).flatMap(userCredentials -> Mono.deferContextual(
-                contextView -> Mono.just(contextView.getOrEmpty(IReactiveService.TokenKey))).map(o -> {
-                o.ifPresent(ReactiveUtil.TokenTreadLocal::set);
-                return userCredentials;
-            })).zipWhen(userCredentials -> sysLoginUserCustomInfoService.getCustomInfo(userCredentials.getId()))
+                    })).zipWhen(userCredentials -> sysLoginUserCustomInfoService.getCustomInfo(userCredentials.getId()))
             .map(objects -> {
                 UserCredentials credentials = objects.getT1();
                 credentials.setCustomInfo(objects.getT2());
