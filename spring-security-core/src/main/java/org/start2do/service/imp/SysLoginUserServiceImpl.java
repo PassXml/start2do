@@ -59,7 +59,7 @@ public class SysLoginUserServiceImpl extends AbsService<SysUser> implements SysL
         Set<GrantedAuthority> authorities = new HashSet<GrantedAuthority>();
         UserCredentials credentials = new UserCredentials(user.getId(), user.getUsername(), user.getPassword(),
             user.getRealName(), authorities);
-        credentials.setCustomInfo(sysLoginUserCustomInfoService.getCustomInfo(user.getId()));
+        credentials.setUserExtInfo(sysLoginUserCustomInfoService.getCustomInfo(user.getId()));
         credentials.setRoles(
             roles.stream().map(sysRole -> new UserRole(sysRole.getId(), sysRole.getName(), sysRole.getRoleCode()))
                 .collect(Collectors.toList()));
