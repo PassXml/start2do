@@ -16,6 +16,7 @@ public interface IFileOperationService {
     Mono remove(String fileId);
 
     Mono<SysFile> update(FilePart part, Boolean checkExist);
+    Mono<SysFile> update(byte[] bytes, String fileName, Boolean checkExist);
 
     Mono<Boolean> download(ServerHttpResponse response, String fileId);
 

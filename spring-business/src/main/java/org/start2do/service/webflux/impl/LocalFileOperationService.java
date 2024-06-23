@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -86,6 +87,21 @@ public class LocalFileOperationService implements IFileOperationService {
                     .flatMap(sysFileReactiveService::save);
             }
         });
+    }
+
+    @Override
+    public Mono<SysFile> update(byte[] bytes, String fileName, Boolean checkExist) {
+        return Mono.fromCallable(() -> {
+            String md5 = Md5Util.md5(bytes);
+            if (checkExist) {
+                return sysFileReactiveService.findOne(new QSysFile().fileMd5.eq(md5)).switchIfEmpty(
+                    Mono.just(uploadFile(md5, fileName, new ByteArrayInputStream(bytes)))
+                        .flatMap(sysFileReactiveService::save));
+            } else {
+                return Mono.just(uploadFile(md5, fileName, new ByteArrayInputStream(bytes)))
+                    .flatMap(sysFileReactiveService::save);
+            }
+        }).flatMap(Function.identity());
     }
 
     @Override

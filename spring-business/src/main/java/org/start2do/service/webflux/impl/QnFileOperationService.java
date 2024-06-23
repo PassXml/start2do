@@ -1,6 +1,7 @@
 package org.start2do.service.webflux.impl;
 
 import java.nio.ByteBuffer;
+import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -54,6 +55,23 @@ public class QnFileOperationService implements IFileOperationService {
                     new SysFile(part.filename(), defaultPutRet.key, defaultPutRet.key, md5,
                         businessConfig.getFileSetting().getHost(), size, subFix))));
         });
+    }
+
+    @Override
+    public Mono<SysFile> update(byte[] bytes, String fileName, Boolean checkExist) {
+        return Mono.fromCallable(() -> {
+            String md5 = Md5Util.md5(bytes);
+            long size = bytes.length;
+            String subFix = getSubFix(fileName);
+            return Mono.just(checkExist).filter(aBoolean -> aBoolean)
+                .flatMap(aBoolean -> fileReactiveService.findOne(new QSysFile().fileMd5.eq(md5)))
+                .switchIfEmpty(Mono.fromCallable(() -> {
+                    String dateStr = DateUtil.LocalDateStr("yyyy/MM/dd");
+                    return qiNiuService.upload(bytes, String.format("%s/%s.%s", dateStr, md5, subFix));
+                }).flatMap(defaultPutRet -> fileReactiveService.save(
+                    new SysFile(fileName, defaultPutRet.key, defaultPutRet.key, md5,
+                        businessConfig.getFileSetting().getHost(), size, subFix))));
+        }).flatMap(Function.identity());
     }
 
     @Override
