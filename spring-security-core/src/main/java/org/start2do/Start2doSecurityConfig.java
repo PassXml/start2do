@@ -18,7 +18,7 @@ public class Start2doSecurityConfig {
 
     private Boolean enable;
     private List<String> whiteList;
-
+    private long jwtTokenValidity = Long.valueOf(5 * 60 * 60);
     private Boolean checkExpired;
 
     private String secret;

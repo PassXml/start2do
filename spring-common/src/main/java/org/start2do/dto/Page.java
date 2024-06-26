@@ -10,6 +10,7 @@ import lombok.Data;
 @Data
 public class Page<T> implements Serializable {
 
+    public static int MAX_PAGE_SIZE=1000;
     /**
      * 总条数
      */
@@ -61,5 +62,9 @@ public class Page<T> implements Serializable {
 
     public void setPage(int current) {
         this.current = current;
+    }
+
+    public int getSize() {
+        return Math.min(MAX_PAGE_SIZE, size);
     }
 }

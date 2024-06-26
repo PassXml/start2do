@@ -94,6 +94,7 @@ public class SecurityAutoConfiguration {
             log.info("生成密钥:{}", secret);
         }
         JwtTokenUtil.SECRET = secret;
+        JwtTokenUtil.JWT_TOKEN_VALIDITY = start2doSecurityConfig.getJwtTokenValidity();
         JwtTokenUtil.MockUser = start2doSecurityConfig.getMockUser();
         JwtTokenUtil.MockUserId = start2doSecurityConfig.getMockUserId();
         JwtTokenUtil.MockUserName = start2doSecurityConfig.getMockUserName();
