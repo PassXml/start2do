@@ -83,4 +83,6 @@ public interface IReactiveService<T extends Model> {
 
     <S extends QueryBean, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper, Runner<T, R> function2);
+
+    <S extends QueryBean> Mono<Optional<T>> findOneOptional(QueryBean<T, S> bean);
 }

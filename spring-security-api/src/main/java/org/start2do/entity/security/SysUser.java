@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbComment;
 import io.ebean.annotation.DbDefault;
+import io.ebean.annotation.DbForeignKey;
 import io.ebean.annotation.Identity;
 import io.ebean.annotation.IdentityType;
 import jakarta.persistence.Column;
@@ -62,9 +63,10 @@ public class SysUser extends BaseModel2 implements Serializable {
     @DbComment("密码过期时间")
     @Column(name = "pw_expiration_time")
     private LocalDateTime pwExpirationTime;
+    @JsonIgnore
     @JoinColumn(name = "dept_id", insertable = false, updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
+    @DbForeignKey(noConstraint = true)
     private SysDept dept;
     @JoinTable(
         name = "sys_user_role",

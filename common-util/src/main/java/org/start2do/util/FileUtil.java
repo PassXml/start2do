@@ -4,12 +4,19 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @UtilityClass
 public class FileUtil {
 
@@ -38,4 +45,33 @@ public class FileUtil {
         }
     }
 
+    public void delete(String path) {
+        try {
+            Files.walkFileTree(Paths.get(path), new FileVisitor<>() {
+                @Override
+                public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes basicFileAttributes) {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFile(Path path, BasicFileAttributes basicFileAttributes) {
+                    path.toFile().delete();
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFileFailed(Path path, IOException e) throws IOException {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path path, IOException e) throws IOException {
+                    path.toFile().delete();
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
 }

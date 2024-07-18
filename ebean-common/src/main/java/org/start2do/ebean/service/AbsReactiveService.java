@@ -60,7 +60,10 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
         }).doOnError(throwable -> {
             logger.error(throwable.getMessage(), throwable);
             transaction.rollback(throwable);
-        }).doOnSuccess(tt -> transaction.commit()).doFinally(signalType -> transaction.close());
+        }).doFinally(signalType -> {
+            transaction.commit();
+            transaction.close();
+        });
     }
 
     public <TT> Flux<TT> transactionOf(Flux<TT> flux, Transaction transaction) {
@@ -299,6 +302,24 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
                 sink.error(exception);
             } finally {
 //                ReactiveUtil.TokenTreadLocal.remove();
+            }
+        });
+    }
+
+    @Override
+    public <S extends QueryBean> Mono<Optional<T>> findOneOptional(QueryBean<T, S> bean) {
+        return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
+            Mono.just(bean)).handle((objects, sink) -> {
+            try {
+                T one = objects.getT2().findOne();
+                if (one == null) {
+                    sink.next(Optional.empty());
+                    return;
+                }
+                sink.next(Optional.of(one));
+            } catch (Exception exception) {
+                sink.error(exception);
+                logger.error(exception.getMessage(), exception);
             }
         });
     }
