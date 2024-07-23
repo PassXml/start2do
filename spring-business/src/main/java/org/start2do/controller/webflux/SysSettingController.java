@@ -34,7 +34,6 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @RequestMapping("sys/setting")
 @ConditionalOnWebApplication(type = Type.REACTIVE)
-
 public class SysSettingController {
 
     private final SysSettingService settingService;
@@ -95,14 +94,5 @@ public class SysSettingController {
             () -> SettingDtoMapper.INSTANCE.toDetail(settingService.getById(req.getId()))).map(R::ok);
     }
 
-    /**
-     * 所有系统设置
-     */
-    @GetMapping("all")
-    public Mono<R<List<SettingMenuResp>>> all() {
-        return Mono.fromCallable(
-            () -> settingService.findAll(new QSysSetting().enable.eq(EnableType.Enable)).stream()
-                .map(SettingDtoMapper.INSTANCE::toSettingMenuResp).toList()).map(R::ok);
-    }
 
 }

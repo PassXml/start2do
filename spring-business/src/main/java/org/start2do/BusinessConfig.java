@@ -33,6 +33,7 @@ public class BusinessConfig {
         private boolean log = true;
         private boolean menu = true;
         private boolean file = true;
+        private boolean setting = true;
 
     }
 

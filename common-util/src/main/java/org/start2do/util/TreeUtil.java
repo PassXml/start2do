@@ -2,9 +2,11 @@ package org.start2do.util;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -74,15 +76,6 @@ public class TreeUtil {
         return null;
     }
 
-    public <T extends TreeNode<? extends TreeNode>> T findNode(List<T> node, String nodeId) {
-        for (T t : node) {
-            T node1 = findNode(t, nodeId);
-            if (node1 != null) {
-                return (T) node1;
-            }
-        }
-        return null;
-    }
 
     public static <T extends TreeNode<?>> List<T> findPath(TreeNode<T> root, String targetNodeId) {
         List<T> path = new ArrayList<>();
@@ -90,8 +83,7 @@ public class TreeUtil {
         return path;
     }
 
-    private static <T extends TreeNode<?>> boolean findPathRecursive(T node, String targetNodeId,
-        List<T> path) {
+    private static <T extends TreeNode<?>> boolean findPathRecursive(T node, String targetNodeId, List<T> path) {
         if (node == null) {
             return false;
         }
@@ -118,7 +110,6 @@ public class TreeUtil {
 
         String getParentId();
 
-
         void setChildren(List<T> children);
 
         List<T> getChildren();
@@ -130,7 +121,7 @@ public class TreeUtil {
 
     }
 
-    public static <T> List<String> getAllChildrenId(TreeNode<T> tTreeNode) {
+    public static <T> List<String> getAllChildrenId(TreeUtil.TreeNode<T> tTreeNode) {
         List<String> result = new ArrayList<>();
         for (T child : tTreeNode.getChildren()) {
             if (child instanceof TreeNode<?>) {
@@ -145,4 +136,58 @@ public class TreeUtil {
         return result;
     }
 
+
+    public static <T extends TreeNode<?>> List<T> hasCycle(List<T> nodes) {
+        Set<String> visited = new HashSet<>();
+        Set<String> stack = new HashSet<>();
+        List<T> result = new ArrayList<>();
+        for (T node : nodes) {
+            if (hasCycleUtil(node, visited, stack, nodes)) {
+                result.add(node);
+            }
+        }
+        return result;
+    }
+
+    private static <T extends TreeNode<?>> boolean hasCycleUtil(T node, Set<String> visited, Set<String> stack,
+        List<T> nodes) {
+        String nodeId = node.getTreeNodeId();
+        if (stack.contains(nodeId)) {
+            return true;
+        }
+        if (visited.contains(nodeId)) {
+            return false;
+        }
+
+        visited.add(nodeId);
+        stack.add(nodeId);
+        for (T child : getChildren(nodeId, nodes)) {
+            if (hasCycleUtil(child, visited, stack, nodes)) {
+                return true;
+            }
+        }
+
+        stack.remove(nodeId);
+        return false;
+    }
+
+    public <T extends TreeNode<? extends TreeNode>> T findNode(List<T> node, String nodeId) {
+        for (T t : node) {
+            T node1 = findNode(t, nodeId);
+            if (node1 != null) {
+                return (T) node1;
+            }
+        }
+        return null;
+    }
+
+    public static <T extends TreeNode<?>> List<T> getChildren(String parentId, List<T> nodes) {
+        List<T> children = new ArrayList<>();
+        for (T node : nodes) {
+            if (Objects.equals(node.getParentId(), parentId)) {
+                children.add(node);
+            }
+        }
+        return children;
+    }
 }
