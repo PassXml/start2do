@@ -34,6 +34,7 @@ public class BusinessConfig {
         private boolean menu = true;
         private boolean file = true;
         private boolean setting = true;
+        private boolean customDict = false;
 
     }
 
@@ -47,7 +48,7 @@ public class BusinessConfig {
 
     }
 
-    private FileSetting fileSetting=new FileSetting();
+    private FileSetting fileSetting = new FileSetting();
 
     @Setter
     @Getter
@@ -69,6 +70,6 @@ public class BusinessConfig {
 
 
     public enum FileSettingType {
-        local,qn
+        local, qn
     }
 }
