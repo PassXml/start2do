@@ -5,21 +5,44 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class TreeUtil {
 
+    public <T extends TreeNode<?>> void printTree(List<T> roots) {
+        for (T root : roots) {
+            printTree(root, 0);
+        }
+    }
+
+    private <T extends TreeNode<?>> void printTree(T node, int level) {
+        if (node == null) {
+            return;
+        }
+
+        for (int i = 0; i < level; i++) {
+            System.out.print("  ");
+        }
+        System.out.println(node.getTreeNodeId());
+
+        for (T child : (List<T>) node.getChildren()) {
+            printTree(child, level + 1);
+        }
+    }
+
     /**
-     * 根据所有树节点列表，生成含有所有树形结构的列表
+     * 根据所有树节点列表，生成含有所有树形结构的列表;会存在丢失的情况.
      *
      * @param nodes 树形节点列表
      * @param <T>   节点类型
      * @return 树形结构列表
      */
-    public <T extends TreeNode<?>> List<T> generateTrees(List<T> nodes) {
+    public <T extends TreeNode<?>> List<T> generateTreesHasMiss(List<T> nodes) {
         List<T> roots = new ArrayList<>();
         List<T> original = new ArrayList<>(nodes);
         for (Iterator<T> ite = original.iterator(); ite.hasNext(); ) {
@@ -30,10 +53,36 @@ public class TreeUtil {
                 ite.remove();
             }
         }
-
         roots.forEach(root -> {
             setChildren(root, original);
         });
+        if (roots.isEmpty()) {
+            nodes.stream().findFirst().ifPresent(t -> {
+                setChildren(t, original);
+            });
+        }
+        return roots;
+    }
+
+    /**
+     * 另外一种实现方式不允许丢失
+     */
+    public <T extends TreeNode<?>> List<T> generateTreesNoMiss(List<T> nodes) {
+        List<T> roots = new ArrayList<>();
+        Map<String, T> nodeMap = nodes.stream().collect(Collectors.toMap(t -> t.getTreeNodeId(), t -> t));
+        for (T node : nodes) {
+            if (node.getParentId() == null || Objects.equals(node.getParentId(), "")) {
+                roots.add(node);
+            } else {
+                T parent = nodeMap.get(node.getParentId());
+                if (parent != null) {
+                    List<T> children = (List<T>) parent.getChildren();
+                    children.add(node);
+                } else {
+                    roots.add(node);
+                }
+            }
+        }
         return roots;
     }
 
@@ -66,16 +115,48 @@ public class TreeUtil {
         });
     }
 
+    //
+//    public <T extends TreeNode<? extends TreeNode>> T findNode(T node, String nodeId) {
+//        if (Objects.equals(node.getTreeNodeId(), nodeId)) {
+//            return node;
+//        }
+//        for (TreeNode child : node.getChildren()) {
+//            return (T) findNode(child, nodeId);
+//        }
+//        return null;
+//    }
+//
+//    public <T extends TreeNode<? extends TreeNode>> T findNode(List<T> node, String nodeId) {
+//        for (T t : node) {
+//            T node1 = findNode(t, nodeId);
+//            if (node1 != null) {
+//                return (T) node1;
+//            }
+//        }
+//        return null;
+//    }
     public <T extends TreeNode<? extends TreeNode>> T findNode(T node, String nodeId) {
         if (Objects.equals(node.getTreeNodeId(), nodeId)) {
             return node;
         }
         for (TreeNode child : node.getChildren()) {
-            return (T) findNode(child, nodeId);
+            T foundNode = findNode((T) child, nodeId);
+            if (foundNode != null) {
+                return foundNode;
+            }
         }
         return null;
     }
 
+    public <T extends TreeNode<? extends TreeNode>> T findNode(List<T> node, String nodeId) {
+        for (T t : node) {
+            T foundNode = findNode(t, nodeId);
+            if (foundNode != null) {
+                return foundNode;
+            }
+        }
+        return null;
+    }
 
     public static <T extends TreeNode<?>> List<T> findPath(TreeNode<T> root, String targetNodeId) {
         List<T> path = new ArrayList<>();
@@ -83,7 +164,8 @@ public class TreeUtil {
         return path;
     }
 
-    private static <T extends TreeNode<?>> boolean findPathRecursive(T node, String targetNodeId, List<T> path) {
+    private static <T extends TreeNode<?>> boolean findPathRecursive(T node, String targetNodeId,
+        List<T> path) {
         if (node == null) {
             return false;
         }
@@ -110,6 +192,7 @@ public class TreeUtil {
 
         String getParentId();
 
+
         void setChildren(List<T> children);
 
         List<T> getChildren();
@@ -121,7 +204,7 @@ public class TreeUtil {
 
     }
 
-    public static <T> List<String> getAllChildrenId(TreeUtil.TreeNode<T> tTreeNode) {
+    public static <T> List<String> getAllChildrenId(TreeNode<T> tTreeNode) {
         List<String> result = new ArrayList<>();
         for (T child : tTreeNode.getChildren()) {
             if (child instanceof TreeNode<?>) {
@@ -169,16 +252,6 @@ public class TreeUtil {
 
         stack.remove(nodeId);
         return false;
-    }
-
-    public <T extends TreeNode<? extends TreeNode>> T findNode(List<T> node, String nodeId) {
-        for (T t : node) {
-            T node1 = findNode(t, nodeId);
-            if (node1 != null) {
-                return (T) node1;
-            }
-        }
-        return null;
     }
 
     public static <T extends TreeNode<?>> List<T> getChildren(String parentId, List<T> nodes) {

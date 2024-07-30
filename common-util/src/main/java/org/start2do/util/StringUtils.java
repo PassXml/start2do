@@ -98,4 +98,65 @@ public final class StringUtils {
         }
         return map;
     }
+
+    public static String extractNodeId(String input, String prefix, String suffix) {
+        // 使用 KMP 算法查找 prefix 的位置
+        int startIndex = kmpSearch(input, prefix);
+        if (startIndex == -1) {
+            return null; // 未找到 prefix
+        }
+
+        // 定位到 prefix 之后的位置
+        startIndex += prefix.length();
+
+        // 查找 suffix 的位置
+        int endIndex = input.indexOf(suffix, startIndex);
+        if (endIndex == -1) {
+            // 如果没有找到 suffix，则返回从 prefix 之后的所有字符
+            return input.substring(startIndex);
+        } else {
+            // 否则返回 prefix 和 suffix 之间的子字符串
+            return input.substring(startIndex, endIndex);
+        }
+    }
+
+    // KMP 算法查找子字符串的位置
+    public static int kmpSearch(String text, String pattern) {
+        int[] lps = buildLPS(pattern);
+        int i = 0, j = 0;
+        while (i < text.length()) {
+            if (pattern.charAt(j) == text.charAt(i)) {
+                i++;
+                j++;
+                if (j == pattern.length()) {
+                    return i - j; // 找到匹配位置
+                }
+            } else if (j > 0) {
+                j = lps[j - 1];
+            } else {
+                i++;
+            }
+        }
+        return -1; // 未找到匹配位置
+    }
+
+    // 构建部分匹配表（LPS 数组）
+    private static int[] buildLPS(String pattern) {
+        int[] lps = new int[pattern.length()];
+        int length = 0;
+        int i = 1;
+        while (i < pattern.length()) {
+            if (pattern.charAt(i) == pattern.charAt(length)) {
+                length++;
+                lps[i] = length;
+                i++;
+            } else if (length > 0) {
+                length = lps[length - 1];
+            } else {
+                lps[i] = 0;
+                i++;
+            }
+        }
+        return lps;
+    }
 }

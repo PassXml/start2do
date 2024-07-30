@@ -12,6 +12,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     compileOnly("org.springframework:spring-webmvc:6.0.3")
+    compileOnly("org.springframework:spring-webflux:6.0.3")
     compileOnly group: 'org.springframework.security', name: 'spring-security-web', version: '6.0.3'
     compileOnly("org.springframework.boot:spring-boot:$springBootVersion")
     compileOnly("jakarta.annotation:jakarta.annotation-api:2.1.1")

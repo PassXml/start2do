@@ -1,6 +1,9 @@
 package org.start2do.util.spring;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import lombok.Getter;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -11,6 +14,10 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.reactive.result.method.RequestMappingInfo;
+import org.springframework.web.util.pattern.PathPattern;
+
 
 @Component
 @Order(value = Ordered.HIGHEST_PRECEDENCE)
@@ -54,5 +61,29 @@ public final class SpringBeanUtil implements BeanFactoryAware, ApplicationContex
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         SpringBeanUtil.beanFactory = (ConfigurableBeanFactory) beanFactory;
+    }
+
+    public static Set<String> getWebUrlsByReactive() {
+        return getWebUrlsByReactive(null);
+    }
+
+    public static Set<String> getWebUrlsByReactive(Function<HandlerMethod, Boolean> filter) {
+        Map<String, org.springframework.web.reactive.result.method.RequestMappingInfoHandlerMapping> map = SpringBeanUtil.getBeans(
+            org.springframework.web.reactive.result.method.RequestMappingInfoHandlerMapping.class);
+        Set<String> result = new HashSet<>();
+        for (org.springframework.web.reactive.result.method.RequestMappingInfoHandlerMapping value : map.values()) {
+            Map<RequestMappingInfo, HandlerMethod> handlerMethods = value.getHandlerMethods();
+            for (RequestMappingInfo info : handlerMethods.keySet()) {
+                if (filter != null) {
+                    if (!filter.apply(handlerMethods.get(info))) {
+                        continue;
+                    }
+                }
+                for (PathPattern pattern : info.getPatternsCondition().getPatterns()) {
+                    result.add(pattern.getPatternString());
+                }
+            }
+        }
+        return result;
     }
 }
