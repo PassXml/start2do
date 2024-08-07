@@ -76,4 +76,5 @@ public interface IService<T extends Model> {
 
     <S extends QueryBean, R> Page<R> page(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper, Runner<T, R> function2);
+
 }

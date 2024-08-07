@@ -3,14 +3,14 @@ package org.start2do.entity.security;
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.Identity;
 import io.ebean.annotation.IdentityType;
-import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -33,7 +33,7 @@ public class SysDept extends BaseModel2 implements Serializable {
     private Integer sort = 0;
     @Column(name = "parent_id")
     private Integer parentId;
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id", insertable = false, updatable = false)
     private SysDept parent;
 
