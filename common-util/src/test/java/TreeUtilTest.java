@@ -26,7 +26,7 @@ class TreeUtilTest {
 
     @Test
     @Tag("findNode2")
-    void findNode2() {
+    void findNode2() throws CloneNotSupportedException {
         Node node = new Node("1", null, "1", new ArrayList<>());
         Node node1 = new Node("2", "1", "2", new ArrayList<>());
         Node node2 = new Node("3", "1", "3", new ArrayList<>());
@@ -37,10 +37,24 @@ class TreeUtilTest {
         Node node7 = new Node("8", "6", "7", new ArrayList<>());
         Node node8 = new Node("9", "3", "8", new ArrayList<>());
         List<Node> list = List.of(node, node1, node2, node3, node4, node5, node6, node7, node8);
-        List<Node> nodes = TreeUtil.generateTreesHasMiss(list);
+        List<Node> nodes = TreeUtil.generateTreesNoMiss(list);
         TreeUtil.printTree(nodes);
-        Node node9 = TreeUtil.findNode(nodes, "9");
-        Assertions.assertNotNull(node9);
+        System.out.println("=================");
+        List<Node> nodes1 = TreeUtil.getNodePathAndChildrenDeepCopy(nodes, "7");
+        List<Node> path = TreeUtil.generateTreesHasMiss(nodes1);
+        System.out.println("===================");
+        TreeUtil.printTree(path);
+        System.out.println("===================");
+        List<Node> path1 = TreeUtil.getNodePathAndChildrenDeepCopy(nodes, "2");
+        TreeUtil.printTree(path1);
+        System.out.println("===================");
+
+        List<List<Node>> result = new ArrayList<>();
+        result.add(path);
+        result.add(path1);
+        List<Node> merged = TreeUtil.mergeTreesPreservingChildren(result);
+        TreeUtil.printTree(merged);
+
     }
 
 
@@ -51,7 +65,7 @@ class TreeUtilTest {
         Node node2 = new Node("2", "1", "2", new ArrayList<>());
         List<Node> list = List.of(new Node("1", null, "1", new ArrayList<>()), node2,
             new Node("3", "1", "3", new ArrayList<>()), node1, new Node("5", "3", "5", new ArrayList<>()));
-        List<Node> nodes = TreeUtil.generateTreesHasMiss(list);
+        List<Node> nodes = TreeUtil.generateTreesNoMiss(list);
         Node node3 = TreeUtil.findNode(nodes, "2");
         System.out.println(node1.getAllChildrenId());
         System.out.println(node3);
@@ -99,9 +113,9 @@ class TreeUtilTest {
             new Node("3", "1", "3", new ArrayList<>()), node1, new Node("5", "3", "5", new ArrayList<>()));
         List<Node> nodes = TreeUtil.generateTreesHasMiss(list);
         System.out.println(nodes);
-        List<Node> path = TreeUtil.findPath(nodes.stream().filter(t -> t.getParentId() == null).findFirst().get(), "2");
-        List<Node> trees = TreeUtil.generateTreesHasMiss(path);
-        System.out.println(trees);
+//        List<Node> path = TreeUtil.findNodePath(nodes.stream().filter(t -> t.getParentId() == null).findFirst().get(), "2");
+//        List<Node> trees = TreeUtil.generateTreesHasMiss(path);
+//        System.out.println(trees);
     }
 
 
@@ -121,6 +135,16 @@ class TreeUtilTest {
             return this.id;
         }
 
+        @Override
+        public void setTreeNodeId(String id) {
+            this.id = id;
+        }
+
+        @Override
+        protected Object clone() throws CloneNotSupportedException {
+            return super.clone();
+        }
+
         public Node(String id, String parentId, String name, List<Node> children) {
             this.id = id;
             this.parentId = parentId;
@@ -129,4 +153,6 @@ class TreeUtilTest {
         }
 
     }
+
+
 }

@@ -2,6 +2,8 @@ package org.start2do.util;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -158,40 +160,16 @@ public class TreeUtil {
         return null;
     }
 
-    public static <T extends TreeNode<?>> List<T> findPath(TreeNode<T> root, String targetNodeId) {
-        List<T> path = new ArrayList<>();
-        findPathRecursive((T) root, targetNodeId, path);
-        return path;
-    }
 
-    private static <T extends TreeNode<?>> boolean findPathRecursive(T node, String targetNodeId,
-        List<T> path) {
-        if (node == null) {
-            return false;
-        }
-
-        path.add(node);
-
-        if (Objects.equals(node.getTreeNodeId(), targetNodeId)) {
-            return true;
-        }
-
-        for (Object child : node.getChildren()) {
-            if (findPathRecursive((T) child, targetNodeId, path)) {
-                return true;
-            }
-        }
-        path.remove(path.size() - 1);
-        return false;
-    }
-
-
-    public interface TreeNode<T> {
+    public interface TreeNode<T> extends Cloneable {
 
         String getTreeNodeId();
 
         String getParentId();
 
+        void setParentId(String id);
+
+        void setTreeNodeId(String id);
 
         void setChildren(List<T> children);
 
@@ -201,7 +179,6 @@ public class TreeUtil {
         default List<String> getAllChildrenId() {
             return TreeUtil.getAllChildrenId(this);
         }
-
     }
 
     public static <T> List<String> getAllChildrenId(TreeNode<T> tTreeNode) {
@@ -263,4 +240,167 @@ public class TreeUtil {
         }
         return children;
     }
+
+    public static <T extends TreeNode<T>> List<T> getAllChildren(List<T> nodes) {
+        List<T> children = new ArrayList<>();
+        for (T node : nodes) {
+            children.add(node);
+            List<T> nodeChildren = node.getChildren();
+            if (nodeChildren != null && !nodeChildren.isEmpty()) {
+                children.addAll(getAllChildren(nodeChildren));
+            }
+        }
+        return children;
+    }
+
+    //-----------------------------------------------
+    public static <T extends TreeUtil.TreeNode<T>> List<T> mergeTreesPreservingChildren(List<List<T>> treeLists) {
+        Map<String, T> mergedNodesMap = new HashMap<>();
+
+        // First pass: Collect all nodes
+        for (List<T> treeList : treeLists) {
+            for (T root : treeList) {
+                collectNodes(root, mergedNodesMap);
+            }
+        }
+
+        // Second pass: Merge children
+        for (List<T> treeList : treeLists) {
+            for (T root : treeList) {
+                mergeChildren(root, mergedNodesMap);
+            }
+        }
+
+        // Rebuild the tree structure
+        List<T> mergedRoots = new ArrayList<>();
+        for (T node : mergedNodesMap.values()) {
+            String parentId = node.getParentId();
+            if (parentId == null || parentId.isEmpty() || !mergedNodesMap.containsKey(parentId)) {
+                mergedRoots.add(node);
+            }
+        }
+
+        return mergedRoots;
+    }
+
+    private static <T extends TreeNode<T>> void collectNodes(T node, Map<String, T> mergedNodesMap) {
+        String nodeId = node.getTreeNodeId();
+        if (!mergedNodesMap.containsKey(nodeId)) {
+            T newNode = createNewNode(node);
+            mergedNodesMap.put(nodeId, newNode);
+        }
+
+        for (T child : node.getChildren()) {
+            collectNodes(child, mergedNodesMap);
+        }
+    }
+
+    private static <T extends TreeNode<T>> void mergeChildren(T node, Map<String, T> mergedNodesMap) {
+        T mergedNode = mergedNodesMap.get(node.getTreeNodeId());
+
+        for (T child : node.getChildren()) {
+            T mergedChild = mergedNodesMap.get(child.getTreeNodeId());
+            if (!mergedNode.getChildren().contains(mergedChild)) {
+                mergedNode.getChildren().add(mergedChild);
+            }
+            mergeChildren(child, mergedNodesMap);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends TreeNode<T>> T createNewNode(T originalNode) {
+        try {
+            // This assumes that T has a no-arg constructor. Adjust if necessary.
+            T newNode = (T) originalNode.getClass().getDeclaredConstructor().newInstance();
+
+            // Copy basic TreeNode properties
+            newNode.setTreeNodeId(originalNode.getTreeNodeId());
+            newNode.setParentId(originalNode.getParentId());
+            newNode.setChildren(new ArrayList<>());
+
+            // Here you might want to copy other properties specific to your implementation
+            // For example:
+            // newNode.setName(originalNode.getName());
+            // newNode.setValue(originalNode.getValue());
+
+            return newNode;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create new node", e);
+        }
+    }
+
+    ////////////////////////////
+
+    /**
+     * 获取从根节点到指定节点的路径，并包含该节点的下方所有子节点。添加深拷贝
+     *
+     * @param nodes  所有节点列表
+     * @param nodeId 目标节点ID
+     * @return 从根节点(包含)到目标节点的路径，并包含该节点的下方所有子节点
+     */
+    public static <T extends TreeNode<T>> List<T> getNodePathAndChildrenDeepCopy(List<T> nodes, String nodeId) {
+        Map<String, T> nodeMap = new HashMap<>();
+        for (T node : nodes) {
+            nodeMap.put(node.getTreeNodeId(), node);
+            for (T child : getAllChildren(node.getChildren())) {
+                nodeMap.put(child.getTreeNodeId(), child);
+            }
+        }
+
+        // Find the node with the given nodeId
+        T targetNode = nodeMap.get(nodeId);
+
+        if (targetNode == null) {
+            return Collections.emptyList(); // If node is not found, return empty list
+        }
+
+        // Collect nodes from the root to the target node
+        List<T> pathNodes = new ArrayList<>();
+        T currentNode = targetNode;
+
+        while (currentNode != null) {
+            pathNodes.add(currentNode);
+            currentNode = nodeMap.get(currentNode.getParentId());
+        }
+
+        Collections.reverse(pathNodes); // Reverse to get the path from root to the target node
+
+        // Collect the children of the target node
+        List<T> result = new ArrayList<>(pathNodes);
+        result.addAll(getAllChildren(targetNode.getChildren()));
+
+        // Perform deep copy of the result
+        List<T> deepCopyResult = new ArrayList<>();
+        for (T node : result) {
+            deepCopyResult.add(createNewNode(node));
+        }
+
+        // Rebuild the tree structure for the deep copy
+        Map<String, T> deepCopyMap = new HashMap<>();
+        for (T node : deepCopyResult) {
+            deepCopyMap.put(node.getTreeNodeId(), node);
+        }
+
+        for (T node : deepCopyResult) {
+            String parentId = node.getParentId();
+            if (parentId != null && !parentId.isEmpty()) {
+                T parentNode = deepCopyMap.get(parentId);
+                if (parentNode != null) {
+                    parentNode.getChildren().add(node);
+                }
+            }
+        }
+
+        // Filter out the root nodes from the deep copy result
+        List<T> finalResult = new ArrayList<>();
+        for (T node : deepCopyResult) {
+            if (node.getParentId() == null || node.getParentId().isEmpty() || !deepCopyMap.containsKey(
+                node.getParentId())) {
+                finalResult.add(node);
+            }
+        }
+
+        return finalResult;
+    }
+
 }
