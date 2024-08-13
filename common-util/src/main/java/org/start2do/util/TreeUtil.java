@@ -175,13 +175,15 @@ public class TreeUtil {
 
         List<T> getChildren();
 
+        Object clone() throws CloneNotSupportedException;
+
         @JsonIgnore
         default List<String> getAllChildrenId() {
             return TreeUtil.getAllChildrenId(this);
         }
     }
 
-    public static <T> List<String> getAllChildrenId(TreeNode<T> tTreeNode) {
+    public static <T> List<String> getAllChildrenId(TreeUtil.TreeNode<T> tTreeNode) {
         List<String> result = new ArrayList<>();
         for (T child : tTreeNode.getChildren()) {
             if (child instanceof TreeNode<?>) {
@@ -310,19 +312,8 @@ public class TreeUtil {
     @SuppressWarnings("unchecked")
     private static <T extends TreeNode<T>> T createNewNode(T originalNode) {
         try {
-            // This assumes that T has a no-arg constructor. Adjust if necessary.
-            T newNode = (T) originalNode.getClass().getDeclaredConstructor().newInstance();
-
-            // Copy basic TreeNode properties
-            newNode.setTreeNodeId(originalNode.getTreeNodeId());
-            newNode.setParentId(originalNode.getParentId());
+            T newNode = (T) originalNode.clone();
             newNode.setChildren(new ArrayList<>());
-
-            // Here you might want to copy other properties specific to your implementation
-            // For example:
-            // newNode.setName(originalNode.getName());
-            // newNode.setValue(originalNode.getValue());
-
             return newNode;
         } catch (Exception e) {
             throw new RuntimeException("Failed to create new node", e);

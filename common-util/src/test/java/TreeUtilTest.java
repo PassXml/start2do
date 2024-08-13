@@ -141,9 +141,10 @@ class TreeUtilTest {
         }
 
         @Override
-        protected Object clone() throws CloneNotSupportedException {
+        public Object clone() throws CloneNotSupportedException {
             return super.clone();
         }
+
 
         public Node(String id, String parentId, String name, List<Node> children) {
             this.id = id;
