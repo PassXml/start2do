@@ -20,6 +20,7 @@ import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.core.ScanOptions.ScanOptionsBuilder;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.Topic;
 import org.springframework.stereotype.Component;
@@ -41,22 +42,28 @@ public class RedisCacheUtil implements CommandLineRunner {
 
     private static RedisCacheUtil redisCacheUtil;
 
-    public static List<String> scan(RedisTemplate redisTemplate, String query) {
+    public static List<String> scan(RedisTemplate redisTemplate, String query, Integer maxCount) {
         if (redisTemplate == null) {
             return new ArrayList<>();
         }
-        Set<String> resultKeys = (Set<String>) redisTemplate.execute((RedisCallback<Set<String>>) connection -> {
-            ScanOptions scanOptions = ScanOptions.scanOptions().match("*" + query + "*").count(1000).build();
-            Cursor<byte[]> scan = connection.scan(scanOptions);
-            Set<String> keys = new HashSet<>();
-            while (scan.hasNext()) {
-                byte[] next = scan.next();
-                keys.add(new String(next));
+        Set<String> execute = (Set<String>) redisTemplate.execute((RedisCallback<Set<String>>) connection -> {
+            ScanOptionsBuilder builder = ScanOptions.scanOptions().match("*" + query + "*");
+            if (maxCount != null) {
+                builder.count(maxCount);
             }
-            return keys;
+            try (Cursor<byte[]> scan = connection.scan(builder.build())) {
+                Set<String> keys = new HashSet<>();
+                while (scan.hasNext()) {
+                    byte[] next = scan.next();
+                    keys.add(new String(next));
+                }
+                return keys;
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                return new HashSet<>();
+            }
         });
-
-        return new ArrayList<>(resultKeys);
+        return new ArrayList<>(execute);
     }
 
     public static List<String> scan(String key) {
@@ -64,7 +71,19 @@ public class RedisCacheUtil implements CommandLineRunner {
             return new ArrayList<>();
         }
         try {
-            return scan(RedisCacheUtil.redisCacheUtil.redisTemplate, key);
+            return scan(RedisCacheUtil.redisCacheUtil.redisTemplate, key, 1000);
+        } catch (IllegalStateException e) {
+            log.error(e.getMessage(), e);
+            return List.of();
+        }
+    }
+
+    public static List<String> scan(String key, Integer maxCount) {
+        if (RedisCacheUtil.redisCacheUtil == null) {
+            return new ArrayList<>();
+        }
+        try {
+            return scan(RedisCacheUtil.redisCacheUtil.redisTemplate, key, maxCount);
         } catch (IllegalStateException e) {
             log.error(e.getMessage(), e);
             return List.of();

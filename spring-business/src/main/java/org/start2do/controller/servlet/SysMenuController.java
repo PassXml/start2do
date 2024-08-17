@@ -106,7 +106,7 @@ public class SysMenuController {
     @GetMapping("menu/all")
     public R<List<MenuDetailResp>> menuAll(MenuPageReq req) {
         QSysMenu qClass = new QSysMenu();
-        Where.ready().notEmpty(req.getName(), qClass.name::like);
+        Where.ready().like(req.getName(), qClass.name::like);
         return R.ok(sysMenuService.findAllUseCache(qClass).stream()
             .map(MenuDtoMapper.INSTANCE::toMenuDetailResp).collect(Collectors.toList()));
     }
