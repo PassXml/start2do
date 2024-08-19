@@ -177,7 +177,6 @@ public class SysLog extends Model {
             return label;
         }
         @JsonCreator
-
         public static Type find(String s) {
             for (Type value : values()) {
                 if (value.getValue().equals(s)) {
@@ -191,5 +190,22 @@ public class SysLog extends Model {
         public String toString() {
             return String.join("", label, "(", value, ")");
         }
+    }
+
+    public SysLog(Type type, String title, String remoteAddr, String userAgent, String requestUri, String method,
+        String params, String requestHeader, String requestBody, String responseBody, String responseHeader,
+        Long useTime) {
+        this.type = type;
+        this.title = title;
+        this.remoteAddr = remoteAddr;
+        this.userAgent = userAgent;
+        this.requestUri = requestUri;
+        this.method = method;
+        this.params = params;
+        this.requestHeader = requestHeader;
+        this.requestBody = requestBody;
+        this.responseBody = responseBody;
+        this.responseHeader = responseHeader;
+        this.useTime = useTime;
     }
 }
