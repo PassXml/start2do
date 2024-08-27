@@ -32,7 +32,7 @@ public class Where {
         return where;
     }
 
-    public <R> Where ddefaulf(R s, R defaultValue, Consumer<R> function) {
+    public <R> Where defaultValue(R s, R defaultValue, Consumer<R> function) {
         if (s != null) {
             function.accept(s);
         } else {
@@ -49,10 +49,28 @@ public class Where {
         return where;
     }
 
+    public Where notEmpty(String s, String default_, Consumer<String> function) {
+        if (StringUtils.isNotEmpty(s)) {
+            function.accept(s);
+        } else {
+            function.accept(default_);
+        }
+        return where;
+    }
+
 
     public <T> Where notEmpty(Collection<T> s, Consumer<Collection<T>> function) {
         if (s != null && !s.isEmpty()) {
             function.accept(s);
+        }
+        return where;
+    }
+
+    public <T> Where notEmpty(Collection<T> s, Collection<T> default_, Consumer<Collection<T>> function) {
+        if (s != null && !s.isEmpty()) {
+            function.accept(s);
+        } else {
+            function.accept(default_);
         }
         return where;
     }

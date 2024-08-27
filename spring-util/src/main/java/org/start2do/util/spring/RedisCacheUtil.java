@@ -21,6 +21,7 @@ import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.ScanOptions.ScanOptionsBuilder;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.Topic;
 import org.springframework.stereotype.Component;
@@ -262,5 +263,9 @@ public class RedisCacheUtil implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         init();
+    }
+
+    public static <T> T executorScript(RedisScript<T> script, List<String> keys, Object... args) {
+        return redisCacheUtil.redisTemplate.<T>execute(script, keys, args);
     }
 }

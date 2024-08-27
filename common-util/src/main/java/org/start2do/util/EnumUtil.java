@@ -23,6 +23,12 @@ public class EnumUtil {
      * str编码转化成枚举值
      */
     public <T extends IEnum> List<T> code2enum(T[] values, String s) {
+        if (StringUtils.isEmpty(s)) {
+            return List.of();
+        }
+        if (values == null || values.length < 1) {
+            return List.of();
+        }
         List<T> enums = new ArrayList<>();
         Integer integer = Integer.valueOf(s, 2);
         for (T value : values) {
@@ -38,10 +44,13 @@ public class EnumUtil {
      * 转化成数据库类型
      */
     public <T extends IEnum> String enum2code(String baseStr, List<T> enums) {
-        Integer i = Integer.valueOf(baseStr, 2);
+        if (StringUtils.isEmpty(baseStr)) {
+            return null;
+        }
         if (enums == null || enums.isEmpty()) {
             return baseStr;
         }
+        Integer i = Integer.valueOf(baseStr, 2);
         for (T s : enums) {
             i = i | Integer.valueOf(s.getCode(), 2);
         }
