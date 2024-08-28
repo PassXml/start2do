@@ -2,6 +2,7 @@ package org.start2do.util.spring;
 
 import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +22,7 @@ import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.ScanOptions.ScanOptionsBuilder;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.Topic;
@@ -259,6 +261,23 @@ public class RedisCacheUtil implements CommandLineRunner {
         container.setConnectionFactory(connectionFactory);
     }
 
+    /**
+     * 用于在一个 Redis 会话中执行多个操作，这些操作会被打包成一个事务或管道（pipeline），从而提高性能。适合需要在一个会话中执行多个操作的场景。
+     */
+    public <T> List<Object> executePipelined(SessionCallback<T> session) {
+        return redisCacheUtil.redisTemplate.executePipelined(session);
+    }
+
+    /**
+     * 用于在一个 Redis 连接中执行自定义的 Redis 操作。适合需要直接操作 Redis 连接的场景。
+     */
+    public <T> List<Object> executePipelined(RedisCallback<T> callback) {
+        return redisCacheUtil.redisTemplate.executePipelined(callback);
+    }
+
+    public Object mget(Collection<String> keys){
+        return  redisCacheUtil.redisTemplate.opsForValue().multiGet(keys);
+    }
 
     @Override
     public void run(String... args) throws Exception {
@@ -268,4 +287,5 @@ public class RedisCacheUtil implements CommandLineRunner {
     public static <T> T executorScript(RedisScript<T> script, List<String> keys, Object... args) {
         return redisCacheUtil.redisTemplate.<T>execute(script, keys, args);
     }
+
 }

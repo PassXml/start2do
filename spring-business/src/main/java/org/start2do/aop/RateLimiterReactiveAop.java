@@ -76,24 +76,30 @@ public class RateLimiterReactiveAop {
             final long startTime = java.lang.System.nanoTime();
             List<Long> longs = RedisCacheUtil.executorScript(script, keys, setting.rate(), setting.capacity(),
                 Instant.now().getEpochSecond(), setting.requested());
-            do {
-                if (!longs.isEmpty()) {
+            long waitMs = Duration.ofMillis(setting.maxWaitMs()).toNanos();
+
+            if (!longs.isEmpty()) {
+                do {
                     if (longs.get(0) == 1L) {
                         break;
                     }
                     if (!setting.await()) {
                         throw new RateLimiterException();
                     } else {
-                        boolean waited = waitForPermission(startTime, Duration.ofMillis(setting.waitMs()).toNanos());
+                        boolean waited = waitForPermission(startTime,
+                            Duration.ofMillis(setting.waitMs()).toNanos());
                         if (Thread.currentThread().isInterrupted()) {
-                            throw new RateLimiterException("获取令牌异常");
+                            throw new RateLimiterException(setting.errorMsg());
                         }
                         if (!waited) {
-                            throw new RateLimiterException("等待令牌超时");
+                            throw new RateLimiterException(setting.maxWaitMsg());
                         }
                     }
-                }
-            } while (false);
+                    if ((System.nanoTime() - startTime) > waitMs) {
+                        throw new RateLimiterException(setting.maxWaitMsg());
+                    }
+                } while (true);
+            }
         }
         return point.proceed();
     }
@@ -121,6 +127,16 @@ public class RateLimiterReactiveAop {
          * 等待1秒
          */
         long waitMs() default 1000;
+
+        /**
+         *
+         */
+        long maxWaitMs() default 1000;
+
+        String maxWaitMsg() default "等待令牌超时";
+
+        String errorMsg() default "获取令牌异常";
+
     }
 
     private long currentNanoTime(final long nanoTimeStart) {
