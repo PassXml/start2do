@@ -99,7 +99,7 @@ public final class StringUtils {
         return map;
     }
 
-    public static String extractNodeId(String input, String prefix, String suffix) {
+    public static String extractString(String input, String prefix, String suffix) {
         // 使用 KMP 算法查找 prefix 的位置
         int startIndex = kmpSearch(input, prefix);
         if (startIndex == -1) {

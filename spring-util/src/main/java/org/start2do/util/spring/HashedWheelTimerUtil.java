@@ -9,6 +9,7 @@ import java.time.LocalTime;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,15 +22,27 @@ import lombok.extern.slf4j.Slf4j;
 @UtilityClass
 public class HashedWheelTimerUtil {
 
-    private HashedWheelTimer hashedWheelTimer = new HashedWheelTimer(Executors.defaultThreadFactory(), 100,
-        TimeUnit.MILLISECONDS, 1024, true);
+    private HashedWheelTimer hashedWheelTimer;
     private ConcurrentHashMap<String, Timeout> taskMap = new ConcurrentHashMap<>();
+
+    static {
+        ThreadFactory threadFactory = r -> {
+            Thread thread = Executors.defaultThreadFactory().newThread(r);
+            thread.setName("HashedWheelTimer-" + thread.getId());
+            return thread;
+        };
+        hashedWheelTimer = new HashedWheelTimer(threadFactory, 250, TimeUnit.MILLISECONDS, 1024, true);
+    }
 
     public TimeTaskResult addTask(String key, Run timerTask, long delay, TimeUnit timeUnit) {
         if (key == null || key.isEmpty()) {
             key = UUID.randomUUID().toString();
         }
         String finalKey = key;
+        if (taskMap.containsKey(finalKey)) {
+            log.warn("Task with key {} already exists, will be replaced.", finalKey);
+            stop(finalKey);
+        }
         Timeout timeout = hashedWheelTimer.newTimeout(t -> {
             try {
                 timerTask.run();
@@ -46,7 +59,11 @@ public class HashedWheelTimerUtil {
     public boolean stop(String key) {
         Timeout timeout = taskMap.get(key);
         if (timeout != null) {
-            return timeout.cancel();
+            boolean canceled = timeout.cancel();
+            if (canceled) {
+                taskMap.remove(key);
+            }
+            return canceled;
         }
         return false;
     }
@@ -59,6 +76,11 @@ public class HashedWheelTimerUtil {
         }
         long millis = Duration.between(now, dateTime).toMillis() + delay;
         return addTask(key, timerTask, millis, TimeUnit.MILLISECONDS);
+    }
+
+    public void shutdown() {
+        hashedWheelTimer.stop();
+        taskMap.clear();
     }
 
     public interface Run {
@@ -81,4 +103,3 @@ public class HashedWheelTimerUtil {
         }
     }
 }
-

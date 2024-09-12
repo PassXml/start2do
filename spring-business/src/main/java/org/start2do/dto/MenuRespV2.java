@@ -9,7 +9,16 @@ import lombok.experimental.Accessors;
 @Getter
 @Accessors(chain = true)
 @NoArgsConstructor
-public class MenuRespV2 extends MenuResp{
+public class MenuRespV2 {
 
-    private String value2;
+    private String label;
+    private Object value;
+
+    private Object value2;
+
+    public MenuRespV2(String label, Object value, Object value2) {
+        this.label = label;
+        this.value = value;
+        this.value2 = value2;
+    }
 }

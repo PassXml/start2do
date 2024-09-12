@@ -1,8 +1,14 @@
 import jakarta.validation.constraints.NotEmpty;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.junit.jupiter.api.Test;
+import org.start2do.util.BeanValidatorUtil;
+import org.start2do.util.validator.list.ValidListItem;
 import org.start2do.util.validator.notPattern.NotHasEmoji;
 
 public class Test1 {
@@ -44,5 +50,33 @@ public class Test1 {
 //        String reviewerName = "😀😁😂😃😄😅😆8888";
 //        String replaceAll = reviewerName.replaceAll("[\\ud800\\udc00-\\udbff\\udfff\\ud800-\\udfff]", "");
 //        System.out.println("repalceAll"+replaceAll);
+    }
+
+    @Test
+    void test3() {
+        Item item = new Item().setName("ok").setList(List.of(new Item2()));
+        BeanValidatorUtil.validate(item);
+
+    }
+
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    static class Item {
+
+        private String name;
+        @ValidListItem(message = "list字段")
+        private List<Item2> list;
+    }
+
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    static class Item2 {
+
+        @NotEmpty
+        private String name;
     }
 }

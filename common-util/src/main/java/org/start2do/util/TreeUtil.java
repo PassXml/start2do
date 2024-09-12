@@ -177,6 +177,12 @@ public class TreeUtil {
 
         Object clone() throws CloneNotSupportedException;
 
+        default void setTreeLevel(Integer level) {
+
+        }
+
+        ;
+
         @JsonIgnore
         default List<String> getAllChildrenId() {
             return TreeUtil.getAllChildrenId(this);
@@ -394,4 +400,27 @@ public class TreeUtil {
         return finalResult;
     }
 
+    public <T extends TreeNode<?>> void setTreeLevels(List<T> roots) {
+        for (T root : roots) {
+            setTreeLevel(root, 0);
+        }
+    }
+
+    public <T extends TreeNode<?>> void setTreeLevels(List<T> roots, int baseLevel) {
+        for (T root : roots) {
+            setTreeLevel(root, baseLevel);
+        }
+    }
+
+    private <T extends TreeNode<?>> void setTreeLevel(T node, int level) {
+        if (node == null) {
+            return;
+        }
+
+        node.setTreeLevel(level);
+
+        for (T child : (List<T>) node.getChildren()) {
+            setTreeLevel(child, level + 1);
+        }
+    }
 }

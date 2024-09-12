@@ -1,3 +1,5 @@
+package test;
+
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -53,6 +55,10 @@ class TreeUtilTest {
         result.add(path);
         result.add(path1);
         List<Node> merged = TreeUtil.mergeTreesPreservingChildren(result);
+        TreeUtil.setTreeLevels(
+            merged,1
+        );
+        System.out.println(merged);
         TreeUtil.printTree(merged);
 
     }
@@ -129,6 +135,7 @@ class TreeUtilTest {
         private String parentId;
         private String name;
         private List<Node> children;
+        private int level;
 
         @Override
         public String getTreeNodeId() {
@@ -143,6 +150,11 @@ class TreeUtilTest {
         @Override
         public Object clone() throws CloneNotSupportedException {
             return super.clone();
+        }
+
+        @Override
+        public void setTreeLevel(Integer level) {
+            this.level = level;
         }
 
 

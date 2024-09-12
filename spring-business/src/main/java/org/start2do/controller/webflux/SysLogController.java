@@ -4,7 +4,9 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,6 +45,7 @@ import reactor.core.publisher.Mono;
 
 public class SysLogController {
 
+    public static Integer MIN_DAY = 90;
     private final SysLogReactiveService sysLogService;
 
     /**
@@ -73,13 +76,13 @@ public class SysLogController {
         Where.ready().notEmpty(req.getType(), s -> qClass.type.eq(Type.find(s)));
         if (req.getTimeRange() == null) {
             if (req.getStartTime() != null && req.getEndTime() != null) {
-                if (ChronoUnit.DAYS.between(req.getStartTime(), req.getEndTime()) > 90) {
-                    throw new BusinessException("不能导出大于90天的数据");
+                if (ChronoUnit.DAYS.between(req.getStartTime(), req.getEndTime()) > MIN_DAY) {
+                    throw new BusinessException("不能导出大于" + MIN_DAY + "天的数据");
                 }
             }
             if (req.getStartTime() != null) {
-                if (ChronoUnit.DAYS.between(req.getStartTime(), now) > 90) {
-                    throw new BusinessException("不能导出大于90天的数据");
+                if (ChronoUnit.DAYS.between(req.getStartTime(), now) > MIN_DAY) {
+                    throw new BusinessException("不能导出大于" + MIN_DAY + "天的数据");
                 }
                 qClass.createTime.ge(req.getStartTime());
             } else {
@@ -93,8 +96,8 @@ public class SysLogController {
         } else {
             LocalDateTime endTime = req.getTimeRange()[1];
             LocalDateTime startTime = req.getTimeRange()[0];
-            if (ChronoUnit.DAYS.between(startTime, endTime) > 90) {
-                throw new BusinessException("不能导出大于90天的数据");
+            if (ChronoUnit.DAYS.between(startTime, endTime) > MIN_DAY) {
+                throw new BusinessException("不能导出大于" + MIN_DAY + "天的数据");
             }
             qClass.createTime.ge(startTime).createTime.lt(endTime);
         }
@@ -128,13 +131,13 @@ public class SysLogController {
 
 
     /**
-     * 批量删除
+     * 批量删除;只能清理90天之前的数据
      */
     @GetMapping("delete")
     @DeleteMapping("delete")
-    public R delete(IdsReq req) {
+    public Mono<R<Boolean>> delete(IdsReq req) {
         BeanValidatorUtil.validate(req);
-        sysLogService.delete(new QSysLog().id.in(req.getId()));
-        return R.ok();
+        return sysLogService.delete(new QSysLog().createTime.le(
+            LocalDateTime.of(LocalDate.now().minusDays(MIN_DAY), LocalTime.of(0, 0, 0))).id.in(req.getId())).map(R::ok);
     }
 }

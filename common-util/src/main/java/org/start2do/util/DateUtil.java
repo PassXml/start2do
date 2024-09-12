@@ -51,7 +51,7 @@ public class DateUtil {
         return formatter;
     }
 
-    public String LocalDateTimeToString(LocalDateTime time, String pattern) {
+    public String localDateTimeToString(LocalDateTime time, String pattern) {
         if (time == null) {
             return "";
         }
@@ -105,11 +105,11 @@ public class DateUtil {
     }
 
     public static String LocalDateTimeStr() {
-        return LocalDateTimeToString(LocalDateTime.now(), Pattern.YYYY_MM_ddHHmmss);
+        return localDateTimeToString(LocalDateTime.now(), Pattern.YYYY_MM_ddHHmmss);
     }
 
     public static String LocalDateTimeStr(String pattern) {
-        return LocalDateTimeToString(LocalDateTime.now(), pattern);
+        return localDateTimeToString(LocalDateTime.now(), pattern);
     }
 
     public static String LocalDateStr() {
@@ -141,12 +141,35 @@ public class DateUtil {
     }
 
     public static LocalDateTime getMonthStartTime() {
-        return LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0, 0)).withDayOfMonth(1);
+        return getMonthStartTime(LocalDate.now());
     }
 
     public static LocalDateTime getMonthEndTime() {
-        return LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59)).plusMonths(1).withDayOfMonth(1)
+        return getMonthEndTime(LocalDate.now());
+    }
+
+    public static LocalDateTime getMonthStartTime(LocalDate date) {
+        if (date == null) {
+            date = LocalDate.now();
+        }
+        return LocalDateTime.of(date, LocalTime.of(0, 0, 0)).withDayOfMonth(1);
+    }
+
+    public static LocalDateTime getMonthEndTime(LocalDate date) {
+        if (date == null) {
+            date = LocalDate.now();
+        }
+        return LocalDateTime.of(date, LocalTime.of(23, 59, 59)).plusMonths(1).withDayOfMonth(1)
             .minus(1, ChronoUnit.DAYS);
+    }
+
+    public static String localDateTimeToString(LocalDateTime time) {
+        if (time == null) {
+            return null;
+        }
+        return localDateTimeToString(
+            time, Pattern.YYYY_MM_ddHHmmss
+        );
     }
 
     public static class Pattern {
@@ -158,20 +181,48 @@ public class DateUtil {
     }
 
     public static LocalDateTime getWeekStartTime() {
-        LocalDateTime now = LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0));
-        return now.plus(1 - now.getDayOfWeek().getValue(), ChronoUnit.DAYS);
+        return getWeekStartTime(LocalDate.now());
     }
 
     public static LocalDateTime getWeekEndTime() {
-        LocalDateTime now = LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59));
+        return getWeekEndTime(LocalDate.now());
+    }
+
+    public static LocalDateTime getWeekStartTime(LocalDate date) {
+        if (date == null) {
+            date = LocalDate.now();
+        }
+        LocalDateTime now = LocalDateTime.of(date, LocalTime.of(0, 0));
+        return now.plus(1 - now.getDayOfWeek().getValue(), ChronoUnit.DAYS);
+    }
+
+    public static LocalDateTime getWeekEndTime(LocalDate date) {
+        if (date == null) {
+            date = LocalDate.now();
+        }
+        LocalDateTime now = LocalDateTime.of(date, LocalTime.of(23, 59, 59));
         return now.plus(7 - now.getDayOfWeek().getValue(), ChronoUnit.DAYS);
     }
 
     public static LocalDateTime getDayEndTime() {
-        return LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59, 59));
+        return getDayEndTime(LocalDate.now());
     }
 
     public static LocalDateTime getDayStartTime() {
-        return LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0, 0));
+        return getDayStartTime(LocalDate.now());
+    }
+
+    public static LocalDateTime getDayEndTime(LocalDate date) {
+        if (date == null) {
+            date = LocalDate.now();
+        }
+        return LocalDateTime.of(date, LocalTime.of(23, 59, 59));
+    }
+
+    public static LocalDateTime getDayStartTime(LocalDate date) {
+        if (date == null) {
+            date = LocalDate.now();
+        }
+        return LocalDateTime.of(date, LocalTime.of(0, 0, 0));
     }
 }

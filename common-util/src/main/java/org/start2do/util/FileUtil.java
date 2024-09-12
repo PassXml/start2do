@@ -9,6 +9,7 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,90 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @UtilityClass
 public class FileUtil {
+
+    public String getJavaTmpDir() {
+        return System.getProperty("java.io.tmpdir");
+    }
+
+    public List<String> readAllLine(String filePath) {
+        Path path = Paths.get(filePath);
+        File file = path.toFile();
+        if (!file.exists()) {
+            return List.of();
+        }
+        try {
+            return Files.readAllLines(path);
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            return List.of();
+        }
+    }
+
+    public boolean writeString(String filePath, String body, StandardOpenOption... options) {
+        return writeString(Paths.get(filePath), body, options);
+    }
+
+    public boolean writeString(Path path, String body, StandardOpenOption... options) {
+        try {
+            Path parent = path.getParent();
+            if (!Files.exists(parent)) {
+                parent.toFile().mkdirs();
+            }
+            Files.writeString(path, body, options);
+            return true;
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            return false;
+        }
+    }
+
+    public List<String> readAllLine(Path path) {
+        File file = path.toFile();
+        if (!file.exists()) {
+            return List.of();
+        }
+        try {
+            return Files.readAllLines(path);
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            return List.of();
+        }
+    }
+
+    public String getFileName(String name) {
+        if (StringUtils.isEmpty(name)) {
+            return null;
+        }
+        int i = name.lastIndexOf(".");
+        if (i == -1) {
+            return name;
+        }
+        return name.substring(0, i);
+    }
+
+    public String getSuffix(String name) {
+        if (StringUtils.isEmpty(name)) {
+            return null;
+        }
+        int i = name.lastIndexOf(".");
+        if (i == -1) {
+            return name;
+        }
+        return name.substring(i + 1);
+    }
+
+    public String readString(Path path) {
+        File file = path.toFile();
+        if (!file.exists()) {
+            return "";
+        }
+        try {
+            return Files.readString(path);
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            return "";
+        }
+    }
 
     public List<String> getFiles(File file, Predicate<String> predicate) {
         List<String> result = new ArrayList<>();
@@ -74,4 +159,17 @@ public class FileUtil {
             log.error(e.getMessage(), e);
         }
     }
+
+    public static String getDirname(Path parent, int i) {
+        if (parent == null || i < 0) {
+            return null;
+        }
+        String path = parent.toString();
+        String[] parts = path.split("\\".equals(File.separator) ? "\\\\" : File.separator);
+        if (i >= parts.length) {
+            return null;
+        }
+        return parts[parts.length - 1 - i];
+    }
+
 }

@@ -1,4 +1,5 @@
-package org.start2do.util.validator.ip;
+package org.start2do.util.validator.list;
+
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -7,16 +8,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * @author lijie
+ */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = {IPV4Validation.class})
-public @interface ValidIPv4 {
+@Constraint(validatedBy = {ValidListItemValidation.class})
+public @interface ValidListItem {
 
-    String value() default "^((25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(25[0-5]|2[0-4]\\d|[01]?\\d\\d?)";
-
-    boolean checkNull() default true;
-
-    String message() default "${validatedValue} 非法IP";
+    String message();
 
     Class<?>[] groups() default {};
 

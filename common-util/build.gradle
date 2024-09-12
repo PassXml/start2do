@@ -13,6 +13,8 @@ dependencies {
     compileOnly group: 'io.ebean', name: 'ebean-annotation', version: '8.4'
     compileOnly 'jakarta.validation:jakarta.validation-api:3.0.2'
     compileOnly 'com.fasterxml.jackson.core:jackson-annotations:2.14.3'
+    testImplementation("org.slf4j:slf4j-simple:2.0.5")
+    testImplementation("org.slf4j:slf4j-api:2.0.5")
 
 }
 

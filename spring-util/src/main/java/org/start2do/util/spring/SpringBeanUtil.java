@@ -8,6 +8,7 @@ import lombok.Getter;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -34,6 +35,18 @@ public final class SpringBeanUtil implements BeanFactoryAware, ApplicationContex
 
     public static <T> T getBean(Class<T> tClass) {
         return context.getBean(tClass);
+    }
+
+    public static <T> ObjectProvider<T> getBeanProvider(Class<T> tClass) {
+        return context.getBeanProvider(tClass);
+    }
+
+    public static boolean containsBean(String tClass) {
+        return context.containsBean(tClass);
+    }
+
+    public static String[] getBeanNamesForType(Class<?> tClass) {
+        return context.getBeanNamesForType(tClass);
     }
 
     public static <T> T getBeanFormBeanFactory(Class<T> tClass) {
