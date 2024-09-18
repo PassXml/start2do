@@ -31,7 +31,7 @@ import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
 
 @Slf4j
-public abstract class AbsMixService<T extends Model,TokenType> implements IMixService<T> {
+public abstract class AbsMixService<T extends Model, TokenType> implements IMixService<T> {
 
     protected final Class<T> aclass = getTClass();
 
@@ -139,6 +139,10 @@ public abstract class AbsMixService<T extends Model,TokenType> implements IMixSe
         bean.delete();
     }
 
+    public <S extends QueryBean> void delete(QueryBean<T, S> bean, Transaction transaction) {
+        bean.usingTransaction(transaction).delete();
+    }
+
     @Override
     public <S extends QueryBean> Page<T> page(QueryBean<T, S> bean, Page page) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
@@ -226,7 +230,6 @@ public abstract class AbsMixService<T extends Model,TokenType> implements IMixSe
     public void save(T entity, Transaction transaction) {
         entity.save(transaction);
     }
-
 
 
     public <TT> Mono<TT> transactionOf(Mono<TT> mono, Transaction transaction) {
@@ -594,15 +597,16 @@ public abstract class AbsMixService<T extends Model,TokenType> implements IMixSe
     @Override
     public <S extends QueryBean, R> Mono<Page<R>> pageReactive(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper) {
-        bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(
             (BiConsumer<? super Tuple3<Optional<TokenType>, QueryBean<T, S>, Page>, SynchronousSink<Tuple2<PagedList<T>, Optional<TokenType>>>>) (objects, sink) -> {
 //                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
+                    Page t3 = objects.getT3();
                     QueryBean<T, S> rootBean = objects.getT2();
-                    rootBean.setMaxRows(objects.getT3().getSize()).setFirstRow(objects.getT3().getOffset());
-                    sink.next(Tuples.of(rootBean.findPagedList(), objects.getT1()));
+                    rootBean.setMaxRows(t3.getSize()).setFirstRow(t3.getOffset());
+                    Optional<TokenType> optional = objects.getT1();
+                    sink.next(Tuples.of(rootBean.findPagedList(), optional));
                 } catch (Exception e) {
                     sink.error(e);
                 } finally {

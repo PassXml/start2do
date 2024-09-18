@@ -73,9 +73,13 @@ public interface IReactiveService<T extends Model> {
 
     <S extends QueryBean> Mono<Integer> count(QueryBean<T, S> bean);
 
+    <S extends QueryBean> Mono<Boolean> countOrEmpty(QueryBean<T, S> bean);
+
     <S extends QueryBean> Mono<Integer> countUseCache(QueryBean<T, S> bean);
 
     <S> Mono<Boolean> exists(QueryBean<T, S> bean);
+
+    <S> Mono<Boolean> existsOrEmpty(QueryBean<T, S> bean);
 
     <S extends QueryBean, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
         Consumer<Collection<T>> function,

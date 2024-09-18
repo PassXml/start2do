@@ -44,4 +44,9 @@ public interface IDictItem {
     default String convert(IDictItem s) {
         return s.value();
     }
+
+    default String getClassName() {
+        return null;
+    }
+
 }

@@ -494,6 +494,17 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
+    public <S extends QueryBean> Mono<Boolean> countOrEmpty(QueryBean<T, S> bean) {
+        return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
+            Mono.just(bean)).flatMap(objects -> {
+            if (objects.getT2().findCount() > 0) {
+                return Mono.just(true);
+            }
+            return Mono.empty();
+        });
+    }
+
+    @Override
     public <S extends QueryBean> Mono<Integer> countUseCache(QueryBean<T, S> bean) {
         return count(bean).cache(Duration.ofSeconds(10));
     }
@@ -513,6 +524,18 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
 //                    ReactiveUtil.TokenTreadLocal.remove();
                 }
             });
+    }
+
+    @Override
+    public <S> Mono<Boolean> existsOrEmpty(QueryBean<T, S> bean) {
+        return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
+            Mono.just(bean)).flatMap(objects -> {
+            QueryBean<T, S> queryBean = objects.getT2();
+            if (queryBean.exists()) {
+                return Mono.just(true);
+            }
+            return Mono.empty();
+        });
     }
 
     @Override

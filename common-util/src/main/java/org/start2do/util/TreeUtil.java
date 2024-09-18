@@ -260,6 +260,23 @@ public class TreeUtil {
         }
         return children;
     }
+    public static <T extends TreeNode<T>> List<T> getAllChildrenClone(List<T> nodes) {
+        List<T> children = new ArrayList<>();
+        for (T node : nodes) {
+            try {
+                Object clone = node.clone();
+                children.add((T) clone);
+                List<T> nodeChildren = node.getChildren();
+                if (nodeChildren != null && !nodeChildren.isEmpty()) {
+                    children.addAll(getAllChildren(nodeChildren));
+                }
+            } catch (CloneNotSupportedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return children;
+    }
+
 
     //-----------------------------------------------
     public static <T extends TreeUtil.TreeNode<T>> List<T> mergeTreesPreservingChildren(List<List<T>> treeLists) {

@@ -176,8 +176,12 @@ public class ListUtil {
         return findFirst(list, get, eqValue).map(function).orElseThrow(exception);
     }
 
-    public static boolean isEmpty(List req) {
-        return req == null || req.size() == 0;
+    public static boolean isEmpty(Collection req) {
+        return req == null || req.isEmpty();
+    }
+
+    public static boolean isNotEmpty(Collection list) {
+        return list != null && !list.isEmpty();
     }
 
 
