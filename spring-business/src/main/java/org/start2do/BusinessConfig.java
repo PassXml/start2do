@@ -36,6 +36,7 @@ public class BusinessConfig {
         private boolean file = true;
         private boolean setting = true;
         private boolean customDict = false;
+        private boolean mock = false;
 
     }
 

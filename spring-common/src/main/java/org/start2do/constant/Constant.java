@@ -1,7 +1,16 @@
 package org.start2do.constant;
 
-public final class Constant {
+public interface Constant {
 
-    public final static String ENABLE = "1";
-    public final static String DISABLE = "0";
+    /**
+     *
+     */
+    String ENABLE = "1";
+    /**
+     * 停用
+     */
+    String DISABLE = "0";
+
+    String ID_GENERATOR_SNOW_FLAKE_STR = "snowflakeStr";
+    String ID_GENERATOR_SNOW_FLAKE = "snowflake";
 }

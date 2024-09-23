@@ -16,7 +16,7 @@ public class MenuRespV2 {
 
     private Object value2;
 
-    private Short sort;
+    private Integer sort;
 
     public MenuRespV2(String label, Object value, Object value2) {
         this.label = label;

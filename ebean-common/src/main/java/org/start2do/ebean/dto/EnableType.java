@@ -1,11 +1,12 @@
 package org.start2do.ebean.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import org.start2do.constant.Constant;
 import org.start2do.dto.BusinessException;
 import org.start2do.ebean.dict.IDictItem;
 
 public enum EnableType implements IDictItem {
-    Enable("1", "启用"), DisEnable("0", "停用"),
+    Enable(Constant.ENABLE, "启用"), DisEnable(Constant.DISABLE, "停用"),
 
     ;
 

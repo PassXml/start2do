@@ -12,4 +12,8 @@ public class DataNotFoundException extends RuntimeException {
     public DataNotFoundException() {
         super("找不到数据");
     }
+
+    public DataNotFoundException(String message) {
+        super(message);
+    }
 }
