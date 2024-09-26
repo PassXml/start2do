@@ -21,6 +21,7 @@ import org.start2do.BusinessConfig.FileSetting;
 import org.start2do.dto.R;
 import org.start2do.dto.resp.file.SysFileUploadResp;
 import org.start2do.entity.business.SysFile;
+import org.start2do.service.IFileFilter;
 import org.start2do.service.servlet.SysFileService;
 
 /**
@@ -35,10 +36,12 @@ public class SysFileController {
     private final SysFileService sysFileService;
     private final BusinessConfig config;
     private final String uploadDir;
+    private final IFileFilter fileFilter;
 
-    public SysFileController(SysFileService sysFileService, BusinessConfig config) {
+    public SysFileController(SysFileService sysFileService, BusinessConfig config, IFileFilter fileFilter) {
         this.sysFileService = sysFileService;
         this.config = config;
+        this.fileFilter = fileFilter;
         if (config.getFileSetting() == null) {
             config.setFileSetting(new FileSetting());
         }
@@ -91,6 +94,7 @@ public class SysFileController {
      */
     @PostMapping("upload")
     public R<SysFileUploadResp> upload(MultipartFile file) throws IOException {
+        fileFilter.filter(file);
         SysFile entity = sysFileService.updateFile(file);
         return R.ok(new SysFileUploadResp(entity.getId(), entity.getRelativeFilePath()));
     }

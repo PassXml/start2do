@@ -25,6 +25,7 @@ import org.start2do.BusinessConfig;
 import org.start2do.BusinessConfig.FileSetting;
 import org.start2do.dto.R;
 import org.start2do.dto.resp.file.SysFileUploadResp;
+import org.start2do.service.IFileFilter;
 import org.start2do.service.webflux.SysFileReactiveService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -41,10 +42,12 @@ public class SysFileController {
 
     private final SysFileReactiveService sysFileService;
     private final BusinessConfig config;
+    private final IFileFilter fileFilter;
 
-    public SysFileController(SysFileReactiveService sysFileService, BusinessConfig config) {
+    public SysFileController(SysFileReactiveService sysFileService, BusinessConfig config, IFileFilter fileFilter) {
         this.sysFileService = sysFileService;
         this.config = config;
+        this.fileFilter = fileFilter;
         if (config.getFileSetting() == null) {
             config.setFileSetting(new FileSetting());
         }
@@ -93,7 +96,8 @@ public class SysFileController {
     @PostMapping("upload")
     @ResponseBody
     public Mono<R<SysFileUploadResp>> upload(FilePart file) throws IOException {
-        return sysFileService.uploadFile(true, file).flatMapIterable(Function.identity())
+        return fileFilter.filter(file).flatMap(t -> sysFileService.uploadFile(true, t))
+            .flatMapIterable(Function.identity())
             .map(entity -> new SysFileUploadResp(entity.getId(), entity.getRelativeFilePath())).collectList()
             .map(reps -> reps.stream().findFirst().get()).map(R::ok);
     }
