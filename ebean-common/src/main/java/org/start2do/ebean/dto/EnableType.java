@@ -33,4 +33,9 @@ public enum EnableType implements IDictItem {
         throw new BusinessException(String.format("%s未知字典值:%s", "EnableType", s));
     }
 
+
+    @Override
+    public String getDesc() {
+        return "是否启用";
+    }
 }

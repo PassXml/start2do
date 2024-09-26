@@ -13,7 +13,7 @@ public class MockDataUtil {
     private final static int borderThickness = 1; // 边框厚度
     private final static int stripeSpacing = 10; // 条纹间距
 
-    public BufferedImage mockImageData(String fontName,Color color, int width, int height, int index, String text) {
+    public BufferedImage mockImageData(String fontName, Color color, int width, int height, int index, String text) {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         // 获取Graphics2D对象
         Graphics2D g2d = image.createGraphics();

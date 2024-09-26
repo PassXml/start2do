@@ -49,4 +49,8 @@ public interface IDictItem {
         return null;
     }
 
+    default String getDesc() {
+        return null;
+    }
+
 }

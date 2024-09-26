@@ -159,4 +159,24 @@ public final class StringUtils {
         }
         return lps;
     }
+
+    /**
+     * 判断字符串是否为空
+     */
+    public static String isNotBlank(String string, String defaultString) {
+        if (isNotBlank(string)) {
+            return string;
+        }
+        return defaultString;
+    }
+
+    /**
+     * 判断字符串是否为空
+     */
+    public static String isNotEmpty(String string, String defaultString) {
+        if (isNotEmpty(string)) {
+            return string;
+        }
+        return defaultString;
+    }
 }

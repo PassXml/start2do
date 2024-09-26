@@ -25,5 +25,5 @@ public class MockDataImageReq {
     private String text;
     private Color color = Color.WHITE;
 
-    private String fontName = "宋体";
+    private String fontName = "Source Han Sans SC Bold";
 }

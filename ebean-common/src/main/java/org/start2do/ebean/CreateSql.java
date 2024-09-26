@@ -38,6 +38,23 @@ public abstract class CreateSql {
     }
 
     @SneakyThrows
+    public static void runInit(String path, String name, String version, Platform platform, Boolean strictMode) {
+        if (StringUtils.isEmpty(path)) {
+            String root = Paths.get("").toFile().getAbsolutePath();
+            Path path1 = Paths.get(root + "/sql");
+            path1.toFile().mkdirs();
+            path = path1.toString();
+        }
+        DbMigration dbMigration = DbMigration.create();
+        dbMigration.setVersion(version);
+        dbMigration.setName(name);
+        dbMigration.setPathToResources(path);
+        dbMigration.setPlatform(platform);
+        dbMigration.setStrictMode(strictMode);
+        dbMigration.generateInitMigration();
+    }
+
+    @SneakyThrows
     public static void init(String pathStr, Platform platform) {
         Path path = Paths.get(pathStr + "dbmigration");
         if (Files.exists(path)) {

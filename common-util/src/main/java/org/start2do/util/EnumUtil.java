@@ -63,7 +63,7 @@ public class EnumUtil {
         return stringBuilder.toString();
     }
 
-    public <T extends IDictItem> String toStr(Collection<T> list, String split) {
+    public <T extends IDictItem> String joiner(Collection<T> list, String split) {
         if (list == null || list.isEmpty()) {
             return null;
         }
@@ -72,6 +72,18 @@ public class EnumUtil {
             joiner.add(t.getLabel());
         }
         return joiner.toString();
+    }
+
+    public <T extends IDictItem> String toStr(T[] list, String split) {
+        if (list == null || list.length == 0) {
+            return null;
+        }
+        for (T t : list) {
+            if (t.value().equals(split)) {
+                return t.getLabel();
+            }
+        }
+        return null;
     }
 
     public <T extends IDictItem> String toStr(T t) {

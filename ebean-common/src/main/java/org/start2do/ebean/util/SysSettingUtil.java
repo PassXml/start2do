@@ -25,6 +25,13 @@ public class SysSettingUtil implements CommandLineRunner {
     private static SysSettingUtil sysSettingUtil;
     private ConcurrentHashMap<String, ConcurrentHashMap<String, String>> hashMap;
 
+    public static String getLabel(String type, String key, String defaultValue) {
+        if (StringUtils.isEmpty(type) || StringUtils.isEmpty(key)) {
+            return defaultValue;
+        }
+        return Optional.ofNullable(SysSettingUtil.sysSettingUtil).map(t -> t.hashMap).map(map -> map.get(type))
+            .map(t -> t.get(key)).orElseGet(() -> defaultValue);
+    }
 
     public static String getLabel(String type, String key) {
         if (StringUtils.isEmpty(type)) {
@@ -34,8 +41,7 @@ public class SysSettingUtil implements CommandLineRunner {
             return key;
         }
         return Optional.ofNullable(SysSettingUtil.sysSettingUtil).map(t -> t.hashMap).map(map -> map.get(type))
-            .map(t -> t.get(key))
-            .orElseGet(() -> key);
+            .map(t -> t.get(key)).orElseGet(() -> key);
     }
 
     public static ConcurrentHashMap<String, String> getItems(String type) {
