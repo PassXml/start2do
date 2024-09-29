@@ -1,8 +1,11 @@
 package org.start2do.util;
 
 import java.math.BigInteger;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public class HexUtil {
+
     /**
      * 整形转换成网络传输的字节流（字节数组）型数据
      *
@@ -292,7 +295,7 @@ public class HexUtil {
         int digit = Character.digit(ch, 16);
         if (digit == -1) {
             throw new RuntimeException("Illegal hexadecimal character " + ch
-                + " at index " + index);
+                                       + " at index " + index);
         }
         return digit;
     }
@@ -613,5 +616,36 @@ public class HexUtil {
             bt[i] = input[i + startIndex];
         }
         return bt;
+    }
+
+    /**
+     *  Convert byte[] to hex string
+     */
+
+    public static String fixedBytesToString(byte[] bytes) {
+        int endLength = bytes.length;
+
+        for (int i = bytes.length - 1; i >= 0; --i) {
+            if (bytes[i] != 0) {
+                endLength = i;
+                break;
+            }
+        }
+
+        return new String(bytes, 0, Math.min(endLength + 1, bytes.length));
+    }
+
+    /**
+     * * Convert hex string to int
+     */
+    public static int toInt(String number) {
+        return (new BigInteger(number, 16)).intValue();
+    }
+
+    /**
+     * Convert int to hex string
+     */
+    public static String toHex(Integer i) {
+        return "0x" + Integer.toHexString(i);
     }
 }

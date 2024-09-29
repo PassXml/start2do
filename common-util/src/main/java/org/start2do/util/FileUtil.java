@@ -105,16 +105,32 @@ public class FileUtil {
         }
     }
 
-    public List<String> getFiles(File file, Predicate<String> predicate) {
+    public List<File> walkFilterByFile(File file, Predicate<File> predicate) {
+        List<File> result = new ArrayList<>();
+        if (file.isDirectory()) {//如果是目录
+            File[] listFiles = file.listFiles();//获取当前路径下的所有文件和目录,返回File对象数组
+            for (File f : listFiles) {//将目录内的内容对象化并遍历
+                result.addAll(walkFilterByFile(f, predicate));
+
+            }
+        } else if (file.isFile()) {//如果是文件
+            if (predicate.test(file)) {
+                result.add(file);
+            }
+        }
+        return result;
+    }
+
+    public List<String> walk(File file, Predicate<String> fileNameFilter) {
         List<String> result = new ArrayList<>();
         if (file.isDirectory()) {//如果是目录
             File[] listFiles = file.listFiles();//获取当前路径下的所有文件和目录,返回File对象数组
             for (File f : listFiles) {//将目录内的内容对象化并遍历
-                result.addAll(getFiles(f, predicate));
+                result.addAll(walk(f, fileNameFilter));
 
             }
         } else if (file.isFile()) {//如果是文件
-            if (predicate.test(file.getName())) {
+            if (fileNameFilter.test(file.getName())) {
                 result.add(file.getAbsolutePath());
             }
         }
@@ -172,4 +188,22 @@ public class FileUtil {
         return parts[parts.length - 1 - i];
     }
 
+    /**
+     * 输入路径信息以及想要的层级,返回对应的路径信息
+     */
+    public static String getDirPath(Path parent, int level) {
+        if (parent == null || level < 0) {
+            return null;
+        }
+        String path = parent.toString();
+        String[] parts = path.split("\\".equals(File.separator) ? "\\\\" : File.separator);
+        if (level >= parts.length) {
+            return null;
+        }
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < level; i++) {
+            result.append(parts[i]).append(File.separator);
+        }
+        return result.toString();
+    }
 }

@@ -15,6 +15,7 @@ dependencies {
     compileOnly 'com.fasterxml.jackson.core:jackson-annotations:2.14.3'
     testImplementation("org.slf4j:slf4j-simple:2.0.5")
     testImplementation("org.slf4j:slf4j-api:2.0.5")
+    compileOnly group: 'net.java.dev.jna', name: 'jna', version: '5.14.0'
 
 }
 

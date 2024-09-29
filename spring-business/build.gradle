@@ -33,6 +33,14 @@ dependencies {
     compileOnly 'com.qiniu:qiniu-java-sdk:7.15.1'
     compileOnly("org.springframework.boot:spring-boot-starter-data-redis:$springBootVersion")
     api 'org.apache.tika:tika-core:2.9.2'
+    compileOnly 'net.coobird:thumbnailator:0.4.20'
+    testImplementation 'net.coobird:thumbnailator:0.4.20'
+    compileOnly 'com.twelvemonkeys.imageio:imageio-core:3.11.0'
+    compileOnly 'com.twelvemonkeys.imageio:imageio-metadata:3.11.0'
+    compileOnly 'com.twelvemonkeys.imageio:imageio-webp:3.11.0'
+    testImplementation 'com.twelvemonkeys.imageio:imageio-core:3.11.0'
+    testImplementation 'com.twelvemonkeys.imageio:imageio-metadata:3.11.0'
+    testImplementation 'com.twelvemonkeys.imageio:imageio-webp:3.11.0'
 
 }
 
