@@ -13,6 +13,7 @@ import org.springframework.format.FormatterRegistry;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
+import org.springframework.web.reactive.config.ResourceHandlerRegistry;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 import org.start2do.util.StringCodeToEnumConverterFactory;
 
@@ -38,5 +39,10 @@ public class WebFluxConfig implements WebFluxConfigurer {
         registry.addConverterFactory(stringCodeToEnumConverterFactory);
         registry.addConverter(localDateConverter);
         registry.addConverter(localDateTimeConverter);
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/static").addResourceLocations("classpath:/static/");
     }
 }

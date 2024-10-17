@@ -19,5 +19,5 @@ public class UUIDReq {
      */
     @NotNull
     @JsonAlias({"uuid", "UUID"})
-    private UUID id;
+    private String id;
 }

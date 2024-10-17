@@ -1,13 +1,12 @@
 package org.start2do.util;
 
+import jakarta.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
-import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -48,7 +47,7 @@ public class DictServletUtil {
         concurrentMap.clear();
         List<SysDict> dicts = DICT_SERVICE.findAll();
         List<SysDictItem> items = SYS_DICT_ITEM_SERVICE.findAll();
-        Map<UUID, List<SysDictItem>> map = items.stream().collect(Collectors.groupingBy(SysDictItem::getDictId));
+        Map<String, List<SysDictItem>> map = items.stream().collect(Collectors.groupingBy(SysDictItem::getDictId));
         for (SysDict dict : dicts) {
             ConcurrentHashMap<String, String> itemMap = new ConcurrentHashMap<>();
             List<SysDictItem> itemList = map.get(dict.getId());

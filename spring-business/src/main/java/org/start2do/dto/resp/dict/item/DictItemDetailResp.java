@@ -14,8 +14,8 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 public class DictItemDetailResp {
 
-    private UUID id;
-    private UUID dictId;
+    private String id;
+    private String dictId;
 
     private String itemName;
 

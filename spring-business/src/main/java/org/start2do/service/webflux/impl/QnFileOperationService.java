@@ -32,7 +32,7 @@ public class QnFileOperationService implements IFileOperationService {
 
     @Override
     public Mono remove(String fileId) {
-        return fileReactiveService.findOne(new QSysFile().idStr.eq(fileId)).map(sysFile -> {
+        return fileReactiveService.findOne(new QSysFile().id.eq(fileId)).map(sysFile -> {
             String relativeFilePath = sysFile.getRelativeFilePath();
             qiNiuService.move(relativeFilePath, "Recycle/".concat(relativeFilePath));
             return sysFile;

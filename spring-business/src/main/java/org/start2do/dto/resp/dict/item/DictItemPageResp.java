@@ -14,7 +14,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 public class DictItemPageResp {
 
-    private UUID id;
+    private String id;
 
 
     private String itemName;

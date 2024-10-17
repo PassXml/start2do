@@ -2,6 +2,7 @@ package org.start2do.dto.req.log;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,4 +21,5 @@ public class LogPageReq {
 
     @JsonAlias("logDesc")
     private String keyword;
+    private List<Long> ids;
 }

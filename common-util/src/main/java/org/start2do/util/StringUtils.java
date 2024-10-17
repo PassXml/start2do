@@ -140,7 +140,7 @@ public final class StringUtils {
         return -1; // 未找到匹配位置
     }
 
-    // 构建部分匹配表（LPS 数组）
+    // 构建部分匹配表（LPS 数组） （KMP算法需要
     private static int[] buildLPS(String pattern) {
         int[] lps = new int[pattern.length()];
         int length = 0;
@@ -178,5 +178,28 @@ public final class StringUtils {
             return string;
         }
         return defaultString;
+    }
+
+    public static String renderTemplate(String template, Map<String, String> placeholders) {
+        return renderTemplate(template, "{{", "}}", placeholders);
+    }
+
+    public static String renderTemplate(String template, String delimiterStartChar, String delimiterendChar,
+        Map<String, String> placeholders) {
+        StringBuilder result = new StringBuilder(template);
+        int offset = 0;
+
+        for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+            String placeholder = delimiterStartChar + entry.getKey() + delimiterendChar;
+            String value = entry.getValue();
+
+            int index;
+            while ((index = kmpSearch(result.toString(), placeholder)) != -1) {
+                result.replace(index + offset, index + offset + placeholder.length(), value);
+                offset += value.length() - placeholder.length();
+            }
+        }
+
+        return result.toString();
     }
 }

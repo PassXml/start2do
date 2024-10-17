@@ -15,7 +15,7 @@ import lombok.experimental.Accessors;
 public class DictItemAddReq {
 
     @NotNull
-    private UUID dictId;
+    private String dictId;
     @NotEmpty
     private String itemName;
     @NotEmpty

@@ -18,7 +18,7 @@ import org.start2do.dto.resp.dict.item.DictItemPageResp;
 public class DictAllResp {
 
     @JsonIgnore
-    private UUID id;
+    private String id;
     private String dictName;
     private String dictDesc;
 

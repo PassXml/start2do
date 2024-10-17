@@ -181,7 +181,6 @@ public class TreeUtil {
 
         }
 
-        ;
 
         @JsonIgnore
         default List<String> getAllChildrenId() {
@@ -192,7 +191,7 @@ public class TreeUtil {
     public static <T> List<String> getAllChildrenId(TreeUtil.TreeNode<T> tTreeNode) {
         List<String> result = new ArrayList<>();
         for (T child : tTreeNode.getChildren()) {
-            if (child instanceof TreeNode<?>) {
+            if (child instanceof TreeUtil.TreeNode<?>) {
                 String id = ((TreeNode<?>) child).getTreeNodeId();
                 result.add(id);
                 TreeNode<T> node = (TreeNode<T>) child;
@@ -205,7 +204,7 @@ public class TreeUtil {
     }
 
 
-    public static <T extends TreeNode<?>> List<T> hasCycle(List<T> nodes) {
+    public static <T extends TreeUtil.TreeNode<?>> List<T> hasCycle(List<T> nodes) {
         Set<String> visited = new HashSet<>();
         Set<String> stack = new HashSet<>();
         List<T> result = new ArrayList<>();
@@ -260,6 +259,7 @@ public class TreeUtil {
         }
         return children;
     }
+
     public static <T extends TreeNode<T>> List<T> getAllChildrenClone(List<T> nodes) {
         List<T> children = new ArrayList<>();
         for (T node : nodes) {

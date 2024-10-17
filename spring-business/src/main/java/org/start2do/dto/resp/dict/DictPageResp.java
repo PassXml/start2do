@@ -1,7 +1,6 @@
 package org.start2do.dto.resp.dict;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +14,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 public class DictPageResp {
 
-    private UUID id;
+    private String id;
     /**
      * createBy
      */

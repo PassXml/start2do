@@ -15,7 +15,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 public class DictDetailResp {
 
-    private UUID id;
+    private String id;
     /**
      * createBy
      */

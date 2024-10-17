@@ -41,6 +41,8 @@ dependencies {
     testImplementation 'com.twelvemonkeys.imageio:imageio-core:3.11.0'
     testImplementation 'com.twelvemonkeys.imageio:imageio-metadata:3.11.0'
     testImplementation 'com.twelvemonkeys.imageio:imageio-webp:3.11.0'
+    compileOnly("org.mybatis.spring.boot:mybatis-spring-boot-starter")
+    compileOnly 'com.google.guava:guava'
 
 }
 

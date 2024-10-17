@@ -4,10 +4,10 @@ import io.ebean.Model;
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbComment;
 import io.ebean.annotation.DbDefault;
-import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -16,6 +16,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.start2do.constant.DBConstant;
+import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 
 @Setter
 @Getter
@@ -26,13 +28,14 @@ import lombok.experimental.Accessors;
 @Cache(enableQueryCache = true)
 public class SysDictItem extends Model {
 
-    @DbComment("UUID")
     @Id
-    private java.util.UUID id;
+    @Column(length = DBConstant.ID_STR_LENGHT)
+    @GeneratedValue(generator = SnowflakeStrGenerator.KEY)
+    private String id;
 
     @DbComment("字典项ID")
     @Column(name = "dict_id", nullable = false, length = 128)
-    private UUID dictId;
+    private String dictId;
     @JoinColumn(name = "dict_id", insertable = false, updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private SysDict sysDict;

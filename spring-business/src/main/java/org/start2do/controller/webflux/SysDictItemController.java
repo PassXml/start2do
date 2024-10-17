@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.start2do.dto.IdStrReq;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
-import org.start2do.dto.UUIDReq;
 import org.start2do.dto.mapper.DictDtoMapper;
 import org.start2do.dto.req.dict.item.DictItemAddReq;
 import org.start2do.dto.req.dict.item.DictItemUpdateReq;
@@ -37,7 +37,7 @@ public class SysDictItemController {
      * 分页
      */
     @GetMapping("page")
-    public Mono<R<Page<DictItemPageResp>>> page(Page page, UUIDReq req) {
+    public Mono<R<Page<DictItemPageResp>>> page(Page page, IdStrReq req) {
         BeanValidatorUtil.validate(req);
         QSysDictItem qClass = new QSysDictItem().dictId.eq(req.getId());
         return sysDictItemService.page(qClass, page, DictDtoMapper.INSTANCE::toDictPageItemResp).map(R::ok);
@@ -69,7 +69,7 @@ public class SysDictItemController {
      * 详情
      */
     @GetMapping("detail")
-    public Mono<R<DictItemDetailResp>> detail(UUIDReq req) {
+    public Mono<R<DictItemDetailResp>> detail(IdStrReq req) {
         BeanValidatorUtil.validate(req);
         return sysDictItemService.getById(req.getId()).map(DictDtoMapper.INSTANCE::toDictItemDetailResp).map(R::ok);
     }
@@ -78,7 +78,7 @@ public class SysDictItemController {
      * 删除
      */
     @GetMapping("delete")
-    public Mono<R<Boolean>> delete(UUIDReq req) {
+    public Mono<R<Boolean>> delete(IdStrReq req) {
         BeanValidatorUtil.validate(req);
         return sysDictItemService.deleteById(req.getId()).map(R::ok);
     }

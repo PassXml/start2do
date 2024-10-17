@@ -14,7 +14,8 @@ public class EPage<T> extends Page<T> {
 
     public <S> EPage(PagedList<S> result, Function<? super S, ? extends T> mapper) {
         super(result.getTotalCount(), result.getPageSize(), result.getPageIndex(),
-            result.getList().stream().map(mapper).collect(Collectors.toList()));
+            result.getList() != null ? result.getList().stream().map(mapper).collect(Collectors.toList()) : null
+        );
     }
 
 }

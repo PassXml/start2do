@@ -34,6 +34,10 @@ public class HashedWheelTimerUtil {
         hashedWheelTimer = new HashedWheelTimer(threadFactory, 250, TimeUnit.MILLISECONDS, 1024, true);
     }
 
+    public boolean containsKey(String key) {
+        return taskMap.containsKey(key);
+    }
+
     public TimeTaskResult addTask(String key, Run timerTask, long delay, TimeUnit timeUnit) {
         if (key == null || key.isEmpty()) {
             key = UUID.randomUUID().toString();

@@ -206,4 +206,14 @@ public class FileUtil {
         }
         return result.toString();
     }
+    public static String getLastDirname(Path parent, int i) {
+        if (parent != null && i >= 0) {
+            String path = parent.toString();
+            String[] parts = path.split("\\".equals(File.separator) ? "\\\\" : File.separator);
+            if (parts.length > 0) {
+                return parts[parts.length - 1 - i];
+            }
+        }
+        return null;
+    }
 }

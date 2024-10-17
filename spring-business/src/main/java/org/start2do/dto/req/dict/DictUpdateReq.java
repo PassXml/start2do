@@ -14,5 +14,5 @@ import lombok.experimental.Accessors;
 public class DictUpdateReq extends DictAddReq {
 
     @NotNull
-    private UUID id;
+    private String id;
 }

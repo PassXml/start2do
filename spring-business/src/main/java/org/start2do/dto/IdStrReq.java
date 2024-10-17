@@ -1,5 +1,6 @@
 package org.start2do.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -14,5 +15,6 @@ import lombok.experimental.Accessors;
 public class IdStrReq {
 
     @NotEmpty
+    @JsonAlias({"uuid", "UUID"})
     private String id;
 }

@@ -18,7 +18,7 @@ public class SysDictReactiveService extends AbsReactiveService<SysDict, Integer>
 
     private final SysDictItemReactiveService sysDictItemService;
 
-    public Mono<Boolean> remove(UUID id) {
+    public Mono<Boolean> remove(String id) {
         return transactionOf(sysDictItemService.delete(new QSysDictItem().dictId.eq(id)).then(deleteById(id)),
             DB.beginTransaction());
     }

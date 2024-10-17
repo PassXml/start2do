@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.start2do.dto.IdStrReq;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
-import org.start2do.dto.UUIDReq;
 import org.start2do.dto.mapper.DictDtoMapper;
 import org.start2do.dto.req.dict.DictAddReq;
 import org.start2do.dto.req.dict.DictPageReq;
@@ -51,7 +51,7 @@ public class SysDictController {
      * 删除
      */
     @GetMapping("delete")
-    public Mono<R<Boolean>> delete(UUIDReq req) {
+    public Mono<R<Boolean>> delete(IdStrReq req) {
         BeanValidatorUtil.validate(req);
         return sysDictService.remove(req.getId()).map(R::ok);
     }
@@ -82,7 +82,7 @@ public class SysDictController {
      * 详情
      */
     @GetMapping("detail")
-    public Mono<R<DictDetailResp>> detail(UUIDReq req) {
+    public Mono<R<DictDetailResp>> detail(IdStrReq req) {
         BeanValidatorUtil.validate(req);
         return sysDictService.getById(req.getId()).map(DictDtoMapper.INSTANCE::toDictDetailResp).map(R::ok);
     }

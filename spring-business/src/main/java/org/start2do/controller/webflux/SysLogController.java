@@ -32,6 +32,7 @@ import org.start2do.entity.business.SysLog.Type;
 import org.start2do.entity.business.query.QSysLog;
 import org.start2do.service.webflux.SysLogReactiveService;
 import org.start2do.util.BeanValidatorUtil;
+import org.start2do.util.ListUtil;
 import reactor.core.publisher.Mono;
 
 /**
@@ -72,40 +73,48 @@ public class SysLogController {
     @GetMapping("export")
     public Mono<Void> export(LogPageReq req, ServerHttpResponse response) throws IOException {
         QSysLog qClass = new QSysLog().createTime.desc();
-        LocalDateTime now = LocalDateTime.now();
-        Where.ready().notEmpty(req.getType(), s -> qClass.type.eq(Type.find(s)));
-        if (req.getTimeRange() == null) {
-            if (req.getStartTime() != null && req.getEndTime() != null) {
-                if (ChronoUnit.DAYS.between(req.getStartTime(), req.getEndTime()) > MIN_DAY) {
-                    throw new BusinessException("不能导出大于" + MIN_DAY + "天的数据");
+        if (ListUtil.isEmpty(req.getIds())) {
+            LocalDateTime now = LocalDateTime.now();
+            Where.ready().notEmpty(req.getType(), s -> qClass.type.eq(Type.find(s)));
+            if (req.getTimeRange() == null) {
+                if (req.getStartTime() != null && req.getEndTime() != null) {
+                    if (ChronoUnit.DAYS.between(req.getStartTime(), req.getEndTime()) > MIN_DAY) {
+                        throw new BusinessException("不能导出大于" + MIN_DAY + "天的数据");
+                    }
                 }
-            }
-            if (req.getStartTime() != null) {
-                if (ChronoUnit.DAYS.between(req.getStartTime(), now) > MIN_DAY) {
-                    throw new BusinessException("不能导出大于" + MIN_DAY + "天的数据");
+                if (req.getStartTime() != null) {
+                    if (ChronoUnit.DAYS.between(req.getStartTime(), now) > MIN_DAY) {
+                        throw new BusinessException("不能导出大于" + MIN_DAY + "天的数据");
+                    }
+                    qClass.createTime.ge(req.getStartTime());
+                } else {
+                    qClass.createTime.ge(now.plusDays(-7));
                 }
-                qClass.createTime.ge(req.getStartTime());
-            } else {
-                qClass.createTime.ge(now.plusDays(-7));
-            }
-            if (req.getEndTime() == null) {
+                if (req.getEndTime() == null) {
 
+                } else {
+                    qClass.createTime.lt(now);
+                }
             } else {
-                qClass.createTime.lt(now);
+                LocalDateTime endTime = req.getTimeRange()[1];
+                LocalDateTime startTime = req.getTimeRange()[0];
+                if (ChronoUnit.DAYS.between(startTime, endTime) > MIN_DAY) {
+                    throw new BusinessException("不能导出大于" + MIN_DAY + "天的数据");
+                }
+                qClass.createTime.ge(startTime).createTime.lt(endTime);
             }
+
+
         } else {
-            LocalDateTime endTime = req.getTimeRange()[1];
-            LocalDateTime startTime = req.getTimeRange()[0];
-            if (ChronoUnit.DAYS.between(startTime, endTime) > MIN_DAY) {
-                throw new BusinessException("不能导出大于" + MIN_DAY + "天的数据");
+            if (req.getIds().size() > 999) {
+                throw new BusinessException("指定导出,导出条数最大999条");
             }
-            qClass.createTime.ge(startTime).createTime.lt(endTime);
+            qClass.id.inOrEmpty(req.getIds());
         }
 
         return sysLogService.findAll(qClass).flatMap(logs -> {
             response.getHeaders()
                 .add("Content-Disposition", "attachment;filename=" + System.currentTimeMillis() + ".xlsx");
-
             List<LogExcelPojo> pojos = logs.stream().map(SysLogDtoMapper.INSTANCE::toLogExcelPojo)
                 .collect(Collectors.toList());
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -126,7 +135,6 @@ public class SysLogController {
                 }
             }
         });
-
     }
 
 

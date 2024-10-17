@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbComment;
 import io.ebean.annotation.DbEnumValue;
+import jakarta.persistence.Column;
+import jakarta.persistence.GeneratedValue;
 import java.util.List;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -15,8 +17,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.start2do.constant.DBConstant;
 import org.start2do.dto.BusinessException;
 import org.start2do.ebean.entity.BaseModel2;
+import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 
 @Setter
 @Getter
@@ -28,9 +32,9 @@ import org.start2do.ebean.entity.BaseModel2;
 public class SysDict extends BaseModel2 {
 
     @Id
-    @DbComment("UUID")
-    private java.util.UUID id;
-
+    @Column(length = DBConstant.ID_STR_LENGHT)
+    @GeneratedValue(generator = SnowflakeStrGenerator.KEY)
+    private String id;
     @NotNull
     @DbComment("字典名称,Type")
     private String dictName;

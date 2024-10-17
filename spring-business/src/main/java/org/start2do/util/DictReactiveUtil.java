@@ -5,7 +5,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -54,7 +53,7 @@ public class DictReactiveUtil {
             .subscribe(objects -> {
                 List<SysDict> dicts = objects.getT1();
                 List<SysDictItem> items = objects.getT2();
-                Map<UUID, List<SysDictItem>> map = items.stream()
+                Map<String, List<SysDictItem>> map = items.stream()
                     .collect(Collectors.groupingBy(SysDictItem::getDictId));
                 for (SysDict dict : dicts) {
                     ConcurrentHashMap<String, String> itemMap = new ConcurrentHashMap<>();

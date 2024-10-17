@@ -24,7 +24,7 @@ public interface IDictItem {
     }
 
     @JsonValue
-    @DbEnumValue(length = 2, storage = DbEnumType.VARCHAR)
+    @DbEnumValue(length = 2, storage = DbEnumType.VARCHAR, withConstraint = false)
     default String getValue() {
         return getItemBean().getValue();
     }

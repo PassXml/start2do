@@ -18,7 +18,7 @@ public class SysDictService extends AbsService<SysDict> {
     private final SysDictItemService sysDictItemService;
 
     @Transactional(rollbackFor = Exception.class)
-    public void remove(UUID id) {
+    public void remove(String id) {
         sysDictItemService.delete(new QSysDictItem().dictId.eq(id));
         deleteById(id);
     }
