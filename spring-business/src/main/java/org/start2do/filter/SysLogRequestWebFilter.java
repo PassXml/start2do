@@ -79,7 +79,7 @@ public class SysLogRequestWebFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
-        if (!ReReadRequestBodyFilter.isHandle(request) || urlPatternService.isMatch(request.getPath().toString())) {
+        if (!urlPatternService.isMatch(request.getPath().toString())) {
             return chain.filter(exchange);
         }
         HttpMethod method = request.getMethod();
@@ -106,17 +106,18 @@ public class SysLogRequestWebFilter implements WebFilter {
         } catch (Exception e) {
             sysLog.setExceptionInfo(e.getMessage());
         }
-        return DataBufferUtils.join(request.getBody()).map(dataBuffer -> {
-            int byteCount = dataBuffer.readableByteCount();
-            if (byteCount == 0) {
+        if (ReReadRequestBodyFilter.isHandle(request)) {
+            return DataBufferUtils.join(request.getBody()).map(dataBuffer -> {
+                int byteCount = dataBuffer.readableByteCount();
+                if (byteCount == 0) {
+                    return true;
+                }
+                byte[] bytes = new byte[byteCount];
+                dataBuffer.read(bytes, 0, byteCount);
+                sysLog.setRequestBody(new String(bytes));
                 return true;
-            }
-            byte[] bytes = new byte[byteCount];
-            dataBuffer.read(bytes, 0, byteCount);
-            sysLog.setRequestBody(new String(bytes));
-            return true;
-        }).then(chain.filter(exchange).contextWrite(Context.of(
-            SysLog.class, sysLog)
-        ));
+            }).then(chain.filter(exchange).contextWrite(Context.of(SysLog.class, sysLog)));
+        }
+        return chain.filter(exchange).contextWrite(Context.of(SysLog.class, sysLog));
     }
 }

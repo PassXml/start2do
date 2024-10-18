@@ -32,7 +32,7 @@ import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 public class SysDict extends BaseModel2 {
 
     @Id
-    @Column(length = DBConstant.ID_STR_LENGHT)
+    @Column(length = DBConstant.ID_STR_LENGTH)
     @GeneratedValue(generator = SnowflakeStrGenerator.KEY)
     private String id;
     @NotNull

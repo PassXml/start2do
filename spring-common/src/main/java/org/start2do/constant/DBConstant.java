@@ -8,15 +8,16 @@ public interface DBConstant {
     /**
      * ID长度
      */
-    int ID_STR_LENGHT = 64;
+    int ID_STR_LENGTH = 64;
+    int UUID_STR_LENGTH = 64;
     /**
      * 标题
      */
-    int TITLE_LENGHT = 128;
+    int TITLE_LENGTH = 128;
     /**
      * URL
      */
-    int URL_LENGHT = 4096;
+    int URL_LENGTH = 4096;
 
     /**
      * 内容中等

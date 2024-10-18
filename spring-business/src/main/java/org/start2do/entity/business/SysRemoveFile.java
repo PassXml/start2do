@@ -25,7 +25,7 @@ import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 public class SysRemoveFile extends Model {
 
     @Id
-    @Column(length = DBConstant.ID_STR_LENGHT)
+    @Column(length = DBConstant.ID_STR_LENGTH)
     @GeneratedValue(generator = SnowflakeStrGenerator.KEY)
     private String id;
     @DbComment("file_id")

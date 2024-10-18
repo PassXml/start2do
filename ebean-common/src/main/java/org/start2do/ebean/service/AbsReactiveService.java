@@ -282,7 +282,8 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
             .handle((BiConsumer<Tuple2<Optional<TokenType>, Object>, SynchronousSink<T>>) (objects, sink) -> {
                 try {
 //                    objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
-                    DB.find(aclass, id);
+                    sink.next(DB.find(aclass, id));
+                    sink.complete();
                 } catch (Exception e) {
                     sink.error(e);
                 } finally {
