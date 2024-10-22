@@ -5,6 +5,8 @@ import java.util.UUID;
 
 public class UUIDStrIdGenerator implements IdGenerator {
 
+    public static String KEY = "UUIDStr";
+
     @Override
     public Object nextValue() {
         return UUID.randomUUID().toString().replace("-", "");
@@ -12,6 +14,6 @@ public class UUIDStrIdGenerator implements IdGenerator {
 
     @Override
     public String getName() {
-        return "UUIDStr";
+        return KEY;
     }
 }

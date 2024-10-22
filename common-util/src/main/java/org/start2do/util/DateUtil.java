@@ -81,7 +81,7 @@ public class DateUtil {
     }
 
     public LocalTime StringToLocalTime(String time, String pattern) {
-        return stringToLocalTime(time,pattern);
+        return stringToLocalTime(time, pattern);
     }
 
     public LocalDate StringToLocalDate(String time, String pattern) {
@@ -205,6 +205,27 @@ public class DateUtil {
             return null;
         }
         return localDateTimeToString(time, Pattern.YYYY_MM_ddHHmmss);
+    }
+
+    public static boolean inRange(LocalDateTime startTime, LocalDateTime endTime, LocalDateTime now) {
+        if (startTime == null || endTime == null || now == null) {
+            return false;
+        }
+        return now.isAfter(startTime) && now.isBefore(endTime);
+    }
+
+    public static boolean inRange(LocalTime startTime, LocalTime endTime, LocalTime now) {
+        if (startTime == null || endTime == null || now == null) {
+            return false;
+        }
+        return now.isAfter(startTime) && now.isBefore(endTime);
+    }
+
+    public static boolean inRange(LocalDate startTime, LocalDate endTime, LocalDate now) {
+        if (startTime == null || endTime == null || now == null) {
+            return false;
+        }
+        return now.isAfter(startTime) && now.isBefore(endTime);
     }
 
 

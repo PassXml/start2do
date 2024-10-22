@@ -18,7 +18,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScans;
 import org.springframework.context.annotation.Import;
+import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 import org.start2do.ebean.id_generators.UUIDStrIdGenerator;
+import org.start2do.util.Snowflake;
 
 @Import(EbeanConfig.class)
 @AutoConfiguration
@@ -101,5 +103,31 @@ public class EbeanBeanAutoConfiguration {
         return DatabaseFactory.create(config);
     }
 
+
+    @ConditionalOnBean(value = {ObjectMapper.class, Snowflake.class})
+    @ConditionalOnMissingBean(DatabaseConfig.class)
+    public static class Config3 {
+
+
+        @Bean
+        public DatabaseConfig databaseConfig(DataSource dataSource, CurrentUserProvider currentUserProvider,
+            ObjectMapper objectMapper, EbeanConfig ebeanConfig, Snowflake snowflake) {
+            DatabaseConfig config = new DatabaseConfig();
+            config.loadFromProperties();
+            config.add(new UUIDStrIdGenerator());
+            config.add(new SnowflakeStrGenerator(snowflake));
+            config.setCurrentUserProvider(currentUserProvider);
+            config.setRunMigration(ebeanConfig.isMigration());
+            config.setDataSource(dataSource);
+            config.setDdlRun(false);
+            config.setExternalTransactionManager(new SpringJdbcTransactionManager());
+            config.setDdlCreateOnly(false);
+            if (ebeanConfig.isMigration()) {
+                EbeanBeanAutoConfiguration.migration(dataSource, ebeanConfig);
+            }
+            config.setObjectMapper(objectMapper);
+            return config;
+        }
+    }
 
 }
