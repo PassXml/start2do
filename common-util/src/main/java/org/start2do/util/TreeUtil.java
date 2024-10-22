@@ -277,8 +277,11 @@ public class TreeUtil {
         return children;
     }
 
-
     //-----------------------------------------------
+
+    /**
+     * 合并树
+     */
     public static <T extends TreeUtil.TreeNode<T>> List<T> mergeTreesPreservingChildren(List<List<T>> treeLists) {
         Map<String, T> mergedNodesMap = new HashMap<>();
 
@@ -440,4 +443,55 @@ public class TreeUtil {
             setTreeLevel(child, level + 1);
         }
     }
+
+    /**
+     * 查找指定节点的所有父节点，并返回一个列表
+     *
+     * @param node  当前节点
+     * @param nodes 所有节点的列表
+     * @return 包含所有父节点的列表（从最近的父节点到根节点）
+     */
+    public static <T extends TreeNode<T>> List<T> getAllParents(T node, List<T> nodes) {
+        List<T> parents = new ArrayList<>();
+        Map<String, T> nodeMap = nodes.stream().collect(Collectors.toMap(T::getTreeNodeId, t -> t));
+
+        String parentId = node.getParentId();
+        while (parentId != null && !parentId.isEmpty() && nodeMap.containsKey(parentId)) {
+            T parentNode = nodeMap.get(parentId);
+            parents.add(parentNode);
+            parentId = parentNode.getParentId(); // 继续寻找上一级父节点
+        }
+        return parents;
+    }
+
+    /**
+     * 将树结构展开为一个包含所有节点的列表
+     *
+     * @param roots 根节点列表
+     * @return 扁平化后的节点列表
+     */
+    public static <T extends TreeNode<T>> List<T> flattenTree(List<T> roots) {
+        List<T> flatList = new ArrayList<>();
+        for (T root : roots) {
+            flattenTree(root, flatList);
+        }
+        return flatList;
+    }
+
+    /**
+     * 递归方法，将单个节点及其子节点展开为列表
+     *
+     * @param node 当前节点
+     * @param flatList 扁平化后的列表
+     */
+    private static <T extends TreeNode<T>> void flattenTree(T node, List<T> flatList) {
+        if (node == null) {
+            return;
+        }
+        flatList.add(node); // 先将当前节点添加到列表
+        for (T child : node.getChildren()) {
+            flattenTree(child, flatList); // 递归处理子节点
+        }
+    }
+
 }

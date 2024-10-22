@@ -4,6 +4,7 @@ import io.ebean.Model;
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbComment;
 import io.ebean.annotation.DbDefault;
+import io.ebean.annotation.StorageEngine;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -26,6 +27,7 @@ import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 @Entity
 @Table(name = "sys_dict_item")
 @Cache(enableQueryCache = true)
+@StorageEngine("ENGINE = MergeTree() order by id;")
 public class SysDictItem extends Model {
 
     @Id

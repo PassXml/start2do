@@ -6,6 +6,7 @@ import io.ebean.annotation.Identity;
 import io.ebean.annotation.IdentityGenerated;
 import io.ebean.annotation.IdentityType;
 import io.ebean.annotation.Index;
+import io.ebean.annotation.StorageEngine;
 import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,10 +29,11 @@ import org.start2do.ebean.dto.EnableType;
 @Table(name = "sys_setting")
 @DbComment("字典值表")
 @Cache(enableQueryCache = true)
+@StorageEngine("ENGINE = MergeTree() order by id;")
 public class SysSetting extends BaseModel2 implements Serializable {
 
     @Id
-    @Identity(type = IdentityType.IDENTITY,generated = IdentityGenerated.BY_DEFAULT)
+    @Identity(type = IdentityType.IDENTITY, generated = IdentityGenerated.BY_DEFAULT)
     private Long id;
 
     @Column(name = "enable", length = 2)

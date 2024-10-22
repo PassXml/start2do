@@ -58,7 +58,18 @@ public class DateUtil {
         return time.format(getPattern(pattern));
     }
 
+    public String localDateToString(LocalDate time, String pattern) {
+        if (time == null) {
+            return "";
+        }
+        return time.format(getPattern(pattern));
+    }
+
     public String LocalDateToString(LocalDate time, String pattern) {
+        return localDateToString(time, pattern);
+    }
+
+    public String localTimeToString(LocalTime time, String pattern) {
         if (time == null) {
             return "";
         }
@@ -66,32 +77,42 @@ public class DateUtil {
     }
 
     public String LocalTimeToString(LocalTime time, String pattern) {
-        if (time == null) {
-            return "";
-        }
-        return time.format(getPattern(pattern));
+        return localTimeToString(time, pattern);
     }
 
     public LocalTime StringToLocalTime(String time, String pattern) {
+        return stringToLocalTime(time,pattern);
+    }
+
+    public LocalDate StringToLocalDate(String time, String pattern) {
+        return stringToLocalDate(time, pattern);
+    }
+
+    public LocalDateTime StringToLocalDateTime(String time, String pattern) {
+        return stringToLocalDateTime(time, pattern);
+    }
+
+    public LocalTime stringToLocalTime(String time, String pattern) {
         if (time == null) {
             return LocalTime.now();
         }
         return LocalTime.parse(time, getPattern(pattern));
     }
 
-    public LocalDate StringToLocalDate(String time, String pattern) {
+    public LocalDate stringToLocalDate(String time, String pattern) {
         if (time == null) {
             return LocalDate.now();
         }
         return LocalDate.parse(time, getPattern(pattern));
     }
 
-    public LocalDateTime StringToLocalDateTime(String time, String pattern) {
+    public LocalDateTime stringToLocalDateTime(String time, String pattern) {
         if (time == null) {
             return LocalDateTime.now();
         }
         return LocalDateTime.parse(time, getPattern(pattern));
     }
+
 
     public static LocalDateTime dateToLocalDateTime(Date endDate) {
         return LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault());
@@ -118,6 +139,22 @@ public class DateUtil {
 
     public static String LocalDateStr(String pattern) {
         return LocalDateToString(LocalDate.now(), pattern);
+    }
+
+    public static String localDateTimeStr() {
+        return localDateTimeToString(LocalDateTime.now(), Pattern.YYYY_MM_ddHHmmss);
+    }
+
+    public static String localDateTimeStr(String pattern) {
+        return localDateTimeToString(LocalDateTime.now(), pattern);
+    }
+
+    public static String localDateStr() {
+        return localDateToString(LocalDate.now(), Pattern.YYYY_MM_dd);
+    }
+
+    public static String localDateStr(String pattern) {
+        return localDateToString(LocalDate.now(), pattern);
     }
 
     public static LocalTime toLocalTime(String string, String hHmmss) {
@@ -167,10 +204,9 @@ public class DateUtil {
         if (time == null) {
             return null;
         }
-        return localDateTimeToString(
-            time, Pattern.YYYY_MM_ddHHmmss
-        );
+        return localDateTimeToString(time, Pattern.YYYY_MM_ddHHmmss);
     }
+
 
     public static class Pattern {
 
@@ -225,4 +261,10 @@ public class DateUtil {
         }
         return LocalDateTime.of(date, LocalTime.of(0, 0, 0));
     }
+
+    public static long diffDay(LocalDateTime startTime, LocalDateTime endTime) {
+        long days = ChronoUnit.DAYS.between(startTime, endTime);
+        return days;
+    }
+
 }

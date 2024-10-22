@@ -8,6 +8,7 @@ import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.DbForeignKey;
 import io.ebean.annotation.Identity;
 import io.ebean.annotation.IdentityType;
+import io.ebean.annotation.StorageEngine;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -36,7 +37,8 @@ import org.start2do.ebean.entity.BaseModel2;
 @Entity
 @Table(name = "sys_user")
 @NoArgsConstructor
-@Cache
+@Cache(enableQueryCache = true)
+@StorageEngine("ENGINE = MergeTree() order by id;")
 public class SysUser extends BaseModel2 implements Serializable {
 
     @Id

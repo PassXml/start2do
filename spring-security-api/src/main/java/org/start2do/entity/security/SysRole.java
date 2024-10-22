@@ -3,6 +3,7 @@ package org.start2do.entity.security;
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.Identity;
 import io.ebean.annotation.IdentityType;
+import io.ebean.annotation.StorageEngine;
 import java.io.Serializable;
 import java.util.List;
 import jakarta.persistence.Column;
@@ -23,7 +24,8 @@ import org.start2do.ebean.entity.BaseModel2;
 @Accessors(chain = true)
 @Entity
 @Table(name = "sys_role")
-@Cache
+@Cache(enableQueryCache = true)
+@StorageEngine("ENGINE = MergeTree() order by id;")
 public class SysRole extends BaseModel2 implements Serializable {
 
     @Id

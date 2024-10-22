@@ -624,8 +624,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
 
     @Override
     public <S extends QueryBean, R> Mono<? extends Page<? extends R>> pageUseCacheReactive(QueryBean<T, S> bean,
-        Page page,
-        Function<? super T, ? extends R> mapper) {
+        Page page, Function<? super T, ? extends R> mapper) {
         return pageReactive(bean, page, mapper).cache(Duration.ofSeconds(10));
     }
 
@@ -759,5 +758,30 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
             }
         });
     }
+
+    public void deleteAll(List<T> removeList) {
+        Transaction transaction = DB.beginTransaction();
+        try {
+
+            for (T t : removeList) {
+                t.delete(transaction);
+            }
+            transaction.commit();
+        } catch (Exception e) {
+            transaction.rollback(e);
+        }
+    }
+
+    public void deleteAllNoCommit(List<T> removeList, Transaction transaction) {
+        try {
+
+            for (T t : removeList) {
+                t.delete(transaction);
+            }
+        } catch (Exception e) {
+            transaction.rollback(e);
+        }
+    }
+
 
 }

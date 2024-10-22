@@ -1,5 +1,6 @@
 package org.start2do.entity.business;
 
+import io.ebean.annotation.StorageEngine;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -19,6 +20,7 @@ import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 @NoArgsConstructor
 @Entity
 @Table(name = "sys_file")
+@StorageEngine("ENGINE = MergeTree() order by id;")
 public class SysFile extends BaseModel2 {
 
     @Id
@@ -38,7 +40,7 @@ public class SysFile extends BaseModel2 {
     @Column(length = 1024)
     private String relativeFilePath;
 
-    @Column(length = 32)
+    @Column(length = 48)
     private String fileMd5;
     @Column(length = 128)
     private String host;

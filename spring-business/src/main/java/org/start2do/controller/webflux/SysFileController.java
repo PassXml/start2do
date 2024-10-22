@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.start2do.BusinessConfig;
 import org.start2do.BusinessConfig.FileSetting;
@@ -95,10 +96,12 @@ public class SysFileController {
      */
     @PostMapping("upload")
     @ResponseBody
-    public Mono<R<SysFileUploadResp>> upload(FilePart file) throws IOException {
-        return fileFilter.filter(file).flatMap(t -> sysFileService.uploadFile(true, t))
+    public Mono<R<SysFileUploadResp>> upload(@RequestPart FilePart file,
+        @RequestParam(defaultValue = "true", required = false) boolean checkExist) throws IOException {
+        return fileFilter.filter(file).flatMap(t -> sysFileService.uploadFile(checkExist, t))
             .flatMapIterable(Function.identity())
-            .map(entity -> new SysFileUploadResp(entity.getId(), entity.getRelativeFilePath())).collectList()
+            .map(entity -> new SysFileUploadResp(entity.getId(), entity.getRelativeFilePath(), entity.getUrl()))
+            .collectList()
             .map(reps -> reps.stream().findFirst().get()).map(R::ok);
     }
 }

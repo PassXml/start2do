@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Bean;
 @Accessors(chain = true)
 @NoArgsConstructor
 @ConfigurationProperties(prefix = "jwt.kaptcha")
-@ConditionalOnProperty(prefix = "jwt.kaptcha", name = "enable", havingValue = "true")
 public class KaptchaConfig {
 
     private Boolean enable;

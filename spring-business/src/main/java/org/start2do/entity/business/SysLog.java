@@ -9,6 +9,7 @@ import io.ebean.annotation.DbEnumValue;
 import io.ebean.annotation.Identity;
 import io.ebean.annotation.IdentityGenerated;
 import io.ebean.annotation.IdentityType;
+import io.ebean.annotation.StorageEngine;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ import org.start2do.dto.BusinessException;
 @NoArgsConstructor
 @Entity
 @Table(name = "sys_log")
+@StorageEngine("ENGINE = MergeTree() order by id;")
 public class SysLog extends Model {
 
     /**

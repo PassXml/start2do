@@ -24,6 +24,7 @@ import org.start2do.BusinessConfig;
 import org.start2do.BusinessConfig.FileSetting;
 import org.start2do.entity.business.SysFile;
 import org.start2do.entity.business.query.QSysFile;
+import org.start2do.service.IFileMd5;
 import org.start2do.service.webflux.IFileOperationService;
 import org.start2do.service.webflux.SysFileReactiveService;
 import org.start2do.util.DateUtil;
@@ -39,6 +40,7 @@ public class LocalFileOperationService implements IFileOperationService {
 
     private final BusinessConfig businessConfig;
     private final SysFileReactiveService sysFileReactiveService;
+    private final IFileMd5 fileMd5;
 
     @Override
     public Mono remove(String fileId) {
@@ -56,7 +58,7 @@ public class LocalFileOperationService implements IFileOperationService {
         String subfix = getSubFix(fileName);
         Path path = Paths.get(
             uploadDir + File.separator + DateUtil.LocalDateToString(LocalDate.now(), "yyyyMMdd") + File.separator
-                + finalMd5 + "." + subfix);
+            + finalMd5 + "." + subfix);
         try {
             Files.createDirectories(path.getParent());
             byte[] bytes = inputStream.readAllBytes();
@@ -77,14 +79,27 @@ public class LocalFileOperationService implements IFileOperationService {
     @Override
     public Mono<SysFile> update(FilePart part, Boolean checkExist) {
         return Mono.from(fileToBytes(part).map(DataBuffer::asByteBuffer).map(ByteBuffer::array)).flatMap(bytes -> {
-            String md5 = Md5Util.md5(bytes);
+            String md5 = fileMd5.md5(bytes);
+            ;
             if (checkExist) {
                 return sysFileReactiveService.findOne(new QSysFile().fileMd5.eq(md5)).switchIfEmpty(
                     Mono.just(uploadFile(md5, part.filename(), new ByteArrayInputStream(bytes)))
                         .flatMap(sysFileReactiveService::save));
             } else {
                 return Mono.just(uploadFile(md5, part.filename(), new ByteArrayInputStream(bytes)))
-                    .flatMap(sysFileReactiveService::save);
+                    .zipWhen(file -> sysFileReactiveService.findOne(new QSysFile().fileMd5.eq(md5)))
+                    .flatMap(objects -> {
+                        SysFile newFile = objects.getT1();
+                        SysFile oldFile = objects.getT2();
+                        //更新oldFile的属性,从newfile读取
+                        oldFile.setFileName(newFile.getFileName());
+                        oldFile.setFilePath(newFile.getFilePath());
+                        oldFile.setFileMd5(newFile.getFileMd5());
+                        oldFile.setFileSize(newFile.getFileSize());
+                        oldFile.setRelativeFilePath(newFile.getRelativeFilePath());
+                        oldFile.setSuffix(newFile.getSuffix());
+                        return sysFileReactiveService.update(oldFile);
+                    });
             }
         });
     }

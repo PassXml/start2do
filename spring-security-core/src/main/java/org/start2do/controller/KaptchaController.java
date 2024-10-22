@@ -30,7 +30,7 @@ import org.start2do.util.spring.RedisCacheUtil;
 @RequiredArgsConstructor
 @RequestMapping("/auth")
 @Slf4j
-@ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
+@ConditionalOnProperty(name = "jwt.kaptcha.enable", havingValue = "true")
 public class KaptchaController {
 
     private final DefaultKaptcha kaptchaProducer;

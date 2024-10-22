@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.start2do.BusinessConfig;
 import org.start2do.entity.business.SysFile;
 import org.start2do.entity.business.query.QSysFile;
+import org.start2do.service.IFileMd5;
 import org.start2do.service.webflux.IFileOperationService;
 import org.start2do.service.webflux.QiNiuService;
 import org.start2do.service.webflux.SysFileReactiveService;
@@ -29,6 +30,7 @@ public class QnFileOperationService implements IFileOperationService {
     private final BusinessConfig businessConfig;
     private final QiNiuService qiNiuService;
     private final SysFileReactiveService fileReactiveService;
+    private final IFileMd5 fileMd5;
 
     @Override
     public Mono remove(String fileId) {
@@ -43,7 +45,7 @@ public class QnFileOperationService implements IFileOperationService {
     @Override
     public Mono<SysFile> update(FilePart part, Boolean checkExist) {
         return Mono.from(fileToBytes(part).map(DataBuffer::asByteBuffer).map(ByteBuffer::array)).flatMap(bytes -> {
-            String md5 = Md5Util.md5(bytes);
+            String md5 = fileMd5.md5(bytes);
             long size = bytes.length;
             String subFix = getSubFix(part.filename());
             return Mono.just(checkExist).filter(aBoolean -> aBoolean)

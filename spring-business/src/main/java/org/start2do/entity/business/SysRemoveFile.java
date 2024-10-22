@@ -2,6 +2,7 @@ package org.start2do.entity.business;
 
 import io.ebean.Model;
 import io.ebean.annotation.DbComment;
+import io.ebean.annotation.StorageEngine;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -22,6 +23,7 @@ import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 @NoArgsConstructor
 @Entity
 @Table(name = "sys_remove_file")
+@StorageEngine("ENGINE = MergeTree() order by id;")
 public class SysRemoveFile extends Model {
 
     @Id

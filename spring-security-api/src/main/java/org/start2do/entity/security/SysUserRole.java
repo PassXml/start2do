@@ -2,6 +2,7 @@ package org.start2do.entity.security;
 
 import io.ebean.Model;
 import io.ebean.annotation.Cache;
+import io.ebean.annotation.StorageEngine;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
@@ -21,7 +22,8 @@ import lombok.experimental.Accessors;
 @Entity
 @Table(name = "sys_user_role")
 @NoArgsConstructor
-@Cache
+@Cache(enableQueryCache = true)
+@StorageEngine("ENGINE = MergeTree() order by id;")
 public class SysUserRole extends Model {
 
     @Id

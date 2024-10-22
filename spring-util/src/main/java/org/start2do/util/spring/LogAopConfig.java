@@ -16,8 +16,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.web.multipart.MultipartFile;
 
 
@@ -25,8 +26,9 @@ import org.springframework.web.multipart.MultipartFile;
 @Getter
 @Accessors(chain = true)
 @NoArgsConstructor
-@Configuration
+@ImportAutoConfiguration
 @ConfigurationProperties(prefix = "start2do.log")
+@ConditionalOnProperty(prefix = "start2do.log", value = "enable", havingValue = "true")
 public class LogAopConfig {
 
     private boolean enable;

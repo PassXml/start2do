@@ -5,6 +5,7 @@ import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbComment;
 import io.ebean.annotation.Identity;
 import io.ebean.annotation.IdentityType;
+import io.ebean.annotation.StorageEngine;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -33,7 +34,8 @@ import org.start2do.ebean.enums.YesOrNoType;
 @Entity
 @Table(name = "sys_menu")
 @NoArgsConstructor
-@Cache
+@Cache(enableQueryCache = true)
+@StorageEngine("ENGINE = MergeTree() order by id;")
 public class SysMenu extends BaseModel2 implements Serializable {
 
     @Id

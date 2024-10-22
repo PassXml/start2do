@@ -18,6 +18,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.start2do.service.IFileFilter;
+import org.start2do.service.IFileMd5;
+import org.start2do.service.impl.FileFilterEmptyImpl;
+import org.start2do.service.impl.FileMD5DefaultImpl;
 
 @ComponentScans(value = {
     @ComponentScan(value = "org.start2do.controller"),
@@ -29,6 +33,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @ConditionalOnProperty(prefix = "start2do.business", value = "enable", havingValue = "true")
 public class BusinessAutoConfig {
 
+    @Bean
+    @ConditionalOnMissingBean(IFileFilter.class)
+    public IFileFilter iFileFilter() {
+        return new FileFilterEmptyImpl();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(IFileMd5.class)
+    public IFileMd5 iFileMd5() {
+        return new FileMD5DefaultImpl();
+    }
 
     /**
      * string转localdate
