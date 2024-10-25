@@ -10,10 +10,13 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -286,6 +289,31 @@ public class DateUtil {
     public static long diffDay(LocalDateTime startTime, LocalDateTime endTime) {
         long days = ChronoUnit.DAYS.between(startTime, endTime);
         return days;
+    }
+
+    // 检查事件是否重叠的函数
+    public static boolean hasOverlap(List<TimeRange> events) {
+        for (int i = 0; i < events.size(); i++) {
+            TimeRange currentEvent = events.get(i);
+            for (int j = i + 1; j < events.size(); j++) {
+                TimeRange nextEvent = events.get(j);
+                if (currentEvent.getStartTime().isBefore(nextEvent.getEndTime()) && currentEvent.getEndTime()
+                    .isAfter(nextEvent.getStartTime())) {
+                    return true; // 找到重叠
+                }
+            }
+        }
+        return false; // 没有重叠
+    }
+
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    public static class TimeRange {
+
+        private LocalTime startTime;
+        private LocalTime endTime;
     }
 
 }
