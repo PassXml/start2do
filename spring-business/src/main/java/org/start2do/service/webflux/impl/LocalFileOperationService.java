@@ -82,12 +82,12 @@ public class LocalFileOperationService implements IFileOperationService {
             String md5 = fileMd5.md5(bytes);
             ;
             if (checkExist) {
-                return sysFileReactiveService.findOne(new QSysFile().fileMd5.eq(md5)).switchIfEmpty(
+                return sysFileReactiveService.findOneReactive(new QSysFile().fileMd5.eq(md5)).switchIfEmpty(
                     Mono.just(uploadFile(md5, part.filename(), new ByteArrayInputStream(bytes)))
-                        .flatMap(sysFileReactiveService::save));
+                        .flatMap(sysFileReactiveService::saveReactive));
             } else {
                 return Mono.just(uploadFile(md5, part.filename(), new ByteArrayInputStream(bytes)))
-                    .zipWhen(file -> sysFileReactiveService.findOne(new QSysFile().fileMd5.eq(md5)))
+                    .zipWhen(file -> sysFileReactiveService.findOneReactive(new QSysFile().fileMd5.eq(md5)))
                     .flatMap(objects -> {
                         SysFile newFile = objects.getT1();
                         SysFile oldFile = objects.getT2();
@@ -98,7 +98,7 @@ public class LocalFileOperationService implements IFileOperationService {
                         oldFile.setFileSize(newFile.getFileSize());
                         oldFile.setRelativeFilePath(newFile.getRelativeFilePath());
                         oldFile.setSuffix(newFile.getSuffix());
-                        return sysFileReactiveService.update(oldFile);
+                        return sysFileReactiveService.updateReactive(oldFile);
                     });
             }
         });
@@ -109,12 +109,12 @@ public class LocalFileOperationService implements IFileOperationService {
         return Mono.fromCallable(() -> {
             String md5 = Md5Util.md5(bytes);
             if (checkExist) {
-                return sysFileReactiveService.findOne(new QSysFile().fileMd5.eq(md5)).switchIfEmpty(
+                return sysFileReactiveService.findOneReactive(new QSysFile().fileMd5.eq(md5)).switchIfEmpty(
                     Mono.just(uploadFile(md5, fileName, new ByteArrayInputStream(bytes)))
-                        .flatMap(sysFileReactiveService::save));
+                        .flatMap(sysFileReactiveService::saveReactive));
             } else {
                 return Mono.just(uploadFile(md5, fileName, new ByteArrayInputStream(bytes)))
-                    .flatMap(sysFileReactiveService::save);
+                    .flatMap(sysFileReactiveService::saveReactive);
             }
         }).flatMap(Function.identity());
     }
@@ -122,7 +122,7 @@ public class LocalFileOperationService implements IFileOperationService {
     @Override
     public Mono<Boolean> download(ServerHttpResponse response, String fileId) {
         FileSetting fileSetting = businessConfig.getFileSetting();
-        return sysFileReactiveService.findOneById(fileId).flatMap(sysFile -> {
+        return sysFileReactiveService.findOneByIdReactive(fileId).flatMap(sysFile -> {
             response.getHeaders().add("Content-Disposition", "attachment;filename=" + sysFile.getFileName());
             response.getHeaders().add("Content-Type", "application/octet-stream");
             try (FileInputStream inputStream = new FileInputStream(

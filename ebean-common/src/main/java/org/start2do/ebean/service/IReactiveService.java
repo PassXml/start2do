@@ -33,11 +33,11 @@ public interface IReactiveService<T extends Model> {
 
     Mono<Boolean> handDeleteById(Object id);
 
-    <S extends QueryBean> Mono<Tuple2<Optional<Transaction>, Boolean>> handDelete(QueryBean<T, S> bean);
+    <S extends QueryBean<T,S>> Mono<Tuple2<Optional<Transaction>, Boolean>> handDelete(QueryBean<T, S> bean);
 
     Mono<T> save(T entity);
 
-    <S extends QueryBean> Mono<T> getOne(QueryBean<T, S> bean);
+    <S extends QueryBean<T,S>> Mono<T> getOne(QueryBean<T, S> bean);
 
     Mono<T> getById(Object id);
 
@@ -45,48 +45,48 @@ public interface IReactiveService<T extends Model> {
 
     Mono<List<T>> findAll();
 
-    <S extends QueryBean> Mono<T> findOne(QueryBean<T, S> bean);
+    <S extends QueryBean<T,S>> Mono<T> findOne(QueryBean<T, S> bean);
 
-    <S extends QueryBean> Mono<T> findOneUseCache(QueryBean<T, S> bean);
+    <S extends QueryBean<T,S>> Mono<T> findOneUseCache(QueryBean<T, S> bean);
 
-    <S extends QueryBean> Mono<List<T>> findAll(QueryBean<T, S> bean);
+    <S extends QueryBean<T,S>> Mono<List<T>> findAll(QueryBean<T, S> bean);
 
-    <S extends QueryBean> Mono<List<T>> findAllUseCache(QueryBean<T, S> bean);
+    <S extends QueryBean<T,S>> Mono<List<T>> findAllUseCache(QueryBean<T, S> bean);
 
-    <S extends QueryBean> Mono<Boolean> delete(QueryBean<T, S> bean);
+    <S extends QueryBean<T,S>> Mono<Boolean> delete(QueryBean<T, S> bean);
 
-    <S extends QueryBean> Mono<Page<T>> page(QueryBean<T, S> bean, Page page);
+    <S extends QueryBean<T,S>> Mono<Page<T>> page(QueryBean<T, S> bean, Page page);
 
-    <S extends QueryBean> Mono<Page<T>> pageUseCache(QueryBean<T, S> bean, Page page);
+    <S extends QueryBean<T,S>> Mono<Page<T>> pageUseCache(QueryBean<T, S> bean, Page page);
 
-    <S extends QueryBean, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
+    <S extends QueryBean<T,S>, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper);
 
-    <S extends QueryBean, R> Mono<? extends Page<? extends R>> pageUseCache(QueryBean<T, S> bean, Page page,
+    <S extends QueryBean<T,S>, R> Mono<? extends Page<? extends R>> pageUseCache(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper);
 
-    //    public <S extends QueryBean, R> Page<R> page(QueryBean<T, S> bean, Page page, Consumer<Collection<T>> function,
+    //    public <S extends QueryBean<T,S>, R> Page<R> page(QueryBean<T, S> bean, Page page, Consumer<Collection<T>> function,
 //        Function<? super T, ? extends R> mapper)
-    <S extends QueryBean, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
+    <S extends QueryBean<T,S>, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
         Consumer<Collection<T>> function,
         Function<? super T, ? extends R> mapper);
 
-    <S extends QueryBean> Mono<Integer> count(QueryBean<T, S> bean);
+    <S extends QueryBean<T,S>> Mono<Integer> count(QueryBean<T, S> bean);
 
-    <S extends QueryBean> Mono<Boolean> countOrEmpty(QueryBean<T, S> bean);
+    <S extends QueryBean<T,S>> Mono<Boolean> countOrEmpty(QueryBean<T, S> bean);
 
-    <S extends QueryBean> Mono<Integer> countUseCache(QueryBean<T, S> bean);
+    <S extends QueryBean<T,S>> Mono<Integer> countUseCache(QueryBean<T, S> bean);
 
-    <S> Mono<Boolean> exists(QueryBean<T, S> bean);
+    <S extends QueryBean<T,S>> Mono<Boolean> exists(QueryBean<T, S> bean);
 
-    <S> Mono<Boolean> existsOrEmpty(QueryBean<T, S> bean);
+    <S extends QueryBean<T,S>> Mono<Boolean> existsOrEmpty(QueryBean<T, S> bean);
 
-    <S extends QueryBean, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
+    <S extends QueryBean<T,S>, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
         Consumer<Collection<T>> function,
         Function<? super T, ? extends R> mapper, Consumer<Collection<R>> function2);
 
-    <S extends QueryBean, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
+    <S extends QueryBean<T,S>, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper, Runner<T, R> function2);
 
-    <S extends QueryBean> Mono<Optional<T>> findOneOptional(QueryBean<T, S> bean);
+    <S extends QueryBean<T,S>> Mono<Optional<T>> findOneOptional(QueryBean<T, S> bean);
 }

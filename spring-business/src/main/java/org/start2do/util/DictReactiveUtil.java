@@ -49,7 +49,7 @@ public class DictReactiveUtil {
         }
         concurrentMap.clear();
         Mono.delay(Duration.ofSeconds(60)).publishOn(Schedulers.newParallel("Task"))
-            .then(Mono.zip(DICT_SERVICE.findAll(), SYS_DICT_ITEM_SERVICE.findAll()))
+            .then(Mono.zip(DICT_SERVICE.findAllReactive(), SYS_DICT_ITEM_SERVICE.findAllReactive()))
             .subscribe(objects -> {
                 List<SysDict> dicts = objects.getT1();
                 List<SysDictItem> items = objects.getT2();

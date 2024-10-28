@@ -61,7 +61,7 @@ public class SysRoleController {
     public Mono<R<Page<RolePageResp>>> page(Page page, RolePageReq req) {
         QSysRole qClass = new QSysRole();
         Where.ready().like(req.getRoleName(), qClass.name::like).like(req.getRoleCode(), qClass.roleCode::like);
-        return sysRoleService.page(qClass, page, RoleDtoMapper.INSTANCE::toRolePageResp).map(R::ok);
+        return sysRoleService.pageReactive(qClass, page, RoleDtoMapper.INSTANCE::toRolePageResp).map(R::ok);
     }
 
     /**
@@ -70,7 +70,7 @@ public class SysRoleController {
     @PostMapping("add")
     public Mono<R<Boolean>> add(@RequestBody RoleAddReq req) {
         BeanValidatorUtil.validate(req);
-        return sysRoleService.save(RoleDtoMapper.INSTANCE.toEntity(req)).map(sysRole -> true).map(R::ok);
+        return sysRoleService.saveReactive(RoleDtoMapper.INSTANCE.toEntity(req)).map(sysRole -> true).map(R::ok);
     }
 
     /**
@@ -79,9 +79,9 @@ public class SysRoleController {
     @PostMapping("update")
     public Mono<R<Boolean>> update(@RequestBody RoleUpdateReq req) {
         BeanValidatorUtil.validate(req);
-        return sysRoleService.getById(req.getId()).flatMap(role -> {
+        return sysRoleService.getByIdReactive(req.getId()).flatMap(role -> {
             RoleDtoMapper.INSTANCE.update(role, req);
-            return sysRoleService.update(role);
+            return sysRoleService.updateReactive(role);
         }).map(sysRole -> true).map(R::ok);
     }
 
@@ -108,7 +108,7 @@ public class SysRoleController {
      */
     @GetMapping("menu/role")
     public Mono<R<List<MenuResp>>> roleMenu() {
-        return sysRoleService.findAll().map(sysRoles -> {
+        return sysRoleService.findAllReactive().map(sysRoles -> {
             return sysRoles.stream().map(sysRole -> new MenuResp(sysRole.getName(), sysRole.getId())).collect(
                 Collectors.toList());
         }).map(R::ok);
@@ -121,7 +121,7 @@ public class SysRoleController {
     @GetMapping("detail")
     public Mono<R<RoleDetailResp>> detail(IdReq req) {
         BeanValidatorUtil.validate(req);
-        return sysRoleService.getById(req.getId()).map(RoleDtoMapper.INSTANCE::toRoleDetailResp).map(R::ok);
+        return sysRoleService.getByIdReactive(req.getId()).map(RoleDtoMapper.INSTANCE::toRoleDetailResp).map(R::ok);
     }
 
 
@@ -130,10 +130,10 @@ public class SysRoleController {
      */
     @GetMapping("users")
     public Mono<R<List<RoleUsersResp>>> users(Integer roleId) {
-        return userRoleService.findAll(new QSysUserRole().roleId.eq(roleId))
+        return userRoleService.findAllReactive(new QSysUserRole().roleId.eq(roleId))
             .filter(sysUserRoles -> !sysUserRoles.isEmpty())
             .switchIfEmpty(Mono.just(new ArrayList<>()))
-            .zipWhen(all -> userService.findAll(
+            .zipWhen(all -> userService.findAllReactive(
                 new QSysUser().id.in(
                     new QSysUserRole().select(QSysUserRole.alias().userId).roleId.eq(roleId).query()
                 ))).map(objects -> {

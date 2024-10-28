@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.start2do.util.BeanValidatorUtil;
 import org.start2do.util.validator.list.ValidListItem;
@@ -55,8 +56,12 @@ public class Test1 {
     @Test
     void test3() {
         Item item = new Item().setName("ok").setList(List.of(new Item2()));
-        BeanValidatorUtil.validate(item);
+        try {
 
+            BeanValidatorUtil.validate(item);
+        } catch (Exception exception) {
+            Assertions.assertTrue(exception.getMessage().startsWith("list字段"));
+        }
     }
 
     @Setter

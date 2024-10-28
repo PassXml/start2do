@@ -44,7 +44,7 @@ public class SysDictController {
         QSysDict qClass = new QSysDict();
         Where.ready().like(req.getName(), qClass.dictName)
             .notEmpty(req.getType(), s -> qClass.dictType.eq(SysDict.Type.find(s)));
-        return sysDictService.page(qClass, page, DictDtoMapper.INSTANCE::toDictPageResp).map(R::ok);
+        return sysDictService.pageReactive(qClass, page, DictDtoMapper.INSTANCE::toDictPageResp).map(R::ok);
     }
 
     /**
@@ -63,7 +63,7 @@ public class SysDictController {
     public Mono<R<Boolean>> add(@RequestBody DictAddReq req) {
         BeanValidatorUtil.validate(req);
         SysDict sysDict = DictDtoMapper.INSTANCE.toSysDict(req);
-        return sysDictService.save(sysDict).map(dict -> true).map(R::ok);
+        return sysDictService.saveReactive(sysDict).map(dict -> true).map(R::ok);
     }
 
     /**
@@ -72,10 +72,10 @@ public class SysDictController {
     @PostMapping("update")
     public Mono<R<Boolean>> update(@RequestBody DictUpdateReq req) {
         BeanValidatorUtil.validate(req);
-        return sysDictService.getById(req.getId()).map(dict -> {
+        return sysDictService.getByIdReactive(req.getId()).map(dict -> {
             DictDtoMapper.INSTANCE.updateSysDict(dict, req);
             return dict;
-        }).flatMap(dict -> sysDictService.update(dict)).map(dict -> true).map(R::ok);
+        }).flatMap(sysDictService::updateReactive).map(dict -> true).map(R::ok);
     }
 
     /**
@@ -84,6 +84,6 @@ public class SysDictController {
     @GetMapping("detail")
     public Mono<R<DictDetailResp>> detail(IdStrReq req) {
         BeanValidatorUtil.validate(req);
-        return sysDictService.getById(req.getId()).map(DictDtoMapper.INSTANCE::toDictDetailResp).map(R::ok);
+        return sysDictService.getByIdReactive(req.getId()).map(DictDtoMapper.INSTANCE::toDictDetailResp).map(R::ok);
     }
 }

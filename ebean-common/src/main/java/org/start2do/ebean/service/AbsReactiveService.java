@@ -203,7 +203,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends QueryBean> Mono<Tuple2<Optional<Transaction>, Boolean>> handDelete(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<Tuple2<Optional<Transaction>, Boolean>> handDelete(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.<Optional<Transaction>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TransactionKey))),
             Mono.just(bean.findOne())).handle((objects, sink) -> {
@@ -250,7 +250,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends QueryBean> Mono<T> getOne(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<T> getOne(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).mapNotNull(objects -> {
 //            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
@@ -308,7 +308,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends QueryBean> Mono<Optional<T>> findOneOptional(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<Optional<T>> findOneOptional(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).handle((objects, sink) -> {
             try {
@@ -326,7 +326,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends QueryBean> Mono<T> findOne(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<T> findOne(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).handle((objects, sink) -> {
 //            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
@@ -346,12 +346,12 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends QueryBean> Mono<T> findOneUseCache(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<T> findOneUseCache(QueryBean<T, S> bean) {
         return findOne(bean).cache(Duration.ofSeconds(10));
     }
 
     @Override
-    public <S extends QueryBean> Mono<List<T>> findAll(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<List<T>> findAll(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).handle(
             (BiConsumer<? super Tuple2<Optional<TokenType>, QueryBean<T, S>>, SynchronousSink<List<T>>>) (objects, sink) -> {
@@ -367,12 +367,12 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends QueryBean> Mono<List<T>> findAllUseCache(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<List<T>> findAllUseCache(QueryBean<T, S> bean) {
         return findAll(bean).cache(Duration.ofSeconds(10));
     }
 
     @Override
-    public <S extends QueryBean> Mono<Boolean> delete(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<Boolean> delete(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.<Optional<Transaction>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TransactionKey))),
             Mono.just(bean)).<Boolean>handle((objects, sink) -> {
@@ -391,7 +391,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends QueryBean> Mono<Page<T>> page(QueryBean<T, S> bean, Page page) {
+    public <S extends QueryBean<T, S>> Mono<Page<T>> page(QueryBean<T, S> bean, Page page) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(
             (BiConsumer<? super Tuple3<Optional<TokenType>, QueryBean<T, S>, Page>, SynchronousSink<PagedList<T>>>) (objects, sink) -> {
@@ -409,13 +409,13 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends QueryBean> Mono<Page<T>> pageUseCache(QueryBean<T, S> bean, Page page) {
+    public <S extends QueryBean<T, S>> Mono<Page<T>> pageUseCache(QueryBean<T, S> bean, Page page) {
         return page(bean, page).cache(Duration.ofSeconds(10));
     }
 
 
     @Override
-    public <S extends QueryBean, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
+    public <S extends QueryBean<T, S>, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
@@ -442,13 +442,14 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends QueryBean, R> Mono<? extends Page<? extends R>> pageUseCache(QueryBean<T, S> bean, Page page,
+    public <S extends QueryBean<T, S>, R> Mono<? extends Page<? extends R>> pageUseCache(QueryBean<T, S> bean,
+        Page page,
         Function<? super T, ? extends R> mapper) {
         return page(bean, page, mapper).cache(Duration.ofSeconds(10));
     }
 
     @Override
-    public <S extends QueryBean, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
+    public <S extends QueryBean<T, S>, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
         Consumer<Collection<T>> function, Function<? super T, ? extends R> mapper) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(
@@ -479,7 +480,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
 
 
     @Override
-    public <S extends QueryBean> Mono<Integer> count(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<Integer> count(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).handle(
             (BiConsumer<? super Tuple2<Optional<TokenType>, QueryBean<T, S>>, SynchronousSink<Integer>>) (objects, sink) -> {
@@ -495,7 +496,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends QueryBean> Mono<Boolean> countOrEmpty(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<Boolean> countOrEmpty(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).flatMap(objects -> {
             if (objects.getT2().findCount() > 0) {
@@ -506,13 +507,13 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends QueryBean> Mono<Integer> countUseCache(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<Integer> countUseCache(QueryBean<T, S> bean) {
         return count(bean).cache(Duration.ofSeconds(10));
     }
 
 
     @Override
-    public <S> Mono<Boolean> exists(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<Boolean> exists(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).handle(
             (BiConsumer<? super Tuple2<Optional<TokenType>, QueryBean<T, S>>, SynchronousSink<Boolean>>) (objects, sink) -> {
@@ -528,7 +529,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S> Mono<Boolean> existsOrEmpty(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<Boolean> existsOrEmpty(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).flatMap(objects -> {
             QueryBean<T, S> queryBean = objects.getT2();
@@ -540,7 +541,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends QueryBean, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
+    public <S extends QueryBean<T, S>, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
         Consumer<Collection<T>> function, Function<? super T, ? extends R> mapper, Consumer<Collection<R>> function2) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(
@@ -566,7 +567,7 @@ public abstract class AbsReactiveService<T extends Model, TokenType> implements 
     }
 
     @Override
-    public <S extends QueryBean, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
+    public <S extends QueryBean<T, S>, R> Mono<Page<R>> page(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper, Runner<T, R> function2) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(

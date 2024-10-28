@@ -16,7 +16,7 @@ dependencies {
     compileOnly group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.0.0'
     api(project(":api"))
     compileOnly 'com.fasterxml.jackson.core:jackson-annotations:2.14.2'
-    compileOnly group: 'org.springframework.security', name: 'spring-security-core', version: springVersion
+    compileOnly("org.springframework.security:spring-security-core")
     compileOnly("org.apache.poi:poi:5.0.0")
 
 }

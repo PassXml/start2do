@@ -40,7 +40,7 @@ public class SysDictItemController {
     public Mono<R<Page<DictItemPageResp>>> page(Page page, IdStrReq req) {
         BeanValidatorUtil.validate(req);
         QSysDictItem qClass = new QSysDictItem().dictId.eq(req.getId());
-        return sysDictItemService.page(qClass, page, DictDtoMapper.INSTANCE::toDictPageItemResp).map(R::ok);
+        return sysDictItemService.pageReactive(qClass, page, DictDtoMapper.INSTANCE::toDictPageItemResp).map(R::ok);
     }
 
     /**
@@ -50,7 +50,7 @@ public class SysDictItemController {
     public Mono<R<Boolean>> add(@RequestBody DictItemAddReq req) {
         BeanValidatorUtil.validate(req);
         SysDictItem item = DictDtoMapper.INSTANCE.toDictItem(req);
-        return sysDictItemService.save(item).map(item1 -> true).map(R::ok);
+        return sysDictItemService.saveReactive(item).map(item1 -> true).map(R::ok);
     }
 
     /**
@@ -59,10 +59,10 @@ public class SysDictItemController {
     @PostMapping("update")
     public Mono<R<Boolean>> update(@RequestBody DictItemUpdateReq req) {
         BeanValidatorUtil.validate(req);
-        return sysDictItemService.getById(req.getId()).map(item -> {
+        return sysDictItemService.getByIdReactive(req.getId()).map(item -> {
             DictDtoMapper.INSTANCE.dictItemUpdate(item, req);
             return item;
-        }).flatMap(sysDictItemService::update).map(item -> true).map(R::ok);
+        }).flatMap(sysDictItemService::updateReactive).map(item -> true).map(R::ok);
     }
 
     /**
@@ -71,7 +71,7 @@ public class SysDictItemController {
     @GetMapping("detail")
     public Mono<R<DictItemDetailResp>> detail(IdStrReq req) {
         BeanValidatorUtil.validate(req);
-        return sysDictItemService.getById(req.getId()).map(DictDtoMapper.INSTANCE::toDictItemDetailResp).map(R::ok);
+        return sysDictItemService.getByIdReactive(req.getId()).map(DictDtoMapper.INSTANCE::toDictItemDetailResp).map(R::ok);
     }
 
     /**
@@ -80,6 +80,6 @@ public class SysDictItemController {
     @GetMapping("delete")
     public Mono<R<Boolean>> delete(IdStrReq req) {
         BeanValidatorUtil.validate(req);
-        return sysDictItemService.deleteById(req.getId()).map(R::ok);
+        return sysDictItemService.deleteByIdReactive(req.getId()).map(R::ok);
     }
 }

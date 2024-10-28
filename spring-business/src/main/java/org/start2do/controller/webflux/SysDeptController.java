@@ -52,7 +52,7 @@ public class SysDeptController {
             QSysDept qClass = new QSysDept().sort.desc();
             Where.ready().like(req.getName(), qClass.name);
             return qClass;
-        }).flatMap(qClass -> sysDeptService.page(qClass, page, DeptDtoMapper.INSTANCE::toDeptPageResp)).map(R::ok);
+        }).flatMap(qClass -> sysDeptService.pageReactive(qClass, page, DeptDtoMapper.INSTANCE::toDeptPageResp)).map(R::ok);
     }
 
     /**
@@ -61,7 +61,7 @@ public class SysDeptController {
     @PostMapping("add")
     public Mono<R<Integer>> add(@RequestBody DeptAddReq req) {
         BeanValidatorUtil.validate(req);
-        return Mono.just(DeptDtoMapper.INSTANCE.toEntity(req)).flatMap(sysDeptService::save).filter(Objects::nonNull)
+        return Mono.just(DeptDtoMapper.INSTANCE.toEntity(req)).flatMap(sysDeptService::saveReactive).filter(Objects::nonNull)
             .map(SysDept::getId).map(R::ok);
     }
 
@@ -71,9 +71,9 @@ public class SysDeptController {
     @PostMapping("update")
     public Mono<R<Boolean>> update(@RequestBody DeptUpdateReq req) {
         BeanValidatorUtil.validate(req);
-        return Mono.from(sysDeptService.getById(req.getId())).flatMap(sysDept -> {
+        return Mono.from(sysDeptService.getByIdReactive(req.getId())).flatMap(sysDept -> {
             DeptDtoMapper.INSTANCE.update(sysDept, req);
-            return sysDeptService.update(sysDept).map(sysDept1 -> true);
+            return sysDeptService.updateReactive(sysDept).map(sysDept1 -> true);
         }).map(R::ok);
     }
 
@@ -91,7 +91,7 @@ public class SysDeptController {
      */
     @GetMapping("menu/dept")
     public Mono<R<List<MenuResp>>> menu() {
-        return Mono.from(sysDeptService.findAll()).map(
+        return Mono.from(sysDeptService.findAllReactive()).map(
                 sysDepts -> sysDepts.stream().map(sysDept -> new MenuResp(sysDept.getName(), sysDept.getId())).toList())
             .map(R::ok);
     }
@@ -102,13 +102,13 @@ public class SysDeptController {
     @GetMapping("detail")
     public Mono<R<DeptDetailResp>> detail(IdReq req) {
         BeanValidatorUtil.validate(req);
-        return Mono.from(sysDeptService.getById(req.getId()))
+        return Mono.from(sysDeptService.getByIdReactive(req.getId()))
             .map(DeptDtoMapper.INSTANCE::toDeptDetailResp).map(R::ok);
     }
 
     @GetMapping("tree")
     public Mono<R<List<DeptTreeResp>>> tree() {
-        return Mono.from(sysDeptService.findAll()).map(depts -> {
+        return Mono.from(sysDeptService.findAllReactive()).map(depts -> {
             List<DeptTreeResp> objects = depts.stream().map(DeptDtoMapper.INSTANCE::toDeptTreeResp).toList();
             Map<Integer, List<DeptTreeResp>> map = objects.stream().filter(t -> t.getParentId() != null)
                 .collect(Collectors.groupingBy(DeptTreeResp::getParentId));

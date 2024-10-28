@@ -11,7 +11,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.start2do.dto.BusinessException;
-import org.start2do.ebean.service.AbsReactiveService;
+import org.start2do.ebean.service.AbsMixService;
 import org.start2do.entity.security.SysRole;
 import org.start2do.entity.security.SysUser;
 import org.start2do.entity.security.SysUserRole;
@@ -26,7 +26,7 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = Type.REACTIVE)
-public class SysUserReactiveService extends AbsReactiveService<SysUser, Integer> {
+public class SysUserReactiveService extends AbsMixService<SysUser, Integer> {
 
     private final SysLoginRoleReactiveService sysLoginRoleReactiveService;
     private final SysUserRoleReactiveService sysUserRoleService;
@@ -36,12 +36,12 @@ public class SysUserReactiveService extends AbsReactiveService<SysUser, Integer>
         return transactionOf(checkRole(roles).zipWith(Mono.just(entity)).zipWhen(objs -> {
                 SysUser user = objs.getT2();
                 user.setPassword(passwordEncoder.encode(entity.getPassword()));
-                return save(user);
+                return saveReactive(user);
             }).flatMap(objects -> {
                 SysUser user = objects.getT1().getT2();
                 List<Mono<Boolean>> monos = new ArrayList<>();
                 for (Integer roleId : roles) {
-                    monos.add(sysUserRoleService.save(new SysUserRole(user.getId(), roleId)).map(sysUserRole -> true));
+                    monos.add(sysUserRoleService.saveReactive(new SysUserRole(user.getId(), roleId)).map(sysUserRole -> true));
                 }
                 return Flux.fromIterable(monos).flatMap(Function.identity()).all(Boolean::booleanValue);
             }).filter(aBoolean -> aBoolean).switchIfEmpty(Mono.error(new BusinessException("保存用户失败"))),
@@ -57,13 +57,13 @@ public class SysUserReactiveService extends AbsReactiveService<SysUser, Integer>
     }
 
     public Mono<Boolean> remove(Integer id) {
-        return sysUserRoleService.delete(new QSysUserRole().userId.eq(id)).filter(aBoolean -> aBoolean)
-            .switchIfEmpty(Mono.error(new BusinessException("删除失败"))).flatMap(aBoolean -> deleteById(id));
+        return sysUserRoleService.deleteReactive(new QSysUserRole().userId.eq(id)).filter(aBoolean -> true)
+            .switchIfEmpty(Mono.error(new BusinessException("删除失败"))).flatMap(aBoolean -> deleteByIdReactive(id));
     }
 
     public Mono<Boolean> update(SysUser user, List<Integer> roleIds) {
-        return transactionOf(checkRole(roleIds).zipWhen(sysRoles -> this.update(user))
-                .zipWhen(aBoolean -> sysUserRoleService.findAll(new QSysUserRole().userId.eq(user.getId())))
+        return transactionOf(checkRole(roleIds).zipWhen(sysRoles -> this.updateReactive(user))
+                .zipWhen(aBoolean -> sysUserRoleService.findAllReactive(new QSysUserRole().userId.eq(user.getId())))
                 .flatMap(objects -> {
                     List<SysUserRole> userRoles = objects.getT2();
                     List<SysRole> roles = objects.getT1().getT1();
@@ -71,11 +71,11 @@ public class SysUserReactiveService extends AbsReactiveService<SysUser, Integer>
                     ListUtil.diff(roles, userRoles, (roleEntity, sysRole) -> sysRole.getRoleId().equals(roleEntity.getId()),
                         roleItem -> {
                             for (SysRole item : roleItem) {
-                                result.add(sysUserRoleService.save(new SysUserRole(user.getId(), item.getId()))
+                                result.add(sysUserRoleService.saveReactive(new SysUserRole(user.getId(), item.getId()))
                                     .map(sysUserRole -> true));
                             }
                         }, null, sysUserRoles -> {
-                            result.add(sysUserRoleService.delete(new QSysUserRole().userId.eq(user.getId()).roleId.in(
+                            result.add(sysUserRoleService.deleteReactive(new QSysUserRole().userId.eq(user.getId()).roleId.in(
                                 sysUserRoles.stream().map(SysUserRole::getRoleId).collect(Collectors.toSet()))));
                         });
                     return Flux.fromIterable(result).flatMap(Function.identity()).all(Boolean::booleanValue);
@@ -85,7 +85,7 @@ public class SysUserReactiveService extends AbsReactiveService<SysUser, Integer>
     }
 
     public Mono<Integer> checkUserName(String username) {
-        return count(new QSysUser().username.eq(username)).filter(integer -> integer <= 0)
+        return countReactive(new QSysUser().username.eq(username)).filter(integer -> integer <= 0)
             .switchIfEmpty(Mono.error(new BusinessException("用户名已被使用")));
     }
 }

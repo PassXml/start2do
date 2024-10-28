@@ -83,7 +83,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     }
 
     @Override
-    public <S extends QueryBean> boolean handDelete(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> boolean handDelete(QueryBean<T, S> bean) {
         return DB.deletePermanent(bean.findOne());
     }
 
@@ -93,7 +93,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     }
 
     @Override
-    public <S extends QueryBean> T getOne(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> T getOne(QueryBean<T, S> bean) {
         return bean.findOneOrEmpty().orElseThrow(DataNotFoundException::new);
     }
 
@@ -114,43 +114,43 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     }
 
     @Override
-    public <S extends QueryBean> T findOne(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> T findOne(QueryBean<T, S> bean) {
         return bean.findOne();
     }
 
     @Override
-    public <S extends QueryBean> T findOneUseCache(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> T findOneUseCache(QueryBean<T, S> bean) {
         bean.setUseQueryCache(true);
         return bean.findOne();
     }
 
     @Override
-    public <S extends QueryBean> List<T> findAll(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> List<T> findAll(QueryBean<T, S> bean) {
         return bean.findList();
     }
 
     @Override
-    public <S extends QueryBean> List<T> findAllUseCache(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> List<T> findAllUseCache(QueryBean<T, S> bean) {
         return bean.findList();
     }
 
     @Override
-    public <S extends QueryBean> void delete(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> void delete(QueryBean<T, S> bean) {
         bean.delete();
     }
 
-    public <S extends QueryBean> void delete(QueryBean<T, S> bean, Transaction transaction) {
+    public <S extends QueryBean<T, S>> void delete(QueryBean<T, S> bean, Transaction transaction) {
         bean.usingTransaction(transaction).delete();
     }
 
     @Override
-    public <S extends QueryBean> Page<T> page(QueryBean<T, S> bean, Page page) {
+    public <S extends QueryBean<T, S>> Page<T> page(QueryBean<T, S> bean, Page page) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         return new EPage<T>(bean.findPagedList());
     }
 
     @Override
-    public <S extends QueryBean> Page<T> pageUseCache(QueryBean<T, S> bean, Page page) {
+    public <S extends QueryBean<T, S>> Page<T> pageUseCache(QueryBean<T, S> bean, Page page) {
         bean.setUseQueryCache(true);
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         return new EPage<T>(bean.findPagedList());
@@ -158,14 +158,14 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
 
 
     @Override
-    public <S extends QueryBean, R> Page<R> page(QueryBean<T, S> bean, Page page,
+    public <S extends QueryBean<T, S>, R> Page<R> page(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         return new EPage<R>(bean.findPagedList(), mapper);
     }
 
     @Override
-    public <S extends QueryBean, R> Page<R> pageUseCache(QueryBean<T, S> bean, Page page,
+    public <S extends QueryBean<T, S>, R> Page<R> pageUseCache(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper) {
         bean.setUseQueryCache(true);
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
@@ -173,7 +173,8 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     }
 
     @Override
-    public <S extends QueryBean, R> Page<R> page(QueryBean<T, S> bean, Page page, Consumer<Collection<T>> function,
+    public <S extends QueryBean<T, S>, R> Page<R> page(QueryBean<T, S> bean, Page page,
+        Consumer<Collection<T>> function,
         Function<? super T, ? extends R> mapper) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         PagedList<T> list = bean.findPagedList();
@@ -185,23 +186,24 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
 
 
     @Override
-    public <S extends QueryBean> int count(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> int count(QueryBean<T, S> bean) {
         return bean.findCount();
     }
 
     @Override
-    public <S extends QueryBean> int countUseCache(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> int countUseCache(QueryBean<T, S> bean) {
         return bean.findCount();
     }
 
 
     @Override
-    public <S> boolean exists(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> boolean exists(QueryBean<T, S> bean) {
         return bean.exists();
     }
 
     @Override
-    public <S extends QueryBean, R> Page<R> page(QueryBean<T, S> bean, Page page, Consumer<Collection<T>> function,
+    public <S extends QueryBean<T, S>, R> Page<R> page(QueryBean<T, S> bean, Page page,
+        Consumer<Collection<T>> function,
         Function<? super T, ? extends R> mapper, Consumer<Collection<R>> function2) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         PagedList<T> list = bean.findPagedList();
@@ -216,7 +218,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     }
 
     @Override
-    public <S extends QueryBean, R> Page<R> page(QueryBean<T, S> bean, Page page,
+    public <S extends QueryBean<T, S>, R> Page<R> page(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper, Runner<T, R> function2) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         PagedList<T> list = bean.findPagedList();
@@ -384,7 +386,8 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     }
 
     @Override
-    public <S extends QueryBean> Mono<Tuple2<Optional<Transaction>, Boolean>> handDeleteReactive(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<Tuple2<Optional<Transaction>, Boolean>> handDeleteReactive(
+        QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.<Optional<Transaction>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TransactionKey))),
             Mono.just(bean.findOne())).handle((objects, sink) -> {
@@ -431,7 +434,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     }
 
     @Override
-    public <S extends QueryBean> Mono<T> getOneReactive(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<T> getOneReactive(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).mapNotNull(objects -> {
 //            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
@@ -488,7 +491,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     }
 
     @Override
-    public <S extends QueryBean> Mono<Optional<T>> findOneOptionalReactive(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<Optional<T>> findOneOptionalReactive(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).handle((objects, sink) -> {
             try {
@@ -506,7 +509,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     }
 
     @Override
-    public <S extends QueryBean> Mono<T> findOneReactive(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<T> findOneReactive(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).handle((objects, sink) -> {
 //            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
@@ -526,12 +529,12 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     }
 
     @Override
-    public <S extends QueryBean> Mono<T> findOneUseCacheReactive(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<T> findOneUseCacheReactive(QueryBean<T, S> bean) {
         return findOneReactive(bean).cache(Duration.ofSeconds(10));
     }
 
     @Override
-    public <S extends QueryBean> Mono<List<T>> findAllReactive(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<List<T>> findAllReactive(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).handle(
             (BiConsumer<? super Tuple2<Optional<TokenType>, QueryBean<T, S>>, SynchronousSink<List<T>>>) (objects, sink) -> {
@@ -547,12 +550,12 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     }
 
     @Override
-    public <S extends QueryBean> Mono<List<T>> findAllUseCacheReactive(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<List<T>> findAllUseCacheReactive(QueryBean<T, S> bean) {
         return findAllReactive(bean).cache(Duration.ofSeconds(10));
     }
 
     @Override
-    public <S extends QueryBean> Mono<Boolean> deleteReactive(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<Boolean> deleteReactive(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.<Optional<Transaction>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TransactionKey))),
             Mono.just(bean)).<Boolean>handle((objects, sink) -> {
@@ -571,7 +574,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     }
 
     @Override
-    public <S extends QueryBean> Mono<Page<T>> pageReactive(QueryBean<T, S> bean, Page page) {
+    public <S extends QueryBean<T, S>> Mono<Page<T>> pageReactive(QueryBean<T, S> bean, Page page) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(
             (BiConsumer<? super Tuple3<Optional<TokenType>, QueryBean<T, S>, Page>, SynchronousSink<PagedList<T>>>) (objects, sink) -> {
@@ -589,13 +592,13 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     }
 
     @Override
-    public <S extends QueryBean> Mono<Page<T>> pageUseCacheReactive(QueryBean<T, S> bean, Page page) {
+    public <S extends QueryBean<T, S>> Mono<Page<T>> pageUseCacheReactive(QueryBean<T, S> bean, Page page) {
         return pageReactive(bean, page).cache(Duration.ofSeconds(10));
     }
 
 
     @Override
-    public <S extends QueryBean, R> Mono<Page<R>> pageReactive(QueryBean<T, S> bean, Page page,
+    public <S extends QueryBean<T, S>, R> Mono<Page<R>> pageReactive(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(
@@ -623,13 +626,13 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     }
 
     @Override
-    public <S extends QueryBean, R> Mono<? extends Page<? extends R>> pageUseCacheReactive(QueryBean<T, S> bean,
+    public <S extends QueryBean<T, S>, R> Mono<? extends Page<? extends R>> pageUseCacheReactive(QueryBean<T, S> bean,
         Page page, Function<? super T, ? extends R> mapper) {
         return pageReactive(bean, page, mapper).cache(Duration.ofSeconds(10));
     }
 
     @Override
-    public <S extends QueryBean, R> Mono<Page<R>> pageReactive(QueryBean<T, S> bean, Page page,
+    public <S extends QueryBean<T, S>, R> Mono<Page<R>> pageReactive(QueryBean<T, S> bean, Page page,
         Consumer<Collection<T>> function, Function<? super T, ? extends R> mapper) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(
@@ -660,7 +663,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
 
 
     @Override
-    public <S extends QueryBean> Mono<Integer> countReactive(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<Integer> countReactive(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).handle(
             (BiConsumer<? super Tuple2<Optional<TokenType>, QueryBean<T, S>>, SynchronousSink<Integer>>) (objects, sink) -> {
@@ -676,13 +679,13 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     }
 
     @Override
-    public <S extends QueryBean> Mono<Integer> countUseCacheReactive(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<Integer> countUseCacheReactive(QueryBean<T, S> bean) {
         return countReactive(bean).cache(Duration.ofSeconds(10));
     }
 
 
     @Override
-    public <S> Mono<Boolean> existsReactive(QueryBean<T, S> bean) {
+    public <S extends  QueryBean<T,S>> Mono<Boolean> existsReactive(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).handle(
             (BiConsumer<? super Tuple2<Optional<TokenType>, QueryBean<T, S>>, SynchronousSink<Boolean>>) (objects, sink) -> {
@@ -698,7 +701,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     }
 
     @Override
-    public <S extends QueryBean, R> Mono<Page<R>> pageReactive(QueryBean<T, S> bean, Page page,
+    public <S extends QueryBean<T, S>, R> Mono<Page<R>> pageReactive(QueryBean<T, S> bean, Page page,
         Consumer<Collection<T>> function, Function<? super T, ? extends R> mapper, Consumer<Collection<R>> function2) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(
@@ -724,7 +727,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     }
 
     @Override
-    public <S extends QueryBean, R> Mono<Page<R>> pageReactive(QueryBean<T, S> bean, Page page,
+    public <S extends QueryBean<T, S>, R> Mono<Page<R>> pageReactive(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper, Runner<T, R> function2) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean), Mono.just(page)).handle(

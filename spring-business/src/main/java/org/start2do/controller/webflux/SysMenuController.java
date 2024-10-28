@@ -45,7 +45,7 @@ public class SysMenuController {
     public Mono<R<Page<MenuPageResp>>> page(Page page, MenuPageReq req) {
         QSysMenu qClass = new QSysMenu();
         Where.ready().like(req.getName(), qClass.name::like);
-        return sysMenuService.page(qClass, page, MenuDtoMapper.INSTANCE::toMenuPageResp).map(R::ok);
+        return sysMenuService.pageReactive(qClass, page, MenuDtoMapper.INSTANCE::toMenuPageResp).map(R::ok);
     }
 
     /**
@@ -54,7 +54,7 @@ public class SysMenuController {
     @PostMapping("add")
     public Mono<R<Boolean>> add(@RequestBody MenuAddReq req) {
         BeanValidatorUtil.validate(req);
-        return sysMenuService.save(MenuDtoMapper.INSTANCE.toEntity(req)).map(menu -> true).map(R::ok);
+        return sysMenuService.saveReactive(MenuDtoMapper.INSTANCE.toEntity(req)).map(menu -> true).map(R::ok);
     }
 
     /**
@@ -63,9 +63,9 @@ public class SysMenuController {
     @PostMapping("update")
     public Mono<R<Boolean>> update(@RequestBody MenuUpdateReq req) {
         BeanValidatorUtil.validate(req);
-        return sysMenuService.getById(req.getId()).flatMap(menu -> {
+        return sysMenuService.getByIdReactive(req.getId()).flatMap(menu -> {
             MenuDtoMapper.INSTANCE.update(menu, req);
-            return sysMenuService.update(menu);
+            return sysMenuService.updateReactive(menu);
         }).map(menu -> true).map(R::ok);
     }
 
@@ -84,7 +84,7 @@ public class SysMenuController {
     @GetMapping("detail")
     public Mono<R<MenuDetailResp>> detail(IdReq req) {
         BeanValidatorUtil.validate(req);
-        return sysMenuService.getById(req.getId()).map(MenuDtoMapper.INSTANCE::toMenuDetailResp).map(R::ok);
+        return sysMenuService.getByIdReactive(req.getId()).map(MenuDtoMapper.INSTANCE::toMenuDetailResp).map(R::ok);
     }
 
     /**
@@ -93,7 +93,7 @@ public class SysMenuController {
     @GetMapping("menu/role")
     public Mono<R<List<MenuDetailResp>>> menuByRole(IdReq req) {
         BeanValidatorUtil.validate(req);
-        return sysMenuService.findAll(new QSysMenu().roles.id.eq(req.getId())).map(sysMenus -> {
+        return sysMenuService.findAllReactive(new QSysMenu().roles.id.eq(req.getId())).map(sysMenus -> {
             return sysMenus.stream().map(MenuDtoMapper.INSTANCE::toMenuDetailResp).toList();
         }).map(R::ok);
     }
@@ -105,7 +105,7 @@ public class SysMenuController {
     public Mono<R<List<MenuDetailResp>>> menuAll(MenuPageReq req) {
         QSysMenu qClass = new QSysMenu();
         Where.ready().like(req.getName(), qClass.name);
-        return sysMenuService.findAllUseCache(qClass)
+        return sysMenuService.findAllUseCacheReactive(qClass)
             .map(sysMenus -> sysMenus.stream().map(MenuDtoMapper.INSTANCE::toMenuDetailResp).toList()).map(R::ok);
     }
 

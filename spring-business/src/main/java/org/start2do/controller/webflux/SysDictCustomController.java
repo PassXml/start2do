@@ -41,9 +41,9 @@ public class SysDictCustomController {
      */
     @GetMapping("all")
     public Mono<R<List<DictAllResp>>> all() {
-        return Mono.from(sysDictService.findAll())
+        return Mono.from(sysDictService.findAllReactive())
             .map(sysDicts -> sysDicts.stream().map(DictDtoMapper.INSTANCE::toDictAllResp).toList())
-            .zipWhen(dictAllResps -> sysDictItemService.findAll()).map(objects -> {
+            .zipWhen(dictAllResps -> sysDictItemService.findAllReactive()).map(objects -> {
                 List<SysDictItem> items = objects.getT2();
                 List<DictAllResp> resps = objects.getT1();
                 ListUtil.fillIn(resps, items,

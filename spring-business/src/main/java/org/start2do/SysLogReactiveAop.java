@@ -88,7 +88,7 @@ public class SysLogReactiveAop {
                         }
                     }
                 }
-                return logReactiveService.save(value).map(ctx -> result)
+                return logReactiveService.saveReactive(value).map(ctx -> result)
                     .onErrorResume(throwable -> {
                         log.error(throwable.getMessage(), throwable);
                         return Mono.just(result);

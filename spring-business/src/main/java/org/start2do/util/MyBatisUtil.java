@@ -30,7 +30,6 @@ import org.apache.ibatis.parsing.XPathParser;
 import org.apache.ibatis.scripting.xmltags.XMLScriptBuilder;
 import org.apache.ibatis.session.Configuration;
 import org.start2do.dto.BusinessException;
-import org.start2do.util.BeanUtils.SFunction;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
@@ -114,12 +113,6 @@ public class MyBatisUtil {
             return this;
         }
 
-        public <T> XMLBuilder select(SFunction<T>... property) {
-            for (SFunction<T> function : property) {
-                select.add(new Select<T>(function));
-            }
-            return this;
-        }
 
         public XMLBuilder where(ICondition... condition) {
             where.addAll(Arrays.asList(condition));
@@ -206,12 +199,6 @@ public class MyBatisUtil {
         }
 
 
-        public <T> XMLBuilder groupBy(SFunction<T>... sFunctions) {
-            for (SFunction<T> sFunction : sFunctions) {
-                groupBy(BeanUtils.getFieldName(sFunction));
-            }
-            return this;
-        }
     }
 
     @Setter
@@ -231,9 +218,6 @@ public class MyBatisUtil {
             this.property = property;
         }
 
-        public Select(SFunction<T> property) {
-            this.property = BeanUtils.getFieldName(property);
-        }
 
         public Select(String value, String asLabel) {
             this.property = value;
@@ -276,13 +260,6 @@ public class MyBatisUtil {
         private ConditionType conditionType = ConditionType.AND;
         @NonNull
         private Type type;
-
-        public Condition(@NonNull BeanUtils.SFunction<T> property, @NonNull BeanUtils.SFunction<S> valueName,
-            @NonNull Type type) {
-            this.property = BeanUtils.getFieldName(property);
-            this.valueName = BeanUtils.getFieldName(valueName);
-            this.type = type;
-        }
 
         public Condition(@NonNull String property, @NonNull String valueName, @NonNull Type type) {
             this.property = property;

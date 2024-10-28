@@ -61,7 +61,7 @@ public class SysUserController {
     public Mono<R<Page<UserPageResp>>> page(UserPageReq req) {
         QSysUser qClass = new QSysUser();
         Where.ready().like(req.getUsername(), qClass.username::like).notNull(req.getRole(), qClass.roles.id::eq);
-        return sysUserService.page(qClass, req, UserDtoMapper.INSTANCE::toUserPageResp).map(R::ok);
+        return sysUserService.pageReactive(qClass, req, UserDtoMapper.INSTANCE::toUserPageResp).map(R::ok);
     }
 
     /**
@@ -83,7 +83,7 @@ public class SysUserController {
     @PostMapping("update")
     public Mono<R<Boolean>> update(@RequestBody UserUpdateReq req) {
         BeanValidatorUtil.validate(req);
-        return sysUserService.getById(req.getId()).flatMap(user -> {
+        return sysUserService.getByIdReactive(req.getId()).flatMap(user -> {
             UserDtoMapper.INSTANCE.update(user, req);
             if (StringUtils.isEmpty(req.getPassword())) {
                 user.setPassword(user.getPassword());
@@ -109,7 +109,7 @@ public class SysUserController {
     @GetMapping("detail")
     public Mono<R<UserDetailResp>> detail(IdReq req) {
         BeanValidatorUtil.validate(req);
-        return sysUserService.getOne(new QSysUser().id.eq(req.getId()).roles.fetch()).map(user -> {
+        return sysUserService.getOneReactive(new QSysUser().id.eq(req.getId()).roles.fetch()).map(user -> {
             UserDetailResp resp = UserDtoMapper.INSTANCE.toUserDetailResp(user);
             List<SysRole> roles = sysRoleService.findAll(new QSysRole().menus.fetch().users.id.eq(user.getId()));
             resp.setRoles(roles.stream().map(SysRole::getId).toList());
@@ -131,10 +131,10 @@ public class SysUserController {
     @PostMapping("status")
     public Mono<R<Boolean>> status(UserStatusReq req) {
         BeanValidatorUtil.validate(req);
-        return sysUserService.getById(req.getId()).map(sysUser -> {
+        return sysUserService.getByIdReactive(req.getId()).map(sysUser -> {
             sysUser.setStatus(req.getType());
             return sysUser;
-        }).flatMap(sysUserService::update).map(sysUser -> true).map(R::ok);
+        }).flatMap(sysUserService::updateReactive).map(sysUser -> true).map(R::ok);
     }
 
     /**
@@ -144,7 +144,7 @@ public class SysUserController {
     public Mono<R<Stream<UserMenuResp>>> menu(UserMenuReq req) {
         QSysUser qClass = new QSysUser();
         Where.ready().like(req.getRealName(), qClass.realName).like(req.getUsername(), qClass.username);
-        return sysUserService.findAll(qClass).map(sysUsers -> sysUsers.stream().map(t -> new UserMenuResp(
+        return sysUserService.findAllReactive(qClass).map(sysUsers -> sysUsers.stream().map(t -> new UserMenuResp(
             t.getId(), t.getUsername(), t.getRealName()
         ))).map(R::ok);
     }

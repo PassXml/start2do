@@ -34,11 +34,11 @@ public class QnFileOperationService implements IFileOperationService {
 
     @Override
     public Mono remove(String fileId) {
-        return fileReactiveService.findOne(new QSysFile().id.eq(fileId)).map(sysFile -> {
+        return fileReactiveService.findOneReactive(new QSysFile().id.eq(fileId)).map(sysFile -> {
             String relativeFilePath = sysFile.getRelativeFilePath();
             qiNiuService.move(relativeFilePath, "Recycle/".concat(relativeFilePath));
             return sysFile;
-        }).flatMap(fileReactiveService::delete);
+        }).flatMap(fileReactiveService::deleteReactive);
 
     }
 
@@ -49,11 +49,11 @@ public class QnFileOperationService implements IFileOperationService {
             long size = bytes.length;
             String subFix = getSubFix(part.filename());
             return Mono.just(checkExist).filter(aBoolean -> aBoolean)
-                .flatMap(aBoolean -> fileReactiveService.findOne(new QSysFile().fileMd5.eq(md5)))
+                .flatMap(aBoolean -> fileReactiveService.findOneReactive(new QSysFile().fileMd5.eq(md5)))
                 .switchIfEmpty(Mono.fromCallable(() -> {
                     String dateStr = DateUtil.LocalDateStr("yyyy/MM/dd");
                     return qiNiuService.upload(bytes, String.format("%s/%s.%s", dateStr, md5, subFix));
-                }).flatMap(defaultPutRet -> fileReactiveService.save(
+                }).flatMap(defaultPutRet -> fileReactiveService.saveReactive(
                     new SysFile(part.filename(), defaultPutRet.key, defaultPutRet.key, md5,
                         businessConfig.getFileSetting().getHost(), size, subFix))));
         });
@@ -66,11 +66,11 @@ public class QnFileOperationService implements IFileOperationService {
             long size = bytes.length;
             String subFix = getSubFix(fileName);
             return Mono.just(checkExist).filter(aBoolean -> aBoolean)
-                .flatMap(aBoolean -> fileReactiveService.findOne(new QSysFile().fileMd5.eq(md5)))
+                .flatMap(aBoolean -> fileReactiveService.findOneReactive(new QSysFile().fileMd5.eq(md5)))
                 .switchIfEmpty(Mono.fromCallable(() -> {
                     String dateStr = DateUtil.LocalDateStr("yyyy/MM/dd");
                     return qiNiuService.upload(bytes, String.format("%s/%s.%s", dateStr, md5, subFix));
-                }).flatMap(defaultPutRet -> fileReactiveService.save(
+                }).flatMap(defaultPutRet -> fileReactiveService.saveReactive(
                     new SysFile(fileName, defaultPutRet.key, defaultPutRet.key, md5,
                         businessConfig.getFileSetting().getHost(), size, subFix))));
         }).flatMap(Function.identity());
@@ -78,7 +78,7 @@ public class QnFileOperationService implements IFileOperationService {
 
     @Override
     public Mono<Boolean> download(ServerHttpResponse response, String fileId) {
-        return fileReactiveService.getById(fileId).flatMap(sysFile -> {
+        return fileReactiveService.getByIdReactive(fileId).flatMap(sysFile -> {
             response.getHeaders().add("Content-Disposition", "attachment;filename=" + sysFile.getFileName());
             response.getHeaders().add("Content-Type", "application/octet-stream");
             response.getHeaders().add("Location", sysFile.getUrl());

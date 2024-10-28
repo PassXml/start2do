@@ -15,7 +15,7 @@ import org.start2do.ebean.service.AbsService;
 import org.start2do.util.BeanValidatorUtil;
 
 @ConditionalOnWebApplication(type = Type.SERVLET)
-public abstract class BaseController<Entity extends Model, QClass extends QueryBean<Entity, QClass>, SERVICE extends AbsService<Entity>, PageResp, PageReq, Add, Edit, Delete, DetailReq, DetailResp> {
+public abstract class AbsBaseController<Entity extends Model, QClass extends QueryBean<Entity, QClass>, SERVICE extends AbsService<Entity>, PageResp, PageReq, Add, Edit, Delete, DetailReq, DetailResp> {
 
     @Autowired
     @Lazy

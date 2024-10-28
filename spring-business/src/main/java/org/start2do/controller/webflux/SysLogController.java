@@ -62,7 +62,7 @@ public class SysLogController {
                     "%" + s + "%");
             });
 
-        return sysLogService.page(qClass, page, SysLogDtoMapper.INSTANCE::LogPageResp).map(R::ok);
+        return sysLogService.pageReactive(qClass, page, SysLogDtoMapper.INSTANCE::LogPageResp).map(R::ok);
     }
 
     /**
@@ -112,7 +112,7 @@ public class SysLogController {
             qClass.id.inOrEmpty(req.getIds());
         }
 
-        return sysLogService.findAll(qClass).flatMap(logs -> {
+        return sysLogService.findAllReactive(qClass).flatMap(logs -> {
             response.getHeaders()
                 .add("Content-Disposition", "attachment;filename=" + System.currentTimeMillis() + ".xlsx");
             List<LogExcelPojo> pojos = logs.stream().map(SysLogDtoMapper.INSTANCE::toLogExcelPojo)
@@ -145,7 +145,7 @@ public class SysLogController {
     @DeleteMapping("delete")
     public Mono<R<Boolean>> delete(IdsReq req) {
         BeanValidatorUtil.validate(req);
-        return sysLogService.delete(new QSysLog().createTime.le(
+        return sysLogService.deleteReactive(new QSysLog().createTime.le(
             LocalDateTime.of(LocalDate.now().minusDays(MIN_DAY), LocalTime.of(0, 0, 0))).id.in(req.getId())).map(R::ok);
     }
 }

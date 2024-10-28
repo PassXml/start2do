@@ -16,14 +16,14 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Service;
 import org.start2do.BusinessConfig;
 import org.start2do.dto.dto.file.FileUpdateByteDto;
-import org.start2do.ebean.service.AbsReactiveService;
+import org.start2do.ebean.service.AbsMixService;
 import org.start2do.entity.business.SysFile;
 import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = Type.REACTIVE)
-public class SysFileReactiveService extends AbsReactiveService<SysFile, Integer> implements CommandLineRunner {
+public class SysFileReactiveService extends AbsMixService<SysFile, Integer> implements CommandLineRunner {
 
     private final BusinessConfig businessConfig;
     @Lazy
