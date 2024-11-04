@@ -96,8 +96,8 @@ public class SysFileController {
      */
     @PostMapping("upload")
     @ResponseBody
-    public Mono<R<SysFileUploadResp>> upload(@RequestPart FilePart file,
-        @RequestParam(defaultValue = "true", required = false) boolean replace) throws IOException {
+    public Mono<R<SysFileUploadResp>> upload(@RequestPart("file") FilePart file,
+        @RequestParam(defaultValue = "true", required = false, name = "replace") boolean replace) throws IOException {
         return fileFilter.filter(file).flatMap(t -> sysFileService.uploadFile(replace, t))
             .flatMapIterable(Function.identity())
             .map(entity -> new SysFileUploadResp(entity.getId(), entity.getRelativeFilePath(), entity.getUrl()))

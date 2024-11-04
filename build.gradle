@@ -121,6 +121,7 @@ allprojects {
                     "org.springframework.boot:spring-boot-starter-webflux"      : springBootVersion,
                     "org.springframework.boot:spring-boot-starter-security"     : springBootVersion,
                     "org.springframework:spring-webflux"                        : "6.1.14",
+                    "org.springframework:spring-web"                            : "6.1.14",
                     "org.springframework:spring-jdbc"                           : "6.1.14",
                     "org.springframework:spring-context"                        : "6.1.14",
                     "org.springframework:spring-tx"                             : "6.1.14",

@@ -2,6 +2,7 @@ package org.start2do.controller;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.start2do.Start2doSecurityConfig;
 import org.start2do.config.KaptchaConfig;
 import org.start2do.dto.BusinessException;
 import org.start2do.dto.R;
@@ -29,11 +32,13 @@ import org.start2do.dto.req.login.JwtRequest;
 import org.start2do.dto.resp.login.AuthRoleMenuResp;
 import org.start2do.dto.resp.login.JwtResponse;
 import org.start2do.ebean.dto.EnableType;
+import org.start2do.entity.security.SysLoginLog;
 import org.start2do.entity.security.query.QSysMenu;
 import org.start2do.filter.JwtRequestWebFluxFilter.CustomContextInfo;
 import org.start2do.service.imp.SysLoginUserReactiveServiceImpl;
 import org.start2do.service.reactive.SysLoginMenuReactiveService;
 import org.start2do.util.BeanValidatorUtil;
+import org.start2do.util.HttpHeaderUtil;
 import org.start2do.util.JwtTokenUtil;
 import org.start2do.util.StringUtils;
 import org.start2do.util.spring.RedisCacheUtil;
@@ -42,6 +47,7 @@ import reactor.core.publisher.Mono;
 
 /**
  * 登录
+ *
  * @author kiki
  */
 @CrossOrigin
@@ -61,13 +67,19 @@ public class WebFluxLoginController {
     private final SysLoginUserReactiveServiceImpl userDetailsService;
     private final KaptchaConfig config;
     private final CustomContextInfo customContextInfo;
+    private final Start2doSecurityConfig securityConfig;
 
     /**
      * 登录
      */
     @PostMapping(value = "/login")
-    public Mono<R<JwtResponse>> createAuthenticationToken(@RequestBody JwtRequest req) {
+    public Mono<R<JwtResponse>> createAuthenticationToken(@RequestBody JwtRequest req, ServerHttpRequest request) {
         BeanValidatorUtil.validate(req);
+        String username = req.getUsername();
+        Integer integer = RedisCacheUtil.get(SysLoginLog.getRedisLockKey(username), () -> 0);
+        if (integer > 3) {
+            return Mono.error(new BusinessException("短时间内登录失败次数过多,请稍后再试"));
+        }
         customContextInfo.loadReqBefore(req);
         return customContextInfo.loadUserBefore(Mono.fromCallable(() -> {
                     if (config.getEnable() != null && config.getEnable()) {
@@ -79,11 +91,11 @@ public class WebFluxLoginController {
                         if (!req.getKaptchaCode().equals(kaptcha)) {
                             throw new BusinessException("验证码不正确");
                         }
-                        return authenticate(req.getUsername(), req.getPassword());
+                        return authenticate(username, req.getPassword());
                     }
                     return Mono.just(req);
                 }).flatMap(Function.identity()).flatMap(
-                    serializable -> userDetailsService.findByUsername(req.getUsername()).cast(UserCredentials.class)
+                    serializable -> userDetailsService.findByUsername(username).cast(UserCredentials.class)
                         .map(userCredentials -> new JwtResponse(userCredentials, JwtTokenUtil.generateToken(userCredentials))))
                 .map(R::ok))
             .doOnError(throwable -> {
@@ -94,6 +106,16 @@ public class WebFluxLoginController {
                     throw new BusinessException("用户未启用");
                 }
                 log.error(throwable.getMessage(), throwable);
+                if (Boolean.TRUE.equals(securityConfig.getRecordLoginLog())) {
+                    String requestIp = HttpHeaderUtil.getRealRequestIp(request);
+                    String userAgent = HttpHeaderUtil.getUserAgent(request);
+                    log.info("登录失败, 用户名:{}, IP:{}, User-Agent:{}", username, requestIp, userAgent);
+                    Mono.fromRunnable(() -> {
+                        new SysLoginLog(username, requestIp, userAgent).save();
+                        RedisCacheUtil.increment(SysLoginLog.getRedisLockKey(username), 1, 1, 5,
+                            TimeUnit.MINUTES);
+                    }).subscribe();
+                }
             });
     }
 

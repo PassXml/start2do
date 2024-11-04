@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.R;
 import org.start2do.dto.mapper.DictDtoMapper;
+import org.start2do.dto.req.dict.DictAllReq;
 import org.start2do.dto.resp.dict.DictAllResp;
 import org.start2do.dto.resp.dict.item.DictItemPageResp;
 import org.start2do.ebean.dict.IDictItem;
@@ -40,7 +41,8 @@ public class SysDictCustomController {
      * 所有字典值
      */
     @GetMapping("all")
-    public R<List<DictAllResp>> all() {
+    public R<List<DictAllResp>> all(
+        DictAllReq req) {
         List<DictAllResp> collect = sysDictService.findAll().stream().map(DictDtoMapper.INSTANCE::toDictAllResp)
             .collect(Collectors.toList());
 //        MenuResp

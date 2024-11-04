@@ -20,8 +20,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.start2do.service.IFileFilter;
 import org.start2do.service.IFileMd5;
+import org.start2do.service.IRestPwService;
 import org.start2do.service.impl.FileFilterEmptyImpl;
 import org.start2do.service.impl.FileMD5DefaultImpl;
+import org.start2do.service.impl.RestPwServiceEmptyImpl;
 
 @ComponentScans(value = {
     @ComponentScan(value = "org.start2do.controller"),
@@ -43,6 +45,12 @@ public class BusinessAutoConfig {
     @ConditionalOnMissingBean(IFileMd5.class)
     public IFileMd5 iFileMd5() {
         return new FileMD5DefaultImpl();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(IRestPwService.class)
+    public IRestPwService iRestPwService() {
+        return new RestPwServiceEmptyImpl();
     }
 
     /**

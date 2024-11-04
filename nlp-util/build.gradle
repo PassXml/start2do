@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.start2do'
+version = '3.0.5.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    api 'org.apache.lucene:lucene-core:9.12.0'
+    api 'org.apache.lucene:lucene-queryparser:9.12.0'
+    api 'org.apache.lucene:lucene-analysis-common:9.12.0'
+    testImplementation 'org.apache.lucene:lucene-core:9.12.0'
+    testImplementation 'org.apache.lucene:lucene-queryparser:9.12.0'
+    testImplementation 'org.apache.lucene:lucene-analysis-common:9.12.0'
+    testImplementation 'org.apache.lucene:lucene-queries:9.12.0'
+    testImplementation 'com.github.magese:ik-analyzer:8.5.0'
+    testImplementation 'org.apache.lucene:lucene-analyzers-smartcn:8.11.4'
+
+}
+
+test {
+    useJUnitPlatform()
+}

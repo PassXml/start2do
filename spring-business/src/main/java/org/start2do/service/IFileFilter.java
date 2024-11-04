@@ -8,5 +8,5 @@ public interface IFileFilter {
 
     void filter(MultipartFile file);
 
-    Mono<FilePart> filter(FilePart file);
+    Mono<? extends FilePart> filter(FilePart file);
 }

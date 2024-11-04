@@ -94,7 +94,7 @@ public class SysFileController {
      */
     @PostMapping("upload")
     public R<SysFileUploadResp> upload(MultipartFile file,
-        @RequestParam(defaultValue = "true", required = false) boolean replace) throws IOException {
+        @RequestParam(defaultValue = "true", required = false, name = "replace") boolean replace) throws IOException {
         fileFilter.filter(file);
         SysFile entity = sysFileService.updateFile(file);
         return R.ok(new SysFileUploadResp(entity.getId(), entity.getRelativeFilePath()));

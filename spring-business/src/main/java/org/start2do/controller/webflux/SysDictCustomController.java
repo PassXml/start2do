@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.R;
 import org.start2do.dto.mapper.DictDtoMapper;
+import org.start2do.dto.req.dict.DictAllReq;
 import org.start2do.dto.resp.dict.DictAllResp;
 import org.start2do.dto.resp.dict.item.DictItemPageResp;
 import org.start2do.ebean.dict.IDictItem;
@@ -21,6 +22,7 @@ import org.start2do.entity.business.SysDictItem;
 import org.start2do.service.webflux.SysDictItemReactiveService;
 import org.start2do.service.webflux.SysDictReactiveService;
 import org.start2do.util.ListUtil;
+import org.start2do.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 /**
@@ -40,7 +42,7 @@ public class SysDictCustomController {
      * 所有字典值
      */
     @GetMapping("all")
-    public Mono<R<List<DictAllResp>>> all() {
+    public Mono<R<List<DictAllResp>>> all(DictAllReq req) {
         return Mono.from(sysDictService.findAllReactive())
             .map(sysDicts -> sysDicts.stream().map(DictDtoMapper.INSTANCE::toDictAllResp).toList())
             .zipWhen(dictAllResps -> sysDictItemService.findAllReactive()).map(objects -> {
@@ -53,6 +55,11 @@ public class SysDictCustomController {
                             sysDictItem.stream().map(DictDtoMapper.INSTANCE::toDictPageItemResp).toList());
                     });
                 return getDictAllResps(resps);
+            }).map(resp -> {
+                if (StringUtils.isEmpty(req.getDictName())) {
+                    return resp;
+                }
+                return resp.stream().filter(t -> req.getDictName().equals(t.getDictName())).toList();
             }).map(R::ok);
     }
 
@@ -79,7 +86,7 @@ public class SysDictCustomController {
             if (hasAdd) {
                 DictAllResp resp = add.get(className);
                 if (resp == null) {
-                    resp = new DictAllResp(className,iDictItem.getDesc(), new ArrayList<>());
+                    resp = new DictAllResp(className, iDictItem.getDesc(), new ArrayList<>());
                 }
                 resp.getItems().add(new DictItemPageResp(iDictItem.getLabel(), iDictItem.getValue(), 0));
                 add.put(className, resp);

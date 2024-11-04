@@ -2,12 +2,13 @@ package org.start2do.ebean.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.Optional;
+import org.start2do.constant.Constant;
 import org.start2do.dto.BusinessException;
 import org.start2do.ebean.dict.DictItems;
 import org.start2do.ebean.dict.IDictItem;
 
 public enum YesOrNoType implements IDictItem {
-    Yes("1", "是"), No("0", "否"),
+    Yes(Constant.ENABLE, "是"), No(Constant.DISABLE, "否"),
 
     ;
 

@@ -215,22 +215,27 @@ public class RedisCacheUtil implements CommandLineRunner {
         return redisCacheUtil.redisTemplate.expire(key, time, timeUnit);
     }
 
-    private static void incrementPre(String key, Integer defaultValue) {
+    private static void incrementPre(String key, Integer defaultValue, long time, TimeUnit timeUnit) {
         if (redisCacheUtil.redisTemplate.hasKey(key)) {
             return;
         }
         if (defaultValue == null) {
             defaultValue = 0;
         }
-        redisCacheUtil.redisTemplate.opsForValue().set(key, defaultValue);
+        redisCacheUtil.redisTemplate.opsForValue().set(key, defaultValue, time, timeUnit);
     }
 
     public static Long increment(String key) {
         return increment(key, 1, 0);
     }
 
+    public static Long increment(String key, long i, Integer defaultValue, long time, TimeUnit timeUnit) {
+        incrementPre(key, defaultValue, time, timeUnit);
+        return redisCacheUtil.redisTemplate.opsForValue().increment(key, i);
+    }
+
     public static Long increment(String key, long i, Integer defaultValue) {
-        incrementPre(key, defaultValue);
+        incrementPre(key, defaultValue, 5, TimeUnit.MINUTES);
         return redisCacheUtil.redisTemplate.opsForValue().increment(key, i);
     }
 
@@ -275,8 +280,8 @@ public class RedisCacheUtil implements CommandLineRunner {
         return redisCacheUtil.redisTemplate.executePipelined(callback);
     }
 
-    public Object mget(Collection<String> keys){
-        return  redisCacheUtil.redisTemplate.opsForValue().multiGet(keys);
+    public Object mget(Collection<String> keys) {
+        return redisCacheUtil.redisTemplate.opsForValue().multiGet(keys);
     }
 
     @Override

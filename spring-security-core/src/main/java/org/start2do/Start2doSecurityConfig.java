@@ -29,4 +29,10 @@ public class Start2doSecurityConfig {
     @Value("${spring.main.web-application-type}")
     private WebApplicationType webApplicationType;
 
+
+    /**
+      *  记录登录尝试登录日志
+     */
+    private Boolean recordLoginLog = false;
+
 }
