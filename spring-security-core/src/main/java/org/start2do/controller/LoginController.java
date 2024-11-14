@@ -34,6 +34,8 @@ import org.start2do.ebean.dto.EnableType;
 import org.start2do.entity.security.SysLoginLog;
 import org.start2do.entity.security.SysMenu;
 import org.start2do.entity.security.query.QSysMenu;
+import org.start2do.filter.JwtRequestWebFluxFilter.CustomContextInfo;
+import org.start2do.service.ILoginLogOwner;
 import org.start2do.service.SysLoginMenuService;
 import org.start2do.service.imp.SysLoginUserServiceImpl;
 import org.start2do.util.BeanValidatorUtil;
@@ -62,6 +64,8 @@ public class LoginController {
     private final SysLoginUserServiceImpl userDetailsService;
     private final KaptchaConfig config;
     private final Start2doSecurityConfig securityConfig;
+    private final ILoginLogOwner iLoginLogOwner;
+    private final CustomContextInfo customContextInfo;
 
     /**
      * 登录
@@ -74,6 +78,7 @@ public class LoginController {
         if (integer > 3) {
             throw new BusinessException("短时间内登录失败次数过多,请稍后再试");
         }
+        customContextInfo.loadReqBefore(req);
         if (config.getEnable()) {
             if (StringUtils.isEmpty(req.getKaptchaCode()) || StringUtils.isEmpty(req.getKaptchaKey())) {
                 throw new BusinessException("验证码不能为空");
@@ -133,7 +138,7 @@ public class LoginController {
                     log.info("登录失败, 用户名:{}, IP:{}, User-Agent:{}", username, requestIp, userAgent);
                     RedisCacheUtil.increment(SysLoginLog.getRedisLockKey(username), 1, 1, 5,
                         TimeUnit.MINUTES);
-                    new SysLoginLog(username, requestIp, userAgent).save();
+                    new SysLoginLog(username, requestIp, userAgent, iLoginLogOwner.getOwner()).save();
                 }
             }
         }

@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +15,7 @@ import org.start2do.dto.req.restpw.RestPwReq;
 import org.start2do.dto.req.restpw.RestPwReq.Type;
 import org.start2do.entity.security.SysUser;
 import org.start2do.entity.security.query.QSysUser;
+import org.start2do.filter.JwtRequestWebFluxFilter.CustomContextInfo;
 import org.start2do.service.IRestPwService;
 
 /**
@@ -23,19 +23,21 @@ import org.start2do.service.IRestPwService;
  */
 @Slf4j
 @RestController
-@RequestMapping("/rest/pw")
+@RequestMapping({"/rest/pw", "/reset/pw"})
 @RequiredArgsConstructor
 public class RestPwController {
 
     private final PasswordEncoder passwordEncoder;
     private final IRestPwService iRestPwService;
+    private final CustomContextInfo customContextInfo;
 
     /**
      * 重置密码
      */
-    @GetMapping("submit")
+    @PostMapping("submit")
     public R submit(@Valid @RequestBody RestPwChangeReq req) {
         iRestPwService.validateCode(req.getUsername(), req.getVerificationCode());
+        customContextInfo.loadReqBefore(req);
         SysUser sysUser = new QSysUser().username.eq(req.getUsername()).findOneOrEmpty()
             .orElseThrow(() -> new BusinessException("用户名不存在"));
         sysUser.setPassword(passwordEncoder.encode(req.getNewPassword()));

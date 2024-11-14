@@ -25,6 +25,7 @@ import org.start2do.BusinessConfig.FileSetting;
 import org.start2do.entity.business.SysFile;
 import org.start2do.entity.business.query.QSysFile;
 import org.start2do.service.IFileMd5;
+import org.start2do.service.webflux.IFileOperationHookService;
 import org.start2do.service.webflux.IFileOperationService;
 import org.start2do.service.webflux.SysFileReactiveService;
 import org.start2do.util.DateUtil;
@@ -40,6 +41,7 @@ public class LocalFileOperationService implements IFileOperationService {
 
     private final BusinessConfig businessConfig;
     private final SysFileReactiveService sysFileReactiveService;
+    private final IFileOperationHookService hookService;
     private final IFileMd5 fileMd5;
 
     @Override
@@ -47,7 +49,7 @@ public class LocalFileOperationService implements IFileOperationService {
         return null;
     }
 
-    public SysFile uploadFile(String md5, String fileName, ByteArrayInputStream inputStream) {
+    private SysFile uploadFile(String md5, String fileName, ByteArrayInputStream inputStream) {
         String finalMd5;
         if (md5 == null) {
             finalMd5 = Md5Util.md5(inputStream);
@@ -84,7 +86,10 @@ public class LocalFileOperationService implements IFileOperationService {
             if (checkExist) {
                 return sysFileReactiveService.findOneReactive(new QSysFile().fileMd5.eq(md5)).switchIfEmpty(
                     Mono.just(uploadFile(md5, part.filename(), new ByteArrayInputStream(bytes)))
-                        .flatMap(sysFileReactiveService::saveReactive));
+                        .flatMap(sysFileReactiveService::saveReactive).map(file -> {
+                            hookService.uploadAfter(bytes, file);
+                            return file;
+                        }));
             } else {
                 return Mono.just(uploadFile(md5, part.filename(), new ByteArrayInputStream(bytes)))
                     .zipWhen(file -> sysFileReactiveService.findOneReactive(new QSysFile().fileMd5.eq(md5)))
@@ -99,6 +104,9 @@ public class LocalFileOperationService implements IFileOperationService {
                         oldFile.setRelativeFilePath(newFile.getRelativeFilePath());
                         oldFile.setSuffix(newFile.getSuffix());
                         return sysFileReactiveService.updateReactive(oldFile);
+                    }).map(file -> {
+                        hookService.uploadAfter(bytes, file);
+                        return file;
                     });
             }
         });
@@ -111,10 +119,16 @@ public class LocalFileOperationService implements IFileOperationService {
             if (checkExist) {
                 return sysFileReactiveService.findOneReactive(new QSysFile().fileMd5.eq(md5)).switchIfEmpty(
                     Mono.just(uploadFile(md5, fileName, new ByteArrayInputStream(bytes)))
-                        .flatMap(sysFileReactiveService::saveReactive));
+                        .flatMap(sysFileReactiveService::saveReactive)).map(file -> {
+                    hookService.uploadAfter(bytes, file);
+                    return file;
+                });
             } else {
                 return Mono.just(uploadFile(md5, fileName, new ByteArrayInputStream(bytes)))
-                    .flatMap(sysFileReactiveService::saveReactive);
+                    .flatMap(sysFileReactiveService::saveReactive).map(file -> {
+                        hookService.uploadAfter(bytes, file);
+                        return file;
+                    });
             }
         }).flatMap(Function.identity());
     }

@@ -27,8 +27,11 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.start2do.config.KaptchaConfig;
+import org.start2do.dto.req.login.IPasswordText;
 import org.start2do.dto.req.login.JwtRequest;
 import org.start2do.filter.JwtRequestWebFluxFilter.CustomContextInfo;
+import org.start2do.service.ILoginLogOwner;
+import org.start2do.service.ILoginLogOwnerImpl;
 import org.start2do.service.imp.SysLoginUserCustomInfoEmptyReactiveService;
 import org.start2do.service.reactive.ISysLoginUserCustomInfoReactiveService;
 import org.start2do.util.JwtTokenUtil;
@@ -85,6 +88,12 @@ public class SecurityAutoConfiguration {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    @ConditionalOnMissingBean(value = {ILoginLogOwner.class})
+    public ILoginLogOwner ILoginLogOwner() {
+        return new ILoginLogOwnerImpl();
+    }
+
     @PostConstruct
     public void init() {
         String secret = start2doSecurityConfig.getSecret();
@@ -133,6 +142,11 @@ public class SecurityAutoConfiguration {
             @Override
             public Mono<Object> injectOtherInfo(String jwtStr) {
                 return Mono.just("");
+            }
+
+            @Override
+            public void loadReqBefore(IPasswordText req) {
+
             }
         };
     }

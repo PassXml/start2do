@@ -16,6 +16,7 @@ import org.springframework.web.server.WebFilterChain;
 import org.start2do.Start2doSecurityConfig;
 import org.start2do.dto.R;
 import org.start2do.dto.UserCredentials;
+import org.start2do.dto.req.login.IPasswordText;
 import org.start2do.dto.req.login.JwtRequest;
 import org.start2do.service.imp.SysLoginUserReactiveServiceImpl;
 import org.start2do.util.JwtTokenUtil;
@@ -101,5 +102,8 @@ public class JwtRequestWebFluxFilter implements WebFilter {
         Context injectContext(Context context, String jwtStr, Integer tenantId, Object otherInfo);
 
         Mono<Object> injectOtherInfo(String jwtStr);
+
+        void loadReqBefore(IPasswordText req);
+
     }
 }

@@ -146,14 +146,14 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     @Override
     public <S extends QueryBean<T, S>> Page<T> page(QueryBean<T, S> bean, Page page) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
-        return new EPage<T>(bean.findPagedList());
+        return new EPage<T>(bean.findPagedList(), page);
     }
 
     @Override
     public <S extends QueryBean<T, S>> Page<T> pageUseCache(QueryBean<T, S> bean, Page page) {
         bean.setUseQueryCache(true);
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
-        return new EPage<T>(bean.findPagedList());
+        return new EPage<T>(bean.findPagedList(), page);
     }
 
 
@@ -161,7 +161,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     public <S extends QueryBean<T, S>, R> Page<R> page(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
-        return new EPage<R>(bean.findPagedList(), mapper);
+        return new EPage<R>(bean.findPagedList(), page, mapper);
     }
 
     @Override
@@ -169,7 +169,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
         Function<? super T, ? extends R> mapper) {
         bean.setUseQueryCache(true);
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
-        return new EPage<R>(bean.findPagedList(), mapper);
+        return new EPage<R>(bean.findPagedList(), page, mapper);
     }
 
     @Override
@@ -181,7 +181,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
         if (function != null) {
             function.accept(list.getList());
         }
-        return new EPage<>(list, mapper);
+        return new EPage<>(list, page, mapper);
     }
 
 
@@ -210,7 +210,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
         if (function != null) {
             function.accept(list.getList());
         }
-        EPage<R> ePage = new EPage<>(list, mapper);
+        EPage<R> ePage = new EPage<>(list, page, mapper);
         if (function2 != null) {
             function2.accept(ePage.getRecords());
         }
@@ -222,7 +222,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
         Function<? super T, ? extends R> mapper, Runner<T, R> function2) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         PagedList<T> list = bean.findPagedList();
-        EPage<R> ePage = new EPage<>(list, mapper);
+        EPage<R> ePage = new EPage<>(list, page, mapper);
         if (function2 != null) {
             function2.run(list.getList(), ePage.getRecords());
         }
@@ -265,31 +265,41 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     @Override
     public Mono<T> findOneByIdReactive(Object id) {
         return Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey)))
-            .zipWith(Mono.just(id)).handle((objects, sink) -> {
+            .zipWith(Mono.justOrEmpty(id)).flatMap((objects) -> {
 //                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
-                    sink.next(DB.find(aclass).setId(id).findOne());
+                    T one = DB.find(aclass).setId(id).findOne();
+                    if (one != null) {
+                        return Mono.just(one);
+                    }
                 } catch (Exception e) {
-                    sink.error(e);
+                    log.error(e.getMessage(), e);
+                    return Mono.error(e);
                 } finally {
 //                    ReactiveUtil.TokenTreadLocal.remove();
                 }
+                return Mono.empty();
             });
     }
 
     @Override
     public Mono<T> findOneByIdUseCacheReactive(Object id) {
         return Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey)))
-            .zipWith(Mono.just(id))
-            .handle((BiConsumer<? super Tuple2<Optional<TokenType>, Object>, SynchronousSink<T>>) (objects, sink) -> {
+            .zipWith(Mono.justOrEmpty(id))
+            .flatMap((objects) -> {
 //                objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
                 try {
-                    sink.next(DB.find(aclass, id));
+                    T t = DB.find(aclass, id);
+                    if (t != null) {
+                        return Mono.just(t);
+                    }
                 } catch (Exception e) {
-                    sink.error(e);
+                    log.error(e.getMessage(), e);
+                    return Mono.error(e);
                 } finally {
 //                    ReactiveUtil.TokenTreadLocal.remove();
                 }
+                return Mono.empty();
             }).cache(Duration.ofSeconds(10));
     }
 
@@ -511,20 +521,19 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
     @Override
     public <S extends QueryBean<T, S>> Mono<T> findOneReactive(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
-            Mono.just(bean)).handle((objects, sink) -> {
-//            objects.getT1().ifPresent(ReactiveUtil.TokenTreadLocal::set);
+            Mono.just(bean)).flatMap(objects -> {
             try {
                 T one = objects.getT2().findOne();
-                if (one == null) {
-                    return;
+                if (one != null) {
+                    return Mono.just(one);
                 }
-                sink.next(one);
             } catch (Exception exception) {
-                sink.error(exception);
                 log.error(exception.getMessage(), exception);
+                return Mono.error(exception);
             } finally {
 //                ReactiveUtil.TokenTreadLocal.remove();
             }
+            return Mono.empty();
         });
     }
 
@@ -588,7 +597,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
                 } finally {
 //                    ReactiveUtil.TokenTreadLocal.remove();
                 }
-            }).map(EPage::new);
+            }).map(tPagedList -> new EPage(tPagedList, page));
     }
 
     @Override
@@ -618,7 +627,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
             }).zipWith(Mono.just(mapper)).map(objects -> {
 //            objects.getT1().getT2().ifPresent(ReactiveUtil.TokenTreadLocal::set);
             try {
-                return new EPage<>(objects.getT1().getT1(), objects.getT2());
+                return new EPage<>(objects.getT1().getT1(), page, objects.getT2());
             } finally {
 //                ReactiveUtil.TokenTreadLocal.remove();
             }
@@ -654,7 +663,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
                 Function<? super T, ? extends R> t2 = objects.getT2().getT2();
                 PagedList<T> list = objects.getT1().getT1();
                 consumer.accept(list.getList());
-                return new EPage<>(list, t2);
+                return new EPage<>(list, page, t2);
             } finally {
 //                ReactiveUtil.TokenTreadLocal.remove();
             }
@@ -685,7 +694,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
 
 
     @Override
-    public <S extends  QueryBean<T,S>> Mono<Boolean> existsReactive(QueryBean<T, S> bean) {
+    public <S extends QueryBean<T, S>> Mono<Boolean> existsReactive(QueryBean<T, S> bean) {
         return Mono.zip(Mono.<Optional<TokenType>>deferContextual(ctx -> Mono.just(ctx.getOrEmpty(TokenKey))),
             Mono.just(bean)).handle(
             (BiConsumer<? super Tuple2<Optional<TokenType>, QueryBean<T, S>>, SynchronousSink<Boolean>>) (objects, sink) -> {
@@ -719,7 +728,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
             }).zipWith(Mono.zip(Mono.just(function), Mono.just(mapper))).map(objects -> {
             PagedList<T> list = objects.getT1();
             objects.getT2().getT1().accept(list.getList());
-            return new EPage<R>(list, objects.getT2().getT2());
+            return new EPage<R>(list, page, objects.getT2().getT2());
         }).zipWith(Mono.just(function2)).map(objects -> {
             objects.getT2().accept(objects.getT1().getRecords());
             return objects.getT1();
@@ -746,7 +755,7 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
 //            objects.getT1().getT2().ifPresent(ReactiveUtil.TokenTreadLocal::set);
             try {
                 PagedList<T> list = objects.getT1().getT1();
-                return Tuples.of(new EPage<R>(list, objects.getT2()), list, objects.getT1().getT2());
+                return Tuples.of(new EPage<R>(list, page, objects.getT2()), list, objects.getT1().getT2());
             } finally {
 //                ReactiveUtil.TokenTreadLocal.remove();
             }

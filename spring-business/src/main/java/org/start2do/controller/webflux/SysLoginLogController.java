@@ -19,6 +19,7 @@ import org.start2do.dto.req.log.SysLoginLogReq;
 import org.start2do.dto.resp.log.SysLogPageResp;
 import org.start2do.ebean.util.Where;
 import org.start2do.entity.security.query.QSysLoginLog;
+import org.start2do.service.ILoginLogOwner;
 import org.start2do.service.webflux.SysLoginLogReactiveService;
 import reactor.core.publisher.Mono;
 
@@ -33,6 +34,7 @@ import reactor.core.publisher.Mono;
 public class SysLoginLogController {
 
     private final SysLoginLogReactiveService service;
+    private final ILoginLogOwner iLoginLogOwner;
 
     /**
      * 分页
@@ -40,7 +42,7 @@ public class SysLoginLogController {
     @GetMapping("page")
     public Mono<R<Page<SysLogPageResp>>> page(SysLoginLogReq req) {
         QSysLoginLog qClass = new QSysLoginLog().createTime.geIfPresent(req.getStartTime()).createTime.ltIfPresent(
-            req.getEndTime());
+            req.getEndTime()).owner.inOrEmpty(iLoginLogOwner.getOwners());
         Where.ready().like(req.getUsername(), qClass.username).like(req.getIp(), qClass.ip);
         return service.pageReactive(qClass, req, SysLoginLogDtoMapper.INSTANCE::toSysLogPageResp).map(R::ok);
     }
@@ -49,8 +51,9 @@ public class SysLoginLogController {
      * 详情
      */
     @GetMapping("detail")
-    public Mono<R<SysLogPageResp>> detail(String id) {
-        return service.getByIdReactive(id).map(SysLoginLogDtoMapper.INSTANCE::toSysLogPageResp).map(R::ok);
+    public Mono<R<SysLogPageResp>> detail(@Valid IdStrReq req) {
+        return service.getOneReactive(new QSysLoginLog().id.eq(req.getId()).owner.inOrEmpty(iLoginLogOwner.getOwners()))
+            .map(SysLoginLogDtoMapper.INSTANCE::toSysLogPageResp).map(R::ok);
     }
 
     /**
@@ -58,7 +61,7 @@ public class SysLoginLogController {
      */
     @GetMapping("delete")
     public Mono<R> delete(@Valid IdStrReq req) {
-        return service.deleteReactive(new QSysLoginLog().createTime.le(
+        return service.deleteReactive(new QSysLoginLog().owner.inOrEmpty(iLoginLogOwner.getOwners()).createTime.le(
             LocalDateTime.of(LocalDate.now().minusDays(SysLogController.MIN_DAY), LocalTime.of(0, 0, 0))).id.in(
             req.getId())).map(R::ok);
     }

@@ -35,6 +35,7 @@ import org.start2do.ebean.dto.EnableType;
 import org.start2do.entity.security.SysLoginLog;
 import org.start2do.entity.security.query.QSysMenu;
 import org.start2do.filter.JwtRequestWebFluxFilter.CustomContextInfo;
+import org.start2do.service.ILoginLogOwner;
 import org.start2do.service.imp.SysLoginUserReactiveServiceImpl;
 import org.start2do.service.reactive.SysLoginMenuReactiveService;
 import org.start2do.util.BeanValidatorUtil;
@@ -68,6 +69,7 @@ public class WebFluxLoginController {
     private final KaptchaConfig config;
     private final CustomContextInfo customContextInfo;
     private final Start2doSecurityConfig securityConfig;
+    private final ILoginLogOwner iLoginLogOwner;
 
     /**
      * 登录
@@ -111,7 +113,7 @@ public class WebFluxLoginController {
                     String userAgent = HttpHeaderUtil.getUserAgent(request);
                     log.info("登录失败, 用户名:{}, IP:{}, User-Agent:{}", username, requestIp, userAgent);
                     Mono.fromRunnable(() -> {
-                        new SysLoginLog(username, requestIp, userAgent).save();
+                        new SysLoginLog(username, requestIp, userAgent, iLoginLogOwner.getOwner()).save();
                         RedisCacheUtil.increment(SysLoginLog.getRedisLockKey(username), 1, 1, 5,
                             TimeUnit.MINUTES);
                     }).subscribe();

@@ -29,6 +29,10 @@ public class SysLoginLog extends Model {
     private String userAgent;
     @WhenCreated
     private LocalDateTime createTime;
+    /**
+     * 所属者标志
+     */
+    private String owner;
 
     public static final String RedisLockKey = "Cache:LOGIN_LOCK:";
 
@@ -36,9 +40,10 @@ public class SysLoginLog extends Model {
         return RedisLockKey + username;
     }
 
-    public SysLoginLog(String username, String ip, String userAgent) {
+    public SysLoginLog(String username, String ip, String userAgent, String owner) {
         this.username = username;
         this.ip = ip;
         this.userAgent = userAgent;
+        this.owner = owner;
     }
 }

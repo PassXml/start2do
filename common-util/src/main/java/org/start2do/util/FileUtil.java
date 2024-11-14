@@ -206,6 +206,7 @@ public class FileUtil {
         }
         return result.toString();
     }
+
     public static String getLastDirname(Path parent, int i) {
         if (parent != null && i >= 0) {
             String path = parent.toString();
@@ -215,5 +216,15 @@ public class FileUtil {
             }
         }
         return null;
+    }
+
+    /**
+     * 新的后缀
+     */
+    public String newSuffix(String dest, String newSuffix) {
+        if (dest == null || newSuffix == null) {
+            return null;
+        }
+        return dest.substring(0, dest.lastIndexOf(".")) + "." + newSuffix;
     }
 }

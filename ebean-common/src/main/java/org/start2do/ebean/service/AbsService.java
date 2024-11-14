@@ -127,14 +127,14 @@ public abstract class AbsService<T extends Model> implements IService<T> {
     @Override
     public <S extends QueryBean<T, S>> Page<T> page(QueryBean<T, S> bean, Page page) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
-        return new EPage<T>(bean.findPagedList());
+        return new EPage<T>(bean.findPagedList(), page);
     }
 
     @Override
     public <S extends QueryBean<T, S>> Page<T> pageUseCache(QueryBean<T, S> bean, Page page) {
         bean.setUseQueryCache(true);
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
-        return new EPage<T>(bean.findPagedList());
+        return new EPage<T>(bean.findPagedList(), page);
     }
 
 
@@ -142,7 +142,7 @@ public abstract class AbsService<T extends Model> implements IService<T> {
     public <S extends QueryBean<T, S>, R> Page<R> page(QueryBean<T, S> bean, Page page,
         Function<? super T, ? extends R> mapper) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
-        return new EPage<R>(bean.findPagedList(), mapper);
+        return new EPage<R>(bean.findPagedList(), page, mapper);
     }
 
     @Override
@@ -150,19 +150,18 @@ public abstract class AbsService<T extends Model> implements IService<T> {
         Function<? super T, ? extends R> mapper) {
         bean.setUseQueryCache(true);
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
-        return new EPage<R>(bean.findPagedList(), mapper);
+        return new EPage<R>(bean.findPagedList(), page, mapper);
     }
 
     @Override
     public <S extends QueryBean<T, S>, R> Page<R> page(QueryBean<T, S> bean, Page page,
-        Consumer<Collection<T>> function,
-        Function<? super T, ? extends R> mapper) {
+        Consumer<Collection<T>> function, Function<? super T, ? extends R> mapper) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         PagedList<T> list = bean.findPagedList();
         if (function != null) {
             function.accept(list.getList());
         }
-        return new EPage<>(list, mapper);
+        return new EPage<>(list, page, mapper);
     }
 
 
@@ -184,14 +183,13 @@ public abstract class AbsService<T extends Model> implements IService<T> {
 
     @Override
     public <S extends QueryBean<T, S>, R> Page<R> page(QueryBean<T, S> bean, Page page,
-        Consumer<Collection<T>> function,
-        Function<? super T, ? extends R> mapper, Consumer<Collection<R>> function2) {
+        Consumer<Collection<T>> function, Function<? super T, ? extends R> mapper, Consumer<Collection<R>> function2) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         PagedList<T> list = bean.findPagedList();
         if (function != null) {
             function.accept(list.getList());
         }
-        EPage<R> ePage = new EPage<>(list, mapper);
+        EPage<R> ePage = new EPage<>(list, page, mapper);
         if (function2 != null) {
             function2.accept(ePage.getRecords());
         }
@@ -203,7 +201,7 @@ public abstract class AbsService<T extends Model> implements IService<T> {
         Function<? super T, ? extends R> mapper, Runner<T, R> function2) {
         bean.setMaxRows(page.getSize()).setFirstRow(page.getOffset());
         PagedList<T> list = bean.findPagedList();
-        EPage<R> ePage = new EPage<>(list, mapper);
+        EPage<R> ePage = new EPage<>(list, page, mapper);
         if (function2 != null) {
             function2.run(list.getList(), ePage.getRecords());
         }

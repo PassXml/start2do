@@ -14,6 +14,7 @@ import org.start2do.BusinessConfig;
 import org.start2do.entity.business.SysFile;
 import org.start2do.entity.business.query.QSysFile;
 import org.start2do.service.IFileMd5;
+import org.start2do.service.webflux.IFileOperationHookService;
 import org.start2do.service.webflux.IFileOperationService;
 import org.start2do.service.webflux.QiNiuService;
 import org.start2do.service.webflux.SysFileReactiveService;
@@ -31,6 +32,7 @@ public class QnFileOperationService implements IFileOperationService {
     private final QiNiuService qiNiuService;
     private final SysFileReactiveService fileReactiveService;
     private final IFileMd5 fileMd5;
+    private final IFileOperationHookService hookService;
 
     @Override
     public Mono remove(String fileId) {
@@ -55,7 +57,10 @@ public class QnFileOperationService implements IFileOperationService {
                     return qiNiuService.upload(bytes, String.format("%s/%s.%s", dateStr, md5, subFix));
                 }).flatMap(defaultPutRet -> fileReactiveService.saveReactive(
                     new SysFile(part.filename(), defaultPutRet.key, defaultPutRet.key, md5,
-                        businessConfig.getFileSetting().getHost(), size, subFix))));
+                        businessConfig.getFileSetting().getHost(), size, subFix)))).map(file -> {
+                    hookService.uploadAfter(bytes, file);
+                    return file;
+                });
         });
     }
 
@@ -73,7 +78,10 @@ public class QnFileOperationService implements IFileOperationService {
                 }).flatMap(defaultPutRet -> fileReactiveService.saveReactive(
                     new SysFile(fileName, defaultPutRet.key, defaultPutRet.key, md5,
                         businessConfig.getFileSetting().getHost(), size, subFix))));
-        }).flatMap(Function.identity());
+        }).flatMap(Function.identity()).map(file -> {
+            hookService.uploadAfter(bytes, file);
+            return file;
+        });
     }
 
     @Override

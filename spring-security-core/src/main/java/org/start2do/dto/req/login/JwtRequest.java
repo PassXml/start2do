@@ -11,7 +11,7 @@ import lombok.experimental.Accessors;
 @Getter
 @Accessors(chain = true)
 @NoArgsConstructor
-public class JwtRequest implements Serializable {
+public class JwtRequest implements Serializable, IPasswordText {
 
     private static final long serialVersionUID = 5926468583005150707L;
 
@@ -22,4 +22,13 @@ public class JwtRequest implements Serializable {
     private String kaptchaKey;
     private String kaptchaCode;
 
+    @Override
+    public String getPassword_() {
+        return this.password;
+    }
+
+    @Override
+    public void setPassword_(String password) {
+        this.password = password;
+    }
 }
