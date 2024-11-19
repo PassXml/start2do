@@ -1,7 +1,5 @@
 package org.start2do.controller.webflux;
 
-import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -32,6 +30,7 @@ import org.start2do.entity.business.SysLog.Type;
 import org.start2do.entity.business.query.QSysLog;
 import org.start2do.service.webflux.SysLogReactiveService;
 import org.start2do.util.BeanValidatorUtil;
+import org.start2do.util.ExcelUtil;
 import org.start2do.util.ListUtil;
 import reactor.core.publisher.Mono;
 
@@ -118,8 +117,11 @@ public class SysLogController {
             List<LogExcelPojo> pojos = logs.stream().map(SysLogDtoMapper.INSTANCE::toLogExcelPojo)
                 .collect(Collectors.toList());
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            EasyExcel.write(outputStream, LogExcelPojo.class)
-                .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy()).sheet("系统日志").doWrite(pojos);
+            ExcelUtil.write(
+                outputStream, LogExcelPojo.class, "系统日志", pojos
+            );
+            //            EasyExcel.write(outputStream, LogExcelPojo.class)
+//                .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy()).sheet("系统日志").doWrite(pojos);
             try {
                 outputStream.flush();
                 byte[] bytes = outputStream.toByteArray();

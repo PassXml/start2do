@@ -1,14 +1,12 @@
 package org.start2do.controller.servlet;
 
-import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -30,6 +28,7 @@ import org.start2do.entity.business.SysLog.Type;
 import org.start2do.entity.business.query.QSysLog;
 import org.start2do.service.servlet.SysLogService;
 import org.start2do.util.BeanValidatorUtil;
+import org.start2do.util.ExcelUtil;
 import org.start2do.util.ListUtil;
 
 /**
@@ -107,8 +106,11 @@ public class SysLogController {
         ServletOutputStream outputStream = response.getOutputStream();
         List<LogExcelPojo> pojos = logs.stream().map(SysLogDtoMapper.INSTANCE::toLogExcelPojo)
             .collect(Collectors.toList());
-        EasyExcel.write(outputStream, LogExcelPojo.class)
-            .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy()).sheet("系统日志").doWrite(pojos);
+        ExcelUtil.write(
+            outputStream, LogExcelPojo.class, "系统日志", pojos
+        );
+//        EasyExcel.write(outputStream, LogExcelPojo.class)
+//            .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy()).sheet("系统日志").doWrite(pojos);
         outputStream.flush();
         outputStream.close();
     }

@@ -167,6 +167,9 @@ allprojects {
                     "com.fasterxml.jackson.core:jackson-core"                   : "2.15.2",
                     "jakarta.validation:jakarta.validation-api"                 : "3.0.2",
                     "one.util:streamex"                                         : "0.8.2",
+                    "org.apache.poi:poi"                                        : "5.3.0",
+                    "org.apache.poi:poi-ooxml-lite"                             : "5.3.0",
+                    "org.apache.poi:poi-ooxml"                                  : "5.3.0",
             ]
             dependencySubstitution {
                 for (final def jar in jars) {

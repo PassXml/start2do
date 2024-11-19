@@ -17,7 +17,10 @@ dependencies {
     api(project(":api"))
     compileOnly 'com.fasterxml.jackson.core:jackson-annotations:2.14.2'
     compileOnly("org.springframework.security:spring-security-core")
-    compileOnly("org.apache.poi:poi:5.0.0")
+    compileOnly("org.apache.poi:poi")
+    compileOnly 'org.apache.poi:poi-ooxml'
+    compileOnly 'org.apache.poi:poi-ooxml-lite'
+
 
 }
 

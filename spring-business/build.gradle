@@ -28,7 +28,7 @@ dependencies {
     annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: springBootVersion
     compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.15.2'
     compileOnly group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.13.4'
-    api 'com.alibaba:easyexcel:4.0.3'
+//    api 'com.alibaba:easyexcel:4.0.3'
     compileOnly group: 'io.projectreactor', name: 'reactor-core'
     compileOnly 'com.qiniu:qiniu-java-sdk:7.15.1'
     compileOnly("org.springframework.boot:spring-boot-starter-data-redis:$springBootVersion")
@@ -41,9 +41,16 @@ dependencies {
     testImplementation 'com.twelvemonkeys.imageio:imageio-core:3.11.0'
     testImplementation 'com.twelvemonkeys.imageio:imageio-metadata:3.11.0'
     testImplementation 'com.twelvemonkeys.imageio:imageio-webp:3.11.0'
+    testImplementation group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.0.0'
+    testImplementation 'com.google.guava:guava'
     compileOnly("org.mybatis.spring.boot:mybatis-spring-boot-starter")
     compileOnly 'com.google.guava:guava'
-
+    compileOnly("org.apache.poi:poi")
+    compileOnly 'org.apache.poi:poi-ooxml'
+    compileOnly 'org.apache.poi:poi-ooxml-lite'
+    testImplementation("org.apache.poi:poi")
+    testImplementation 'org.apache.poi:poi-ooxml'
+    testImplementation 'org.apache.poi:poi-ooxml-lite'
 }
 
 test {

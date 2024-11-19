@@ -1,6 +1,5 @@
 package org.start2do.entity.business;
 
-import com.alibaba.excel.annotation.ExcelProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import io.ebean.Model;
 import io.ebean.annotation.DbComment;
@@ -12,7 +11,6 @@ import io.ebean.annotation.IdentityType;
 import io.ebean.annotation.StorageEngine;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
-import java.time.LocalDateTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -20,11 +18,13 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.start2do.dto.BusinessException;
+import org.start2do.util.ExcelUtil.ExcelSetting;
 
 @Setter
 @Getter
@@ -39,80 +39,80 @@ public class SysLog extends Model {
      * 编号
      */
     @Id
-    @Identity(type = IdentityType.IDENTITY,generated = IdentityGenerated.BY_DEFAULT)
-    @ExcelProperty("日志编号")
+    @Identity(type = IdentityType.IDENTITY, generated = IdentityGenerated.BY_DEFAULT)
     @DbComment("日志编号")
+    @ExcelSetting("日志编号")
     private Long id;
 
     /**
      * 日志类型
      */
     @NotBlank(message = "日志类型不能为空")
-    @ExcelProperty("日志类型")
     @DbComment("日志类型（0-正常 9-错误）")
+    @ExcelSetting("日志类型")
     private Type type;
 
     /**
      * 日志标题
      */
     @DbComment("日志标题")
-    @ExcelProperty("日志标题")
     @Column(nullable = false, length = 512)
+    @ExcelSetting("日志标题")
     private String title;
 
     /**
      * 操作IP地址
      */
-    @ExcelProperty("操作ip地址")
     @DbComment("操作ip地址")
+    @ExcelSetting("操作ip地址")
     private String remoteAddr;
 
     /**
      * 用户浏览器
      */
-    @ExcelProperty("用户浏览器")
     @DbComment("用户浏览器")
+    @ExcelSetting("用户浏览器")
     private String userAgent;
 
     /**
      * 请求URI
      */
     @DbComment("请求uri")
-    @ExcelProperty("请求uri")
+    @ExcelSetting("请求uri")
     private String requestUri;
 
     /**
      * 操作方式
      */
-    @ExcelProperty("操作方式")
     @DbComment("操作方式")
+    @ExcelSetting("操作方式")
     private String method;
 
     /**
      * 操作提交的数据
      */
     @Lob
-    @ExcelProperty("操作提交的数据")
     @DbComment("数据")
+    @ExcelSetting("数据")
     private String params;
+    @ExcelSetting("请求头")
     @Lob
-    @ExcelProperty(("请求头"))
     private String requestHeader;
+    @ExcelSetting("请求体")
     @Lob
-    @ExcelProperty(("请求体"))
     private String requestBody;
     @Lob
-    @ExcelProperty("返回体")
+    @ExcelSetting("响应体")
     private String responseBody;
+    @ExcelSetting("响应头")
     @Lob
-    @ExcelProperty("Resp头")
     private String responseHeader;
 
     /**
      * 执行时间
      */
-    @ExcelProperty("方法执行时间")
     @DbComment("方法执行时间")
+    @ExcelSetting("方法执行时间")
     private Long useTime;
 
     /**
@@ -120,19 +120,19 @@ public class SysLog extends Model {
      */
     @Lob
     @DbComment("异常信息")
-    @ExcelProperty("异常信息")
     @Column(name = "exception_info")
+    @ExcelSetting("异常信息")
     private String exceptionInfo;
 
     /**
      * 创建时间
      */
     @WhenCreated
-    @ExcelProperty("创建时间")
     @Column(name = "create_time")
+    @ExcelSetting("创建时间")
     private LocalDateTime createTime;
     @DbDefault("NO SET")
-    @ExcelProperty("创建人")
+    @ExcelSetting("创建人")
     @Column(name = "create_person")
     private String createPerson;
 
@@ -140,7 +140,7 @@ public class SysLog extends Model {
      * 更新时间
      */
     @WhenModified
-    @ExcelProperty("更新时间")
+    @ExcelSetting("更新时间")
     @Column(name = "update_time")
     private LocalDateTime updateTime;
 
@@ -148,15 +148,14 @@ public class SysLog extends Model {
     /**
      * 更新人员
      */
-    @ExcelProperty("更新人")
+    @ExcelSetting("更新人")
     @DbDefault("NO SET")
     @Column(name = "update_person")
     private String updatePerson;
 
     @Version
-
-    @ExcelProperty("版本号")
     @Column(name = "version")
+    @ExcelSetting("版本")
     private Long version;
 
 
@@ -178,6 +177,7 @@ public class SysLog extends Model {
         public String getLabel() {
             return label;
         }
+
         @JsonCreator
         public static Type find(String s) {
             for (Type value : values()) {
