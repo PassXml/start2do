@@ -17,6 +17,7 @@ import org.start2do.dto.BusinessException;
 import org.start2do.dto.IdReq;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
+import org.start2do.dto.annotation.SysLogSetting;
 import org.start2do.dto.mapper.UserDtoMapper;
 import org.start2do.dto.req.user.UserAddReq;
 import org.start2do.dto.req.user.UserMenuReq;
@@ -68,6 +69,7 @@ public class SysUserController {
      * 添加
      */
     @PostMapping("add")
+    @SysLogSetting("添加用户")
     public Mono<R<Boolean>> add(@RequestBody UserAddReq req) {
         BeanValidatorUtil.validate(req);
         if (StringUtils.isEmpty(req.getPassword())) {
@@ -81,6 +83,7 @@ public class SysUserController {
      * 更新
      */
     @PostMapping("update")
+    @SysLogSetting("更新用户")
     public Mono<R<Boolean>> update(@RequestBody UserUpdateReq req) {
         BeanValidatorUtil.validate(req);
         return sysUserService.getByIdReactive(req.getId()).flatMap(user -> {
@@ -98,6 +101,7 @@ public class SysUserController {
      * 删除
      */
     @GetMapping("delete")
+    @SysLogSetting("删除")
     public Mono<R<Boolean>> delete(IdReq req) {
         BeanValidatorUtil.validate(req);
         return sysUserService.remove(req.getId()).map(R::ok);
@@ -128,6 +132,7 @@ public class SysUserController {
     /**
      * 修改状态
      */
+    @SysLogSetting("修改状态")
     @PostMapping("status")
     public Mono<R<Boolean>> status(UserStatusReq req) {
         BeanValidatorUtil.validate(req);

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.IdStrReq;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
+import org.start2do.dto.annotation.SysLogSetting;
 import org.start2do.dto.mapper.DictDtoMapper;
 import org.start2do.dto.req.dict.item.DictItemAddReq;
 import org.start2do.dto.req.dict.item.DictItemUpdateReq;
@@ -46,6 +47,7 @@ public class SysDictItemController {
     /**
      * 添加
      */
+    @SysLogSetting("添加字典子项目")
     @PostMapping("add")
     public Mono<R<Boolean>> add(@RequestBody DictItemAddReq req) {
         BeanValidatorUtil.validate(req);
@@ -56,6 +58,7 @@ public class SysDictItemController {
     /**
      * 更新
      */
+    @SysLogSetting("更新字典子项目")
     @PostMapping("update")
     public Mono<R<Boolean>> update(@RequestBody DictItemUpdateReq req) {
         BeanValidatorUtil.validate(req);
@@ -71,12 +74,14 @@ public class SysDictItemController {
     @GetMapping("detail")
     public Mono<R<DictItemDetailResp>> detail(IdStrReq req) {
         BeanValidatorUtil.validate(req);
-        return sysDictItemService.getByIdReactive(req.getId()).map(DictDtoMapper.INSTANCE::toDictItemDetailResp).map(R::ok);
+        return sysDictItemService.getByIdReactive(req.getId()).map(DictDtoMapper.INSTANCE::toDictItemDetailResp)
+            .map(R::ok);
     }
 
     /**
      * 删除
      */
+    @SysLogSetting("删除字典子项目")
     @GetMapping("delete")
     public Mono<R<Boolean>> delete(IdStrReq req) {
         BeanValidatorUtil.validate(req);

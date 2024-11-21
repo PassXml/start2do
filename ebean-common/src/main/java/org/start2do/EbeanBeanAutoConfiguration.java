@@ -20,6 +20,8 @@ import org.springframework.context.annotation.ComponentScans;
 import org.springframework.context.annotation.Import;
 import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 import org.start2do.ebean.id_generators.UUIDStrIdGenerator;
+import org.start2do.ebean.service.SysSettingService;
+import org.start2do.ebean.util.SysSettingUtil;
 import org.start2do.util.Snowflake;
 
 @Import(EbeanConfig.class)
@@ -130,4 +132,9 @@ public class EbeanBeanAutoConfiguration {
         }
     }
 
+    @Bean
+    @ConditionalOnProperty(prefix = "spring.datasource", name = "url")
+    public SysSettingUtil sysSettingUtil(SysSettingService sysSettingService) {
+        return new SysSettingUtil(sysSettingService);
+    }
 }

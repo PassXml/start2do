@@ -1,5 +1,6 @@
 package org.start2do.controller.servlet;
 
+import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import org.start2do.dto.IdReq;
 import org.start2do.dto.MenuResp;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
+import org.start2do.dto.annotation.SysLogSetting;
 import org.start2do.dto.mapper.RoleDtoMapper;
 import org.start2do.dto.req.role.RoleAddReq;
 import org.start2do.dto.req.role.RoleMenuReq;
@@ -67,6 +69,7 @@ public class SysRoleController {
     /**
      * 添加
      */
+    @SysLogSetting("添加用户")
     @PostMapping("add")
     public R add(@RequestBody RoleAddReq req) {
         BeanValidatorUtil.validate(req);
@@ -77,6 +80,7 @@ public class SysRoleController {
     /**
      * 更新
      */
+    @SysLogSetting("更新用户组")
     @PostMapping("update")
     public R update(@RequestBody RoleUpdateReq req) {
         BeanValidatorUtil.validate(req);
@@ -89,6 +93,7 @@ public class SysRoleController {
     /**
      * 删除
      */
+    @SysLogSetting("删除用户组")
     @GetMapping("delete")
     public R delete(IdReq req) {
         BeanValidatorUtil.validate(req);
@@ -100,8 +105,8 @@ public class SysRoleController {
      * 设置权限
      */
     @PostMapping("set")
-    public R set(@RequestBody RoleMenuReq req) {
-        BeanValidatorUtil.validate(req);
+    @SysLogSetting("设置用户权限")
+    public R set(@Valid @RequestBody RoleMenuReq req) {
         sysRoleService.set(req.getRoleId(), req.getMenuIds());
         return R.ok();
     }
@@ -158,6 +163,7 @@ public class SysRoleController {
      * 设置用户组
      */
     @PostMapping("set/user")
+    @SysLogSetting("设置用户组")
     public R setUserRole(@RequestBody RoleUserAddReq req) {
         BeanValidatorUtil.validate(req);
         userRoleService.save(req.getRoleId(), req.getUserId());

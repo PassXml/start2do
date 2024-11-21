@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 import org.start2do.ebean.dto.EnableType;
 import org.start2do.ebean.entity.SysSetting;
 import org.start2do.ebean.entity.query.QSysSetting;
@@ -15,7 +14,6 @@ import org.start2do.ebean.service.SysSettingService;
 import org.start2do.util.StringUtils;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class SysSettingUtil implements CommandLineRunner {
 

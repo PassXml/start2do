@@ -4,11 +4,15 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
@@ -19,13 +23,19 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class UtilAutoConfig {
 
+    @Bean
+    @ConditionalOnMissingBean(ILogConfigBean.class)
+    public ILogConfigBean logConfigBean() {
+        return () -> new SimpleFilterProvider().addFilter("password_filter",
+            SimpleBeanPropertyFilter.serializeAllExcept("password"));
+    }
 
     @Bean
     @ConditionalOnProperty(prefix = "start2do.log", value = "enable", havingValue = "true")
-    public LogAop.JSON json(ObjectMapper objectMapper) {
+    public LogAop.JSON json(ObjectMapper objectMapper, ILogConfigBean configBean) {
         return object -> {
             try {
-                return objectMapper.writeValueAsString(object);
+                return objectMapper.writer(configBean.filterProvider()).writeValueAsString(object);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
                 return e.getMessage();

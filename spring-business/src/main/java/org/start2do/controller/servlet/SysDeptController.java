@@ -16,6 +16,7 @@ import org.start2do.dto.IdReq;
 import org.start2do.dto.MenuResp;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
+import org.start2do.dto.annotation.SysLogSetting;
 import org.start2do.dto.mapper.DeptDtoMapper;
 import org.start2do.dto.req.dept.DeptAddReq;
 import org.start2do.dto.req.dept.DeptPageReq;
@@ -56,6 +57,7 @@ public class SysDeptController {
      * 添加
      */
     @PostMapping("add")
+    @SysLogSetting("添加部门")
     public R add(@RequestBody DeptAddReq req) {
         BeanValidatorUtil.validate(req);
         sysDeptService.save(DeptDtoMapper.INSTANCE.toEntity(req));
@@ -66,6 +68,7 @@ public class SysDeptController {
      * 更新
      */
     @PostMapping("update")
+    @SysLogSetting("更新部门")
     public R update(@RequestBody DeptUpdateReq req) {
         BeanValidatorUtil.validate(req);
         SysDept dept = sysDeptService.getById(req.getId());
@@ -78,6 +81,7 @@ public class SysDeptController {
      * 删除
      */
     @GetMapping("delete")
+    @SysLogSetting("删除部门")
     public R delete(IdReq req) {
         BeanValidatorUtil.validate(req);
         sysDeptService.remove(req.getId());

@@ -16,6 +16,7 @@ import org.start2do.dto.BusinessException;
 import org.start2do.dto.IdReq;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
+import org.start2do.dto.annotation.SysLogSetting;
 import org.start2do.dto.mapper.UserDtoMapper;
 import org.start2do.dto.req.user.UserAddReq;
 import org.start2do.dto.req.user.UserMenuReq;
@@ -66,6 +67,7 @@ public class SysUserController {
      * 添加
      */
     @PostMapping("add")
+    @SysLogSetting("添加用户")
     public R<Void> add(@RequestBody UserAddReq req) {
         BeanValidatorUtil.validate(req);
         if (StringUtils.isEmpty(req.getPassword())) {
@@ -79,6 +81,7 @@ public class SysUserController {
     /**
      * 更新
      */
+    @SysLogSetting("更新用户")
     @PostMapping("update")
     public R<Void> update(@RequestBody UserUpdateReq req) {
         BeanValidatorUtil.validate(req);
@@ -96,6 +99,7 @@ public class SysUserController {
     /**
      * 删除
      */
+    @SysLogSetting("删除用户")
     @GetMapping("delete")
     public R<Void> delete(IdReq req) {
         BeanValidatorUtil.validate(req);
@@ -128,6 +132,7 @@ public class SysUserController {
      * 修改状态
      */
     @PostMapping("status")
+    @SysLogSetting("修改用户状态")
     public R<Void> status(UserStatusReq req) {
         BeanValidatorUtil.validate(req);
         SysUser user = sysUserService.getById(req.getId());

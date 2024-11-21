@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.IdStrReq;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
+import org.start2do.dto.annotation.SysLogSetting;
 import org.start2do.dto.mapper.DictDtoMapper;
 import org.start2do.dto.req.dict.DictAddReq;
 import org.start2do.dto.req.dict.DictPageReq;
@@ -49,6 +50,7 @@ public class SysDictController {
      * 删除
      */
     @GetMapping("delete")
+    @SysLogSetting("删除字典")
     public R delete(IdStrReq req) {
         BeanValidatorUtil.validate(req);
         sysDictService.remove(req.getId());
@@ -59,6 +61,7 @@ public class SysDictController {
      * 添加
      */
     @PostMapping("add")
+    @SysLogSetting("添加字典")
     public R add(@RequestBody DictAddReq req) {
         BeanValidatorUtil.validate(req);
         SysDict sysDict = DictDtoMapper.INSTANCE.toSysDict(req);
@@ -69,6 +72,7 @@ public class SysDictController {
     /**
      * 更新
      */
+    @SysLogSetting("更新字典")
     @PostMapping("update")
     public R update(@RequestBody DictUpdateReq req) {
         BeanValidatorUtil.validate(req);

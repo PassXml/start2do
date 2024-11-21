@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.IdReq;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
+import org.start2do.dto.annotation.SysLogSetting;
 import org.start2do.dto.mapper.MenuDtoMapper;
 import org.start2do.dto.req.menu.MenuAddReq;
 import org.start2do.dto.req.menu.MenuPageReq;
@@ -51,6 +52,7 @@ public class SysMenuController {
     /**
      * 添加
      */
+    @SysLogSetting("添加菜单")
     @PostMapping("add")
     public Mono<R<Boolean>> add(@RequestBody MenuAddReq req) {
         BeanValidatorUtil.validate(req);
@@ -60,6 +62,7 @@ public class SysMenuController {
     /**
      * 更新
      */
+    @SysLogSetting("更新菜单")
     @PostMapping("update")
     public Mono<R<Boolean>> update(@RequestBody MenuUpdateReq req) {
         BeanValidatorUtil.validate(req);
@@ -72,6 +75,7 @@ public class SysMenuController {
     /**
      * 添加
      */
+    @SysLogSetting("删除菜单")
     @GetMapping("delete")
     public Mono<R<Boolean>> delete(IdReq req) {
         BeanValidatorUtil.validate(req);

@@ -18,6 +18,7 @@ import org.start2do.dto.IdReq;
 import org.start2do.dto.MenuResp;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
+import org.start2do.dto.annotation.SysLogSetting;
 import org.start2do.dto.mapper.RoleDtoMapper;
 import org.start2do.dto.req.role.RoleAddReq;
 import org.start2do.dto.req.role.RoleMenuReq;
@@ -67,6 +68,7 @@ public class SysRoleController {
     /**
      * 添加
      */
+    @SysLogSetting("添加用户")
     @PostMapping("add")
     public Mono<R<Boolean>> add(@RequestBody RoleAddReq req) {
         BeanValidatorUtil.validate(req);
@@ -76,6 +78,7 @@ public class SysRoleController {
     /**
      * 更新
      */
+    @SysLogSetting("更新用户组")
     @PostMapping("update")
     public Mono<R<Boolean>> update(@RequestBody RoleUpdateReq req) {
         BeanValidatorUtil.validate(req);
@@ -88,6 +91,7 @@ public class SysRoleController {
     /**
      * 删除
      */
+    @SysLogSetting("删除用户组")
     @GetMapping("delete")
     public Mono<R<Boolean>> delete(IdReq req) {
         BeanValidatorUtil.validate(req);
@@ -97,6 +101,7 @@ public class SysRoleController {
     /**
      * 设置权限
      */
+    @SysLogSetting("设置权限")
     @PostMapping("set")
     public Mono<R<Boolean>> set(@RequestBody RoleMenuReq req) {
         BeanValidatorUtil.validate(req);
@@ -154,6 +159,7 @@ public class SysRoleController {
     /**
      * 设置用户组
      */
+    @SysLogSetting("设置用户组")
     @PostMapping("set/user")
     public Mono<R<Boolean>> setUserRole(@RequestBody RoleUserAddReq req) {
         BeanValidatorUtil.validate(req);

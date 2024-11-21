@@ -32,7 +32,6 @@ public class SysLogReactiveAop {
     private final LogAopConfig config;
     public final LogAop.JSON json;
 
-
     //获取当前请求对象
     public static Mono<Optional<SysLog>> getLog() {
         return Mono.deferContextual(contextView -> {
