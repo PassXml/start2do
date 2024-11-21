@@ -6,7 +6,6 @@ import javax.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 import org.start2do.ebean.dto.EnableType;
 import org.start2do.ebean.entity.SysSetting;
 import org.start2do.ebean.entity.query.QSysSetting;
@@ -14,7 +13,6 @@ import org.start2do.ebean.service.SysSettingService;
 import org.start2do.util.StringUtils;
 
 @RequiredArgsConstructor
-@Component
 public class SysSettingUtil {
 
     private final SysSettingService sysSettingService;
