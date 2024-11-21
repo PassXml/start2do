@@ -1,17 +1,13 @@
 package org.start2do.aop;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.validation.constraints.Min;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Method;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.locks.LockSupport;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -19,13 +15,10 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
-import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
 import org.start2do.BusinessConfig;
-import org.start2do.dto.RateLimiterException;
+import org.start2do.util.RateLimitUtil;
 import org.start2do.util.StringUtils;
-import org.start2do.util.spring.RedisCacheUtil;
 
 @Aspect
 @Slf4j
@@ -34,22 +27,14 @@ import org.start2do.util.spring.RedisCacheUtil;
 @ConditionalOnProperty(prefix = "start2do.business.rate-limit", value = "enable", havingValue = "true")
 public class RateLimiterReactiveAop {
 
-    private final BusinessConfig businessConfig;
-    private RedisScript<List> script = null;
+    @Getter
+    private RateLimitUtil rateLimitUtil;
 
-    @PostConstruct
-    public void init() {
-        DefaultRedisScript<List> redisScript = new DefaultRedisScript<>(businessConfig.getRateLimit().getLuaScript());
-        redisScript.setResultType(List.class);
-        script = redisScript;
+
+    public RateLimiterReactiveAop(BusinessConfig businessConfig) {
+        this.rateLimitUtil = new RateLimitUtil(businessConfig);
     }
 
-    protected List<String> getKey(String id) {
-        String prefix = "rate_limiter.{" + id;
-        String tokenKey = prefix + "}.tokens";
-        String timestampKey = prefix + "}.timestamp";
-        return Arrays.asList(tokenKey, timestampKey);
-    }
 
     @Around("@annotation(setting)")
     public Object around(ProceedingJoinPoint point, RateLimitSetting setting) throws Throwable {
@@ -58,7 +43,7 @@ public class RateLimiterReactiveAop {
         if (StringUtils.isEmpty(setting.id())) {
             for (Object arg : point.getArgs()) {
                 if (IRetaLimitGetterKey.class.isAssignableFrom(arg.getClass())) {
-                    keys = getKey(((IRetaLimitGetterKey) arg).getPrefix());
+                    keys = rateLimitUtil.getKey(((IRetaLimitGetterKey) arg).getPrefix());
                     found = true;
                     break;
                 }
@@ -66,40 +51,15 @@ public class RateLimiterReactiveAop {
             if (!found) {
                 MethodSignature signature = (MethodSignature) point.getSignature();
                 Method method = signature.getMethod();
-                keys = getKey(
+                keys = rateLimitUtil.getKey(
                     method.getDeclaringClass().getName() + "." + method.getName() + "." + method.getParameterCount());
             }
         } else {
-            keys = getKey(setting.id());
+            keys = rateLimitUtil.getKey(setting.id());
         }
         if (keys != null) {
-            final long startTime = java.lang.System.nanoTime();
-            List<Long> longs = RedisCacheUtil.executorScript(script, keys, setting.rate(), setting.capacity(),
-                Instant.now().getEpochSecond(), setting.requested());
-            long waitMs = Duration.ofMillis(setting.maxWaitMs()).toNanos();
-
-            if (!longs.isEmpty()) {
-                do {
-                    if (longs.get(0) == 1L) {
-                        break;
-                    }
-                    if (!setting.await()) {
-                        throw new RateLimiterException();
-                    } else {
-                        boolean waited = waitForPermission(startTime,
-                            Duration.ofMillis(setting.waitMs()).toNanos());
-                        if (Thread.currentThread().isInterrupted()) {
-                            throw new RateLimiterException(setting.errorMsg());
-                        }
-                        if (!waited) {
-                            throw new RateLimiterException(setting.maxWaitMsg());
-                        }
-                    }
-                    if ((System.nanoTime() - startTime) > waitMs) {
-                        throw new RateLimiterException(setting.maxWaitMsg());
-                    }
-                } while (true);
-            }
+            rateLimitUtil.getToken(keys, setting.await(), setting.requested(), setting.capacity(), setting.rate(),
+                setting.waitMs(), setting.maxWaitMs(), setting.errorMsg(), setting.maxWaitMsg());
         }
         return point.proceed();
     }
@@ -109,14 +69,26 @@ public class RateLimiterReactiveAop {
         String getPrefix();
     }
 
+    /**
+     * 桶容量 / token 速率，即需要多少单位时间（秒）才能填满桶
+     */
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface RateLimitSetting {
 
+        /**
+         * 请求Token数
+         */
         @Min(1) int requested() default 1;
 
+        /**
+         * 桶容量
+         */
         @Min(1) int capacity() default 10000;
 
+        /**
+         * 每秒填充数
+         */
         @Min(1) int rate() default 200;
 
         String id() default "";
@@ -137,24 +109,6 @@ public class RateLimiterReactiveAop {
 
         String errorMsg() default "获取令牌异常";
 
-    }
-
-    private long currentNanoTime(final long nanoTimeStart) {
-        return java.lang.System.nanoTime() - nanoTimeStart;
-    }
-
-    private boolean waitForPermission(final long startTime, final long nanosToWait) {
-        long deadline = currentNanoTime(startTime) + nanosToWait;
-        boolean wasInterrupted = false;
-        while (currentNanoTime(startTime) < deadline && !wasInterrupted) {
-            long sleepBlockDuration = deadline - currentNanoTime(startTime);
-            LockSupport.parkNanos(sleepBlockDuration);
-            wasInterrupted = Thread.interrupted();
-        }
-        if (wasInterrupted) {
-            Thread.currentThread().interrupt();
-        }
-        return !wasInterrupted;
     }
 
 }

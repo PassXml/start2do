@@ -57,6 +57,19 @@ public class BusinessConfig {
     public static class RateLimitConfig {
 
         private boolean enable;
+        /**
+         * <pre>
+         * ARGV[1]：rate，表示每秒生成 token 数量，即 token 生成速度
+         * ARGV[2]：capacity，桶容量
+         * ARGV[3]：now，当前请求令牌的时间戳
+         * ARGV[4]：requested，当前请求 token 数量
+         * KEYS[1]：访问资源的标识
+         * KEYS[2]：保存上一次访问的刷新时间戳
+         * fill_time：桶容量 / token 速率，即需要多少单位时间（秒）才能填满桶
+         * ttl：ttl 为填满时间的 2 倍
+         * last_tokens：当前时刻桶容量
+         *  </pre>
+         */
         private String luaScript = """
             redis.replicate_commands()
             
