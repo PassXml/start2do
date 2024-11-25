@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id "org.springframework.boot" version "2.6.7"
+    id "org.springframework.boot" version "2.7.18"
     id "io.spring.dependency-management" version "1.0.11.RELEASE"
 }
 
@@ -31,7 +31,7 @@ dependencies {
     compileOnly "org.springframework.boot:spring-boot-starter-oauth2-client"
 
 
-    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.6.7'
+    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.7.18'
 }
 
 test {
