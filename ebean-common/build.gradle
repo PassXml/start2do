@@ -18,6 +18,9 @@ dependencies {
     compileOnly "io.ebean:ebean-ddl-generator:$ebeanVersion"
     api project(path: ':spring-common', configuration: 'default')
 
+    compileOnly("org.springframework:spring-tx:$springVersion")
+    compileOnly("org.springframework:spring-jdbc:$springVersion")
+
     api(project(":common-util"))
     testImplementation(project(":bean-valiate"))
 

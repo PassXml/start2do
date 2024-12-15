@@ -15,7 +15,7 @@ import org.start2do.ebean.entity.BaseModel2;
 @Accessors(chain = true)
 @NoArgsConstructor
 @Entity
-@Table(name = "t_sys_file")
+@Table(name = "sys_file")
 public class SysFile extends BaseModel2 {
 
     @Id

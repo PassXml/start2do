@@ -26,11 +26,12 @@ allprojects {
         mavenCentral()
     }
     ext {
-        pushMavenUrl = "http://192.168.30.110:8081/repository/zte-releases/"
-        SNAPSHOTpushMavenUrl = "http://192.168.30.110:8081/repository/zte-snapshots/"
+        pushMavenUrl = ""
+        SNAPSHOTpushMavenUrl = ""
         lombokVersion = '1.18.22'
         jasperreportsVersion = '6.20.6'
         mapstructVersion = "1.4.2.Final"
+        springVersion = "5.3.19"
         ebeanVersion = "14.3.0-javax"
         vertxVersion = '4.3.4'
         curVersion = project.version == 'unspecified' ? this.rootProject.version : project.version
@@ -40,9 +41,9 @@ allprojects {
                       "http-log-sdk"        : JavaVersion.VERSION_11,
                       "spring-business"     : JavaVersion.VERSION_11,
                       "common-util"         : JavaVersion.VERSION_1_8,
-                      "spring-common"         : JavaVersion.VERSION_1_8,
+                      "spring-common"       : JavaVersion.VERSION_1_8,
                       "spring-util"         : JavaVersion.VERSION_1_8,
-                      "bean-valiate"         : JavaVersion.VERSION_1_8,
+                      "bean-valiate"        : JavaVersion.VERSION_1_8,
         ]
     }
     compileJava {
@@ -99,7 +100,7 @@ allprojects {
             }
             maven {
                 if (curVersion.endsWith('-SNAPSHOT')) {
-                    url SNAPSHOTpushMavenUrl
+                    url System.getenv("url")
                 } else {
                     url pushMavenUrl
                 }

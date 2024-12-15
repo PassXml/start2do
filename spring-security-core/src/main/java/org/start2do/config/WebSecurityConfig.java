@@ -57,9 +57,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
-        if (config.getEnable()) {
+        if (Boolean.TRUE.equals(config.getEnable())) {
             ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry security = httpSecurity.csrf()
                 .disable().authorizeRequests().antMatchers("/auth/login", "/auth/code").permitAll();
+
             if (config.getCheckExpired() != null) {
                 JwtTokenUtil.CheckExpired = config.getCheckExpired();
             }

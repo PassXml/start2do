@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.start2do.ebean.dto.EnableType;
@@ -13,8 +14,9 @@ import org.start2do.ebean.entity.query.QSysSetting;
 import org.start2do.ebean.service.SysSettingService;
 import org.start2do.util.StringUtils;
 
-@RequiredArgsConstructor
 @Component
+@ConditionalOnBean(io.ebean.Database.class)
+@RequiredArgsConstructor
 public class SysSettingUtil {
 
     private final SysSettingService sysSettingService;
@@ -28,7 +30,6 @@ public class SysSettingUtil {
         hashMap = new ConcurrentHashMap<>();
         SysSettingUtil.sysSettingUtil = this;
     }
-
 
     public static String getLabel(String type, String key) {
         if (StringUtils.isEmpty(type)) {

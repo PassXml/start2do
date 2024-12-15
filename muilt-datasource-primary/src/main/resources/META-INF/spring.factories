@@ -1,2 +1,2 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  org.start2do.MultiDatasourcePrimaryAutoConfig
+#org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+#  org.start2do.MultiDatasourcePrimaryAutoConfig
