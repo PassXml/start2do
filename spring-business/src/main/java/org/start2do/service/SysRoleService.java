@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.start2do.dto.BusinessException;
 import org.start2do.ebean.service.AbsService;
@@ -21,8 +19,6 @@ import org.start2do.util.ListUtil;
 
 @Service
 @RequiredArgsConstructor
-@EnableConfigurationProperties({DataSourceProperties.class})
-
 public class SysRoleService extends AbsService<SysRole> {
 
     private final SysRoleMenuService sysRoleMenuService;

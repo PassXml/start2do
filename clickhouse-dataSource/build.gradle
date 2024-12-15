@@ -13,7 +13,7 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-    compileOnly("org.springframework.boot:spring-boot:2.6.7")
+    compileOnly("org.springframework.boot:spring-boot:2.7.18")
     api project(path: ':ebean-common', configuration: 'default')
     compileOnly group: 'io.ebean', name: 'ebean-platform-clickhouse', version: ebeanVersion
     compileOnly("io.ebean:ebean:$ebeanVersion")

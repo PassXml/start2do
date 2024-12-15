@@ -13,7 +13,7 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-    compileOnly("org.springframework:spring-webmvc:5.2.3.RELEASE")
+    compileOnly("org.springframework:spring-webmvc:5.3.31")
     compileOnly 'jakarta.validation:jakarta.validation-api:2.0.2'
 }
 
