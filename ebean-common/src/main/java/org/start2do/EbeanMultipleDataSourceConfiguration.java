@@ -5,7 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Setter
@@ -14,6 +16,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @NoArgsConstructor
 @ConditionalOnProperty(prefix = "start2do.ebean", name = "multiple-data-sources", havingValue = "true")
 @ConfigurationProperties(prefix = "spring.datasource")
+@ConditionalOnMissingBean(DataSourceProperties.class)
 public class EbeanMultipleDataSourceConfiguration {
 
     private Class<? extends DataSource> type;

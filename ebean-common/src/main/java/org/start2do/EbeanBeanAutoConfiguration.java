@@ -15,15 +15,20 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScans;
+import org.springframework.context.annotation.Condition;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 import org.start2do.ebean.id_generators.UUIDStrIdGenerator;
-import org.start2do.ebean.util.Snowflake;
+import org.start2do.util.Snowflake;
 import org.start2do.util.StringUtils;
 
 @Slf4j
@@ -104,7 +109,23 @@ public class EbeanBeanAutoConfiguration {
     @Bean("dataSource")
     @Primary
     @ConditionalOnProperty(prefix = "start2do.ebean", name = "multiple-data-sources", havingValue = "true")
-    public DataSource dataSource(EbeanMultipleDataSourceConfiguration property) {
+    @ConditionalOnMissingBean(DataSourceProperties.class)
+    public DataSource dataSource3(EbeanMultipleDataSourceConfiguration property) {
+        log.info("初始化DataSource:{}", property.getUrl());
+        HikariConfig config = new HikariConfig();
+        config.setUsername(property.getUsername());
+        config.setPassword(property.getPassword());
+        config.setJdbcUrl(property.getUrl());
+        if (StringUtils.isNotEmpty(property.getDriverClassName())) {
+            config.setDriverClassName(property.getDriverClassName());
+        }
+        return new HikariDataSource(config);
+    }
+
+    @Bean("dataSource")
+    @Primary
+    @ConditionalOnProperty(prefix = "start2do.ebean", name = "multiple-data-sources", havingValue = "true")
+    public DataSource dataSource2(DataSourceProperties property) {
         log.info("初始化DataSource:{}", property.getUrl());
         HikariConfig config = new HikariConfig();
         config.setUsername(property.getUsername());
@@ -118,11 +139,27 @@ public class EbeanBeanAutoConfiguration {
 
     @Bean
     @Primary
-    @ConditionalOnProperty(prefix = "start2do.ebean", name = "multiple-data-sources", havingValue = "true")
-    @ConditionalOnBean(HikariConfig.class)
+    @Conditional(DefaultSource.class)
     public DataSource dataSource(HikariConfig config) {
         log.info("使用HikariConfig初始化DataSource:{}", config.getJdbcUrl());
         return new HikariDataSource(config);
+    }
+
+    public static class DefaultSource implements Condition {
+
+        @Override
+        public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+            try {
+                HikariConfig bean = context.getBeanFactory().getBean(HikariConfig.class);
+                String property = context.getEnvironment().getProperty("start2do.ebean.multiple-data-sources");
+                if ("true".equals(property)) {
+                    return true;
+                }
+            } catch (Exception e) {
+                return false;
+            }
+            return false;
+        }
     }
 
 }
