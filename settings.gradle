@@ -16,6 +16,6 @@ include 'snmp-starter'
 include 'snmp-util'
 include 'clickhouse-dataSource'
 include 'http-log-sdk'
-include 'muilt-datasource-primary'
+include 'multiple-datasource-util'
 include 'zl-media-kit-util'
 

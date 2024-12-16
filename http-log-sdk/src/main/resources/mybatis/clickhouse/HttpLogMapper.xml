@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.start2do.mapper.HttpLogMapper">
+<mapper namespace="org.start2do.clickhouse.HttpLogMapper">
   <sql id="pageSql">
     <where>
       <if test="pojo.bodyKey != null and pojo.bodyKey != ''">

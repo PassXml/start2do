@@ -15,7 +15,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Accessors(chain = true)
 @NoArgsConstructor
 @ConditionalOnProperty(prefix = "start2do.ebean", name = "multiple-data-sources", havingValue = "true")
-@ConfigurationProperties(prefix = "spring.datasource")
+@ConfigurationProperties(prefix = "start2do.datasource")
 @ConditionalOnMissingBean(DataSourceProperties.class)
 public class EbeanMultipleDataSourceConfiguration {
 

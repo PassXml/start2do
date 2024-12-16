@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'org.start2do'
-version '2.0.8-SNAPSHOT'
+version '2.0.9-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -18,12 +18,13 @@ dependencies {
     compileOnly group: 'io.ebean', name: 'ebean-platform-clickhouse', version: ebeanVersion
     compileOnly("io.ebean:ebean:$ebeanVersion")
     compileOnly "io.ebean:ebean-spring-txn:$ebeanVersion"
-    api group: 'com.clickhouse', name: 'clickhouse-jdbc', version: '0.4.1'
-    api("com.github.pagehelper:pagehelper:5.3.0")
+//    api group: 'com.clickhouse', name: 'clickhouse-jdbc', version: '0.4.1'
+//    api("com.github.pagehelper:pagehelper:5.3.0")
     api("org.mybatis:mybatis:3.5.13")
-    api("org.mybatis:mybatis-spring:2.0.5")
-    api group: 'com.clickhouse', name: 'clickhouse-jdbc', version: '0.4.2'
+    api 'org.mybatis:mybatis-spring:2.1.2'
 
+    api group: 'com.clickhouse', name: 'clickhouse-jdbc', version: '0.4.2'
+    api(project(":multiple-datasource-util"))
 }
 
 test {

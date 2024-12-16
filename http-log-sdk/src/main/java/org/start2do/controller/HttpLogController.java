@@ -16,7 +16,7 @@ import org.start2do.dto.resp.HttpLogPageResp;
 import org.start2do.entity.HttpLog;
 import org.start2do.entity.HttpLogId;
 import org.start2do.entity.query.QHttpLog;
-import org.start2do.mapper.HttpLogMapper;
+import org.start2do.clickhouse.HttpLogMapper;
 import org.start2do.service.HttpLogService;
 import org.start2do.util.BeanValidatorUtil;
 

@@ -1,4 +1,4 @@
-package org.start2do.mapper;
+package org.start2do.clickhouse;
 
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
