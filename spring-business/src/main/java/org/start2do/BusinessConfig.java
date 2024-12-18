@@ -1,5 +1,6 @@
 package org.start2do;
 
+import java.time.temporal.ChronoUnit;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,7 +21,7 @@ public class BusinessConfig {
     private Controller controller = new Controller();
     private String dateTimePattern = "yyyy-MM-dd HH:mm:ss";
     private String datePattern = "yyyy-MM-dd";
-
+    private Service service = new Service();
 
     @Setter
     @Getter
@@ -37,6 +38,23 @@ public class BusinessConfig {
         private boolean setting = true;
         private boolean customDict = false;
         private boolean mock = false;
+
+    }
+
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    public static class Service {
+
+        private boolean user = true;
+        private boolean role = true;
+        private boolean dept = true;
+        private boolean loginLog = true;
+        private boolean removeFile = true;
+        private boolean log = true;
+        private boolean menu = true;
+        private boolean file = true;
 
     }
 
@@ -158,5 +176,26 @@ public class BusinessConfig {
 
     public enum FileSettingType {
         local, qn
+    }
+
+    private CacheSetting cache;
+
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    public static class CacheSetting {
+
+        private Boolean enable;
+        private Type type;
+        private Long entryTtl;
+        private ChronoUnit timeUnit;
+        private String redisCachePrefix = "Cache:";
+
+        public enum Type {
+            Redis, Ehcache, Caffeine, JCache;
+
+
+        }
     }
 }

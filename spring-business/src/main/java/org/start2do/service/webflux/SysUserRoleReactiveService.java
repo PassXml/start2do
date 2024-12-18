@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
@@ -22,8 +23,8 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 @EnableConfigurationProperties({DataSourceProperties.class})
-
 @ConditionalOnWebApplication(type = Type.REACTIVE)
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "user", havingValue = "true")
 public class SysUserRoleReactiveService extends AbsMixService<SysUserRole, Integer> {
 
     public Mono<Boolean> save(Integer roleId, List<Integer> userId) {

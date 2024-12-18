@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +27,7 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = Type.REACTIVE)
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "user", havingValue = "true")
 public class SysUserReactiveService extends AbsMixService<SysUser, Integer> {
 
     private final SysLoginRoleReactiveService sysLoginRoleReactiveService;

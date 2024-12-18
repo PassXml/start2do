@@ -3,6 +3,7 @@ package org.start2do.service.servlet;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +24,7 @@ import org.start2do.util.spring.RedisCacheUtil;
 @Service
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = Type.SERVLET)
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "user", havingValue = "true")
 public class SysUserService extends AbsService<SysUser> {
 
     private final SysLoginRoleService sysRoleService;

@@ -2,6 +2,7 @@ package org.start2do.service.webflux;
 
 import io.ebean.DB;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = Type.REACTIVE)
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "dict", havingValue = "true")
 public class SysDictReactiveService extends AbsMixService<SysDict, Integer> {
 
     private final SysDictItemReactiveService sysDictItemService;

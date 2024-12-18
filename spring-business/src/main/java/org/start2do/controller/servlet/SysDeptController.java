@@ -38,7 +38,6 @@ import org.start2do.util.BeanValidatorUtil;
 @RequestMapping("dept")
 @ConditionalOnProperty(prefix = "start2do.business.controller", name = "dept", havingValue = "true")
 @ConditionalOnWebApplication(type = Type.SERVLET)
-
 public class SysDeptController {
 
     private final SysDeptService sysDeptService;

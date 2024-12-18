@@ -1,6 +1,7 @@
 package org.start2do.service.servlet;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
@@ -17,6 +18,7 @@ import org.start2do.entity.security.query.QSysRoleMenu;
 @RequiredArgsConstructor
 @EnableConfigurationProperties({DataSourceProperties.class})
 @ConditionalOnWebApplication(type = Type.SERVLET)
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "menu", havingValue = "true")
 public class SysMenuService extends AbsService<SysMenu> {
 
     private final SysRoleMenuService sysRoleMenuService;

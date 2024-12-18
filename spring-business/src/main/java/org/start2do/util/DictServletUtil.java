@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,6 +22,7 @@ import org.start2do.service.servlet.SysDictService;
 @Component
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = Type.SERVLET)
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "dict", havingValue = "true")
 public class DictServletUtil {
 
     private final SysDictService DICT_SERVICE;

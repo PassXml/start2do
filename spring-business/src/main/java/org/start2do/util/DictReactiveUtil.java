@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,6 +25,7 @@ import reactor.core.scheduler.Schedulers;
 @Component
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = Type.REACTIVE)
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "dict", havingValue = "true")
 public class DictReactiveUtil {
 
     private final SysDictReactiveService DICT_SERVICE;

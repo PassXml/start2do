@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.context.annotation.Lazy;
@@ -23,6 +24,7 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = Type.REACTIVE)
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "file", havingValue = "true")
 public class SysFileReactiveService extends AbsMixService<SysFile, Integer> implements CommandLineRunner {
 
     private final BusinessConfig businessConfig;

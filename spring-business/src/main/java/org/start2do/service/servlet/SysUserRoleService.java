@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
@@ -20,6 +21,7 @@ import org.start2do.util.ListUtil;
 @RequiredArgsConstructor
 @EnableConfigurationProperties({DataSourceProperties.class})
 @ConditionalOnWebApplication(type = Type.SERVLET)
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "user", havingValue = "true")
 public class SysUserRoleService extends AbsService<SysUserRole> {
 
     @Transactional(rollbackFor = Exception.class)

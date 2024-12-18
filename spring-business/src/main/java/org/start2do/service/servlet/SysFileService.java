@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import org.start2do.util.Md5Util;
 
 @Service
 @ConditionalOnWebApplication(type = Type.SERVLET)
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "file", havingValue = "true")
 public class SysFileService extends AbsService<SysFile> {
 
     private final BusinessConfig businessConfig;
