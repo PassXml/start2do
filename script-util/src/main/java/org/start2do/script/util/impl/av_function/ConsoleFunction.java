@@ -1,4 +1,4 @@
-package org.start2do.script.impl.av_function;
+package org.start2do.script.util.impl.av_function;
 
 import com.googlecode.aviator.runtime.function.AbstractFunction;
 import com.googlecode.aviator.runtime.type.AviatorObject;
