@@ -64,6 +64,8 @@ public class SysMenu extends BaseModel2 implements Serializable {
         Menu("0", "普通路由(显示)"),
         HideMenu("1", "隐藏路由"),
         Button("2", "按钮"),
+        Url("3", "外联"),
+        Iframe("4", "内嵌页面"),
         ;
         private String value;
         private String label;

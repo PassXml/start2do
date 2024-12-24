@@ -24,4 +24,18 @@ public class UserDetailResp {
     private String deptName;
     private List<Integer> menus;
     private List<Integer> roles;
+    private List<Item> rolesInfo;
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    public static class Item{
+        private Integer id;
+        private String name;
+
+        public Item(Integer id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+    }
 }

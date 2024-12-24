@@ -18,7 +18,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @Entity
 @Table(name = "sys_user_permission")
-@Cache
+@Cache(enableQueryCache = true, enableBeanCache = true)
 @IdClass(SysUserPermissionId.class)
 public class SysUserPermission extends Model {
 

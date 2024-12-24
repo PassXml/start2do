@@ -4,10 +4,11 @@ import io.ebean.Model;
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbComment;
 import io.ebean.annotation.DbDefault;
-import java.util.UUID;
+import io.ebean.annotation.StorageEngine;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -16,6 +17,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.start2do.constant.DBConstant;
+import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 
 @Setter
 @Getter
@@ -23,16 +26,18 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @Entity
 @Table(name = "sys_dict_item")
-@Cache(enableQueryCache=true)
+@Cache(enableQueryCache = true)
+@StorageEngine("ENGINE = MergeTree() order by id;")
 public class SysDictItem extends Model {
 
-    @DbComment("UUID")
     @Id
-    private java.util.UUID id;
+    @Column(length = DBConstant.ID_STR_LENGTH)
+    @GeneratedValue(generator = SnowflakeStrGenerator.KEY)
+    private String id;
 
     @DbComment("字典项ID")
     @Column(name = "dict_id", nullable = false, length = 128)
-    private UUID dictId;
+    private String dictId;
     @JoinColumn(name = "dict_id", insertable = false, updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private SysDict sysDict;

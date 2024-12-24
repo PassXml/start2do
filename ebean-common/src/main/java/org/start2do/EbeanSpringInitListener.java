@@ -10,15 +10,16 @@ import org.start2do.ebean.util.SysSettingUtil;
 @Slf4j
 public class EbeanSpringInitListener implements ApplicationListener<AvailabilityChangeEvent> {
 
+
     @Override
     public void onApplicationEvent(AvailabilityChangeEvent event) {
         if (ReadinessState.ACCEPTING_TRAFFIC == event.getState()) {
-            if (SysSettingUtil.getSysSettingUtil() != null) {
-                try {
+            try {
+                if (SysSettingUtil.getSysSettingUtil() != null) {
                     SysSettingUtil.getSysSettingUtil().sync();
-                } catch (PersistenceException e) {
-                    log.error(e.getMessage());
                 }
+            } catch (PersistenceException e) {
+                log.error(e.getMessage());
             }
         }
     }

@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'org.start2do'
-version '2.0.9-SNAPSHOT'
+version '2.0.9.2-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -58,7 +58,7 @@ dependencies {
     testImplementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:2.3.2")
     testImplementation 'mysql:mysql-connector-java:5.1.49'
     testImplementation project(":ebean-common")
-    testImplementation("io.ebean:ebean-querybean:$ebeanVersion")
+    testImplementation("io.ebean:ebean-querybean")
     testAnnotationProcessor("io.ebean:querybean-generator:$ebeanVersion")
 
     annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.7.18'

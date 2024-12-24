@@ -7,7 +7,7 @@ import org.start2do.util.FileUtil
 import java.io.FileInputStream
 import java.nio.file.Paths
 
-class Config {
+class ControllerConfig {
     lateinit var entityDir: String
     lateinit var entityFiles: List<String>
     lateinit var outDir: String
@@ -15,7 +15,7 @@ class Config {
 
     constructor(entityDir: String, outDir: String) {
         this.entityDir = entityDir
-        this.entityFiles = FileUtil.getFiles(
+        this.entityFiles = FileUtil.walk(
             Paths.get(entityDir).toFile()
         ) { s: String -> s.endsWith(".java") }
         this.outDir = outDir
@@ -25,7 +25,7 @@ class Config {
 object ControllerGen {
 
     @SneakyThrows
-    fun run(config: Config) {
+    fun run(config: ControllerConfig) {
         for (entityFile in config.entityFiles) {
             val file = Paths.get(config.outDir + "/" + entityFile + config.suffix + ".java").toFile()
             var source: JavaClassSource

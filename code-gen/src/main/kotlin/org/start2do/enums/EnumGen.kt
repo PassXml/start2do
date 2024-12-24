@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
 
-class Config {
+class TypeInfoConfig {
     lateinit var files: List<String>
     lateinit var outFile: String
     var packageName: String? = null
@@ -19,14 +19,14 @@ class Config {
     var force = false
 
     constructor(filePath: String?, outFile: String) {
-        files = FileUtil.getFiles(
+        files = FileUtil.walk(
             Paths.get(filePath).toFile()
         ) { s: String -> s.endsWith(".java") }
         this.outFile = outFile
     }
 
     constructor(filePath: String?, outFile: String, packageName: String?) {
-        files = FileUtil.getFiles(
+        files = FileUtil.walk(
             Paths.get(filePath).toFile()
         ) { s: String -> s.endsWith(".java") }
         this.outFile = outFile
@@ -38,7 +38,7 @@ class TypeInfoPojo(val typeName: String, val packagePath: String)
 object EnumGen {
 
 
-    fun run(config: Config) {
+    fun run(config: TypeInfoConfig) {
         val hasAnnotations: MutableList<TypeInfoPojo> = ArrayList()
         for (file in config.files) {
             try {

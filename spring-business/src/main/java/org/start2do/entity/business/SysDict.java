@@ -1,21 +1,27 @@
 package org.start2do.entity.business;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbComment;
 import io.ebean.annotation.DbEnumValue;
+import io.ebean.annotation.NotNull;
+import io.ebean.annotation.StorageEngine;
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.start2do.constant.DBConstant;
 import org.start2do.dto.BusinessException;
 import org.start2do.ebean.entity.BaseModel2;
+import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 
 @Setter
 @Getter
@@ -23,13 +29,14 @@ import org.start2do.ebean.entity.BaseModel2;
 @NoArgsConstructor
 @Entity
 @Table(name = "sys_dict")
-@Cache(enableQueryCache=true)
+@Cache(enableQueryCache = true)
+@StorageEngine("ENGINE = MergeTree() order by id;")
 public class SysDict extends BaseModel2 {
 
     @Id
-    @DbComment("UUID")
-    private java.util.UUID id;
-
+    @Column(length = DBConstant.ID_STR_LENGTH)
+    @GeneratedValue(generator = SnowflakeStrGenerator.KEY)
+    private String id;
     @NotNull
     @DbComment("字典名称,Type")
     private String dictName;
@@ -64,6 +71,7 @@ public class SysDict extends BaseModel2 {
         public String getLabel() {
             return label;
         }
+        @JsonCreator
 
         public static Type find(String s) {
             for (Type value : values()) {

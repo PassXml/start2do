@@ -2,6 +2,7 @@ package org.start2do.dto;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -13,7 +14,7 @@ import org.start2do.entity.security.SysMenu;
 @Setter
 @Getter
 @Accessors(chain = true)
-public class UserCredentials extends User {
+public class UserCredentials extends User implements IUserInfoGet {
 
     private Integer id;
     private List<UserRole> roles;
@@ -26,5 +27,15 @@ public class UserCredentials extends User {
         super(username, password, authorities);
         this.id = id;
         this.realName = realName;
+    }
+
+    @Override
+    public Collection<String> getRoles_() {
+        return roles.stream().map(UserRole::getRoleId).map(String::valueOf).collect(Collectors.toSet());
+    }
+
+    @Override
+    public String getUserId() {
+        return this.id.toString();
     }
 }

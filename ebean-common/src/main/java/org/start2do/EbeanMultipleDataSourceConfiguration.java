@@ -19,6 +19,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConditionalOnMissingBean(DataSourceProperties.class)
 public class EbeanMultipleDataSourceConfiguration {
 
+    private boolean force;
     private Class<? extends DataSource> type;
     private String driverClassName;
     private String url;

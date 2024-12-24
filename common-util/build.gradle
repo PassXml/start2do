@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'org.start2do'
-version '2.0.9-SNAPSHOT'
+version '2.0.9.2-SNAPSHOT'
 
 
 dependencies {
@@ -13,12 +13,12 @@ dependencies {
     compileOnly group: 'io.ebean', name: 'ebean-annotation', version: '8.4'
     compileOnly 'jakarta.validation:jakarta.validation-api:2.0.2'
     testImplementation("org.mapstruct:mapstruct:$mapstructVersion")
-    testImplementation("org.slf4j:slf4j-simple:2.0.5")
-    testImplementation("org.slf4j:slf4j-api:2.0.5")
+    testImplementation("org.slf4j:slf4j-simple")
+    testImplementation("org.slf4j:slf4j-api")
     compileOnly group: 'net.java.dev.jna', name: 'jna', version: '5.14.0'
     compileOnly("org.springframework:spring-web:5.3.19")
     compileOnly('javax.servlet:javax.servlet-api:4.0.1')
-    compileOnly 'com.fasterxml.jackson.core:jackson-annotations:2.13.3'
+    compileOnly "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
 }
 
 test {

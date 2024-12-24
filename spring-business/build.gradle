@@ -15,18 +15,28 @@ dependencies {
     api(project(":spring-security-api"))
     api(project(":spring-security-core"))
     api(project(":spring-util"))
-    compileOnly("org.springframework.boot:spring-boot:2.7.18")
+    compileOnly("org.springframework.boot:spring-boot:$springBootVersion")
     compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
-    compileOnly("org.springframework:spring-webmvc:5.3.31")
-    compileOnly 'com.fasterxml.jackson.core:jackson-annotations:2.13.3'
+    compileOnly("org.springframework:spring-webmvc:$springVersion")
+    compileOnly("org.springframework:spring-context-support:$springVersion")
+    compileOnly("org.springframework.data:spring-data-redis:$springBootVersion")
     compileOnly("org.aspectj:aspectjrt:1.9.7")
     compileOnly("org.aspectj:aspectjweaver:1.9.7")
     //
-
+    compileOnly "com.github.ben-manes.caffeine:caffeine"
     annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.7.18'
-    compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.14.1'
-    compileOnly group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.14.1'
-    api 'com.alibaba:easyexcel:3.3.2'
+    compileOnly "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
+    compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
+    compileOnly group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: jacksonVersion
+    api 'org.apache.tika:tika-core:2.9.2'
+    compileOnly("org.apache.poi:poi")
+    compileOnly 'org.apache.poi:poi-ooxml'
+    compileOnly 'org.apache.poi:poi-ooxml-lite'
+    compileOnly 'io.projectreactor:reactor-core'
+    testImplementation("org.apache.poi:poi")
+    testImplementation 'org.apache.poi:poi-ooxml'
+    testImplementation 'org.apache.poi:poi-ooxml-lite'
+    compileOnly("io.minio:minio")
 
 }
 

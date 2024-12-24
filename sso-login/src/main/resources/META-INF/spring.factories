@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  org.start2do.config.CasStater,org.start2do.config.WebFluxCasStater,org.start2do.config.CasStater

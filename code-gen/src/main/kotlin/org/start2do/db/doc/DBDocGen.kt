@@ -10,7 +10,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import javax.sql.DataSource
 
-class Config {
+class DBDocConfig {
     lateinit var deviceClassName: String
     lateinit var jdbcUrl: String
     lateinit var username: String
@@ -37,7 +37,7 @@ class Config {
 
 object DBDocGen {
 
-    fun run(config: Config) {
+    fun run(config: DBDocConfig) {
         //数据源
         val hikariConfig = HikariConfig()
         //        hikariConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");

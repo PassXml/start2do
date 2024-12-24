@@ -8,11 +8,15 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -50,7 +54,14 @@ public class DateUtil {
         return formatter;
     }
 
-    public String LocalDateTimeToString(LocalDateTime time, String pattern) {
+    public String localDateTimeToString(LocalDateTime time, String pattern) {
+        if (time == null) {
+            return "";
+        }
+        return time.format(getPattern(pattern));
+    }
+
+    public String localDateToString(LocalDate time, String pattern) {
         if (time == null) {
             return "";
         }
@@ -58,6 +69,10 @@ public class DateUtil {
     }
 
     public String LocalDateToString(LocalDate time, String pattern) {
+        return localDateToString(time, pattern);
+    }
+
+    public String localTimeToString(LocalTime time, String pattern) {
         if (time == null) {
             return "";
         }
@@ -65,32 +80,42 @@ public class DateUtil {
     }
 
     public String LocalTimeToString(LocalTime time, String pattern) {
-        if (time == null) {
-            return "";
-        }
-        return time.format(getPattern(pattern));
+        return localTimeToString(time, pattern);
     }
 
     public LocalTime StringToLocalTime(String time, String pattern) {
+        return stringToLocalTime(time, pattern);
+    }
+
+    public LocalDate StringToLocalDate(String time, String pattern) {
+        return stringToLocalDate(time, pattern);
+    }
+
+    public LocalDateTime StringToLocalDateTime(String time, String pattern) {
+        return stringToLocalDateTime(time, pattern);
+    }
+
+    public LocalTime stringToLocalTime(String time, String pattern) {
         if (time == null) {
             return LocalTime.now();
         }
         return LocalTime.parse(time, getPattern(pattern));
     }
 
-    public LocalDate StringToLocalDate(String time, String pattern) {
+    public LocalDate stringToLocalDate(String time, String pattern) {
         if (time == null) {
             return LocalDate.now();
         }
         return LocalDate.parse(time, getPattern(pattern));
     }
 
-    public LocalDateTime StringToLocalDateTime(String time, String pattern) {
+    public LocalDateTime stringToLocalDateTime(String time, String pattern) {
         if (time == null) {
             return LocalDateTime.now();
         }
         return LocalDateTime.parse(time, getPattern(pattern));
     }
+
 
     public static LocalDateTime dateToLocalDateTime(Date endDate) {
         return LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault());
@@ -104,7 +129,35 @@ public class DateUtil {
     }
 
     public static String LocalDateTimeStr() {
-        return LocalDateTimeToString(LocalDateTime.now(), Pattern.YYYY_MM_ddHHmmss);
+        return localDateTimeToString(LocalDateTime.now(), Pattern.YYYY_MM_ddHHmmss);
+    }
+
+    public static String LocalDateTimeStr(String pattern) {
+        return localDateTimeToString(LocalDateTime.now(), pattern);
+    }
+
+    public static String LocalDateStr() {
+        return LocalDateToString(LocalDate.now(), Pattern.YYYY_MM_dd);
+    }
+
+    public static String LocalDateStr(String pattern) {
+        return LocalDateToString(LocalDate.now(), pattern);
+    }
+
+    public static String localDateTimeStr() {
+        return localDateTimeToString(LocalDateTime.now(), Pattern.YYYY_MM_ddHHmmss);
+    }
+
+    public static String localDateTimeStr(String pattern) {
+        return localDateTimeToString(LocalDateTime.now(), pattern);
+    }
+
+    public static String localDateStr() {
+        return localDateToString(LocalDate.now(), Pattern.YYYY_MM_dd);
+    }
+
+    public static String localDateStr(String pattern) {
+        return localDateToString(LocalDate.now(), pattern);
     }
 
     public static LocalTime toLocalTime(String string, String hHmmss) {
@@ -127,6 +180,58 @@ public class DateUtil {
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), offset);
     }
 
+    public static LocalDateTime getMonthStartTime() {
+        return getMonthStartTime(LocalDate.now());
+    }
+
+    public static LocalDateTime getMonthEndTime() {
+        return getMonthEndTime(LocalDate.now());
+    }
+
+    public static LocalDateTime getMonthStartTime(LocalDate date) {
+        if (date == null) {
+            date = LocalDate.now();
+        }
+        return LocalDateTime.of(date, LocalTime.of(0, 0, 0)).withDayOfMonth(1);
+    }
+
+    public static LocalDateTime getMonthEndTime(LocalDate date) {
+        if (date == null) {
+            date = LocalDate.now();
+        }
+        return LocalDateTime.of(date, LocalTime.of(23, 59, 59)).plusMonths(1).withDayOfMonth(1)
+            .minus(1, ChronoUnit.DAYS);
+    }
+
+    public static String localDateTimeToString(LocalDateTime time) {
+        if (time == null) {
+            return null;
+        }
+        return localDateTimeToString(time, Pattern.YYYY_MM_ddHHmmss);
+    }
+
+    public static boolean inRange(LocalDateTime startTime, LocalDateTime endTime, LocalDateTime now) {
+        if (startTime == null || endTime == null || now == null) {
+            return false;
+        }
+        return now.isAfter(startTime) && now.isBefore(endTime);
+    }
+
+    public static boolean inRange(LocalTime startTime, LocalTime endTime, LocalTime now) {
+        if (startTime == null || endTime == null || now == null) {
+            return false;
+        }
+        return now.isAfter(startTime) && now.isBefore(endTime);
+    }
+
+    public static boolean inRange(LocalDate startTime, LocalDate endTime, LocalDate now) {
+        if (startTime == null || endTime == null || now == null) {
+            return false;
+        }
+        return now.isAfter(startTime) && now.isBefore(endTime);
+    }
+
+
     public static class Pattern {
 
         public static final String YYYY_MM_ddHHmmss = "yyyy-MM-dd HH:mm:ss";
@@ -135,5 +240,80 @@ public class DateUtil {
         public static final String HHmm = "HH:mm";
     }
 
+    public static LocalDateTime getWeekStartTime() {
+        return getWeekStartTime(LocalDate.now());
+    }
+
+    public static LocalDateTime getWeekEndTime() {
+        return getWeekEndTime(LocalDate.now());
+    }
+
+    public static LocalDateTime getWeekStartTime(LocalDate date) {
+        if (date == null) {
+            date = LocalDate.now();
+        }
+        LocalDateTime now = LocalDateTime.of(date, LocalTime.of(0, 0));
+        return now.plus(1 - now.getDayOfWeek().getValue(), ChronoUnit.DAYS);
+    }
+
+    public static LocalDateTime getWeekEndTime(LocalDate date) {
+        if (date == null) {
+            date = LocalDate.now();
+        }
+        LocalDateTime now = LocalDateTime.of(date, LocalTime.of(23, 59, 59));
+        return now.plus(7 - now.getDayOfWeek().getValue(), ChronoUnit.DAYS);
+    }
+
+    public static LocalDateTime getDayEndTime() {
+        return getDayEndTime(LocalDate.now());
+    }
+
+    public static LocalDateTime getDayStartTime() {
+        return getDayStartTime(LocalDate.now());
+    }
+
+    public static LocalDateTime getDayEndTime(LocalDate date) {
+        if (date == null) {
+            date = LocalDate.now();
+        }
+        return LocalDateTime.of(date, LocalTime.of(23, 59, 59));
+    }
+
+    public static LocalDateTime getDayStartTime(LocalDate date) {
+        if (date == null) {
+            date = LocalDate.now();
+        }
+        return LocalDateTime.of(date, LocalTime.of(0, 0, 0));
+    }
+
+    public static long diffDay(LocalDateTime startTime, LocalDateTime endTime) {
+        long days = ChronoUnit.DAYS.between(startTime, endTime);
+        return days;
+    }
+
+    // 检查事件是否重叠的函数
+    public static boolean hasOverlap(List<TimeRange> events) {
+        for (int i = 0; i < events.size(); i++) {
+            TimeRange currentEvent = events.get(i);
+            for (int j = i + 1; j < events.size(); j++) {
+                TimeRange nextEvent = events.get(j);
+                if (currentEvent.getStartTime().isBefore(nextEvent.getEndTime()) && currentEvent.getEndTime()
+                    .isAfter(nextEvent.getStartTime())) {
+                    return true; // 找到重叠
+                }
+            }
+        }
+        return false; // 没有重叠
+    }
+
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    public static class TimeRange {
+
+        private LocalTime startTime;
+        private LocalTime endTime;
+    }
 
 }

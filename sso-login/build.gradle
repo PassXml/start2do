@@ -1,0 +1,33 @@
+plugins {
+    id 'java'
+}
+
+group 'com.zte'
+version '2.0.9.2-SNAPSHOT'
+
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    compileOnly("org.springframework:spring-web:5.3.31")
+    compileOnly("org.springframework:spring-context:5.3.31")
+    api 'commons-codec:commons-codec:1.15'
+    compileOnly("com.squareup.okhttp3:okhttp:4.10.0")
+    compileOnly("org.springframework.boot:spring-boot-starter-web:2.7.18") {
+        exclude group: "javax.validation", module: "validation-api"
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    }
+//    testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-webflux', version: '2.7.18'
+    api group: 'io.projectreactor', name: 'reactor-core', version: '3.7.0'
+
+    api 'org.springframework.boot:spring-boot-starter-web:2.7.18'
+    api group: 'org.springframework.security', name: 'spring-security-cas', version: '5.7.14'
+    api group: 'org.springframework.security', name: 'spring-security-web', version: '5.7.14'
+    api group: 'org.springframework.security', name: 'spring-security-config', version: '5.7.14'
+
+
+}
+
+test {
+    useJUnitPlatform()
+}

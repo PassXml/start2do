@@ -1,0 +1,35 @@
+spring:
+  main:
+    web-application-type: servlet
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${MYSQL_URL}
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+  redis:
+    host: 127.0.0.1
+server:
+  port: 9090
+management:
+  metrics:
+    web:
+      server:
+        request:
+          autotime:
+            enabled: false
+
+#jwt:
+#  enable: false
+
+cas:
+  enable: true
+  casUrl:
+  baseUrl: http://127.0.0.1:9090
+  key:
+  success-url: http://127.0.0.1:9090
+  cas-server-url:
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG

@@ -3,9 +3,11 @@ package org.start2do.ebean.util;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.start2do.ebean.dto.EnableType;
@@ -14,12 +16,14 @@ import org.start2do.ebean.entity.query.QSysSetting;
 import org.start2do.ebean.service.SysSettingService;
 import org.start2do.util.StringUtils;
 
+@Slf4j
 @Component
-@ConditionalOnBean(io.ebean.Database.class)
-@RequiredArgsConstructor
 public class SysSettingUtil {
 
-    private final SysSettingService sysSettingService;
+    @Lazy
+    @Setter
+    @Resource
+    private SysSettingService sysSettingService;
 
     @Getter
     private static SysSettingUtil sysSettingUtil;
@@ -38,12 +42,14 @@ public class SysSettingUtil {
         if (StringUtils.isEmpty(key)) {
             return key;
         }
-        return Optional.ofNullable(SysSettingUtil.sysSettingUtil.hashMap.get(type)).map(t -> t.get(key))
-            .orElseGet(() -> key);
+        return Optional.ofNullable(SysSettingUtil.sysSettingUtil).map(t -> t.hashMap.get(type)).map(
+            t -> t.get(key)
+        ).orElseGet(() -> key);
     }
 
     public static ConcurrentHashMap<String, String> getItems(String type) {
-        return SysSettingUtil.sysSettingUtil.hashMap.getOrDefault(type, new ConcurrentHashMap<>());
+        return Optional.ofNullable(SysSettingUtil.sysSettingUtil)
+            .map(e -> e.hashMap.get(type)).orElse(new ConcurrentHashMap<>());
     }
 
 
@@ -51,6 +57,10 @@ public class SysSettingUtil {
     public void sync() {
         if (hashMap == null) {
             init();
+        }
+        if (sysSettingService == null) {
+            log.warn("需要注入SysSettingService");
+            return;
         }
         for (SysSetting dto : sysSettingService.findAll(new QSysSetting().enable.eq(EnableType.Enable))) {
             if (dto.getType() == null) {

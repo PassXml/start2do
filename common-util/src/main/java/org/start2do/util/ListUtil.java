@@ -1,12 +1,18 @@
 package org.start2do.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Getter;
@@ -35,6 +41,7 @@ public class ListUtil {
         if (list == null || maxSize < 0 || spFunction == null) {
             return;
         }
+        Spliterators.spliterator(list, Spliterator.IMMUTABLE | Spliterator.ORDERED);
         int cur = 0;
         int end = list.size();
         while (cur < end) {
@@ -51,6 +58,19 @@ public class ListUtil {
 
     public <T, R> void diff(List<T> addSourceList, List<R> sourceList, Compare<T, R> eq, Consumer<List<T>> addFunction,
         Consumer<List<EqValue<T, R>>> updateFunction, Consumer<List<R>> removeFunction) {
+        DiffDTO<T, R> diff = diff(addSourceList, sourceList, eq);
+        if (addFunction != null) {
+            addFunction.accept(diff.getAddList());
+        }
+        if (updateFunction != null) {
+            updateFunction.accept(diff.getEqValues());
+        }
+        if (removeFunction != null) {
+            removeFunction.accept(diff.getRemoveList());
+        }
+    }
+
+    public <T, R> DiffDTO<T, R> diff(List<T> addSourceList, List<R> sourceList, Compare<T, R> eq) {
         List<T> addList = new ArrayList<>();
         List<EqValue<T, R>> eqList = new ArrayList<>();
         List<R> removeList = new ArrayList<>();
@@ -86,14 +106,18 @@ public class ListUtil {
                 }
             }
         }
-        if (addFunction != null) {
-            addFunction.accept(addList);
-        }
-        if (updateFunction != null) {
-            updateFunction.accept(eqList);
-        }
-        if (removeFunction != null) {
-            removeFunction.accept(removeList);
+        return new DiffDTO<T, R>(
+            addList, eqList, removeList
+        );
+    }
+
+    public <T, R> void fillInValue(List<T> source, List<R> items, Compare<T, R> compare, Runner<T, R> runner) {
+        for (T t : source) {
+            for (R item : items) {
+                if (compare.test(t, item)) {
+                    runner.run(t, item);
+                }
+            }
         }
     }
 
@@ -132,6 +156,34 @@ public class ListUtil {
         return result;
     }
 
+    public static <T, R> Optional<T> findFirst(Collection<T> list, Function<T, R> get, R eqValue) {
+        return list.stream().filter(t -> Objects.equals(get.apply(t), eqValue)).findFirst();
+    }
+
+    public static <T, R> T findFirst(Collection<T> list, T defaultValue, Function<T, R> get, R eqValue) {
+        return findFirst(list, get, eqValue).orElseGet(() -> defaultValue);
+    }
+
+    public static <T, R, Z> Z findFirst(Collection<T> list, Z defaultValue, Function<T, R> get, R eqValue,
+        Function<T, Z> function) {
+        return findFirst(list, get, eqValue).map(function).orElseGet(() -> defaultValue);
+    }
+
+    public static <T, Z, R> Z findFirstThrow(Collection<T> list, Supplier<RuntimeException> exception,
+        Function<T, R> get,
+        R eqValue,
+        Function<T, Z> function) {
+        return findFirst(list, get, eqValue).map(function).orElseThrow(exception);
+    }
+
+    public static boolean isEmpty(Collection req) {
+        return req == null || req.isEmpty();
+    }
+
+    public static boolean isNotEmpty(Collection list) {
+        return list != null && !list.isEmpty();
+    }
+
 
     public interface Compare<T, R> {
 
@@ -148,6 +200,7 @@ public class ListUtil {
         void run(T spList);
     }
 
+
     @Setter
     @Getter
     @Accessors(chain = true)
@@ -160,6 +213,23 @@ public class ListUtil {
         public EqValue(T add, R source) {
             this.p1 = add;
             this.p2 = source;
+        }
+    }
+
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    public static class DiffDTO<T, R> {
+
+        private List<T> addList;
+        private List<EqValue<T, R>> eqValues;
+        private List<R> removeList;
+
+        public DiffDTO(List<T> addList, List<EqValue<T, R>> eqValues, List<R> removeList) {
+            this.addList = addList;
+            this.eqValues = eqValues;
+            this.removeList = removeList;
         }
     }
 

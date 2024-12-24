@@ -12,17 +12,23 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-    compileOnly("io.ebean:ebean:$ebeanVersion")
-    compileOnly("org.slf4j:slf4j-api:1.7.36")
-    compileOnly("org.springframework:spring-webmvc:5.3.19")
-    compileOnly("org.springframework.boot:spring-boot:2.7.18")
+    compileOnly("io.ebean:ebean:$ebeanVersion") {
+        exclude group: 'io.ebean', module: 'ebean-platform-hana'
+        exclude group: 'io.ebean', module: 'ebean-platform-hsqldb'
+        exclude group: 'io.ebean', module: 'ebean-querybean'
+    }
+    compileOnly("org.slf4j:slf4j-api")
+    compileOnly("org.springframework:spring-webmvc:$springVersion")
+    compileOnly("org.springframework.boot:spring-boot:$springBootVersion")
 //    compileOnly("org.start2do:bean-valiate:2.0.1-SNAPSHOT")
     compileOnly(project(":bean-valiate"))
     compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
     api(project(":api"))
     compileOnly 'com.fasterxml.jackson.core:jackson-annotations:2.14.2'
-    compileOnly group: 'org.springframework.security', name: 'spring-security-core', version: '5.7.14'
-    compileOnly("org.apache.poi:poi:5.0.0")
+    compileOnly("org.springframework.security:spring-security-core")
+    compileOnly("org.apache.poi:poi")
+    compileOnly 'org.apache.poi:poi-ooxml'
+    compileOnly 'org.apache.poi:poi-ooxml-lite'
 
 }
 

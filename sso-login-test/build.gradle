@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.zte'
+version = '1.0.1-SNAPSHOT'
+application {
+    mainClassName = 'com.zte.TestApplication'
+}
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation platform('org.junit:junit-bom:5.10.0')
+    implementation 'org.junit.jupiter:junit-jupiter'
+    implementation(project(":spring-security-core")) {
+        exclude group: "org.springframework.security", module: "spring-security-web"
+    }
+    implementation(project(":spring-security-api"))
+    implementation(project(":spring-util"))
+    implementation(project(":spring-common"))
+    implementation(project(":ebean-common"))
+//    spring依赖
+//    implementation("org.springframework.boot:spring-boot-starter-actuator:2.7.18") {
+//        exclude group: 'jakarta.validation', module: 'jakarta.validation-api'
+//    }
+
+//    implementation("com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery")
+//    implementation("com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config")
+    implementation("org.springframework.boot:spring-boot-configuration-processor:2.7.18")
+    implementation("org.springframework.boot:spring-boot-starter-logging:2.7.18")
+    implementation("org.springframework.boot:spring-boot-starter-web:2.7.18") {
+        exclude group: "javax.validation", module: "validation-api"
+    }
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-webflux', version: '2.7.18'
+
+    implementation("org.springframework.boot:spring-boot-starter-aop:2.7.18")
+    compileOnly("org.springframework.boot:spring-boot-starter-data-redis:2.7.18")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis:2.7.18")
+//    implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:2.3.2")
+    implementation 'mysql:mysql-connector-java:8.0.26'
+    implementation 'org.springframework.data:spring-data-jdbc:2.4.18'
+    implementation 'org.springframework.boot:spring-boot-autoconfigure:2.7.18'
+    implementation(project(":sso-login"))
+    implementation 'com.zaxxer:HikariCP:6.2.1'
+}
+
+test {
+    useJUnitPlatform()
+}

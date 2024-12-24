@@ -12,7 +12,7 @@ dependencies {
 
     api("io.ebean:ebean:$ebeanVersion")
     api "io.ebean:ebean-platform-oracle:$ebeanVersion"
-    api("io.ebean:ebean-querybean:$ebeanVersion")
+    api("io.ebean:ebean-querybean")
     compileOnly("io.ebean:ebean-redis:$ebeanVersion")
     implementation("io.ebean:ebean-migration:14.0.0")
     compileOnly "io.ebean:ebean-ddl-generator:$ebeanVersion"
@@ -34,8 +34,8 @@ dependencies {
     annotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")
     compileOnly 'jakarta.validation:jakarta.validation-api:2.0.2'
 //
-    testImplementation("org.slf4j:slf4j-api:1.7.36")
-    testImplementation("org.slf4j:slf4j-simple:1.7.36")
+    testImplementation("org.slf4j:slf4j-api")
+    testImplementation("org.slf4j:slf4j-simple")
     testImplementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.3"
     testImplementation "org.glassfish.jaxb:jaxb-runtime:2.3.6"
     testAnnotationProcessor("io.ebean:querybean-generator:$ebeanVersion")
