@@ -26,6 +26,7 @@ import org.start2do.service.impl.FileFilterEmptyImpl;
 import org.start2do.service.impl.FileMD5DefaultImpl;
 import org.start2do.service.impl.FileOperationHookServiceEmptyImp;
 import org.start2do.service.impl.RestPwServiceEmptyImpl;
+import org.start2do.util.StringUtils;
 
 @ComponentScans(value = {@ComponentScan(value = "org.start2do.controller"),
     @ComponentScan(value = "org.start2do.service"), @ComponentScan(value = "org.start2do.util"),
@@ -86,7 +87,7 @@ public class BusinessAutoConfig {
         return new Converter<String, LocalDateTime>() {
             @Override
             public LocalDateTime convert(String source) {
-                if (source.trim().length() == 0) {
+                if (StringUtils.isEmpty(source)) {
                     return null;
                 }
                 // 先尝试ISO格式: 2019-07-15T16:00:00

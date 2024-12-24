@@ -15,6 +15,7 @@ import org.start2do.util.StringUtils;
 public class BusinessConfig {
 
     private Boolean enable;
+    private boolean enableDictConvert = false;
     private SysLogConfig sysLog;
     private RateLimitConfig rateLimit;
     private Controller controller = new Controller();

@@ -2,6 +2,7 @@ package org.start2do.util;
 
 
 import java.util.Map;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,7 @@ import org.start2do.ebean.dict.IDictItem;
  * </p>
  */
 @Component
+@ConditionalOnProperty(prefix = "start2do.business", name = "enable-dict-convert", havingValue = "true")
 public class StringCodeToEnumConverterFactory implements ConverterFactory<String, IDictItem> {
 
     protected static final Map<Class, Converter> CONVERTERS = new ConcurrentReferenceHashMap<>();
