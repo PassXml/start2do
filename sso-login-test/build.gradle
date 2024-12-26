@@ -15,11 +15,9 @@ repositories {
 dependencies {
     implementation platform('org.junit:junit-bom:5.10.0')
     implementation 'org.junit.jupiter:junit-jupiter'
-    implementation(project(":spring-security-core")) {
-        exclude group: "org.springframework.security", module: "spring-security-web"
-    }
     implementation(project(":spring-security-api"))
     implementation(project(":spring-util"))
+    implementation(project(":bean-valiate"))
     implementation(project(":spring-common"))
     implementation(project(":ebean-common"))
 //    spring依赖
@@ -45,6 +43,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-autoconfigure:2.7.18'
     implementation(project(":sso-login"))
     implementation 'com.zaxxer:HikariCP:6.2.1'
+    implementation 'org.slf4j:slf4j-simple'
 }
 
 test {

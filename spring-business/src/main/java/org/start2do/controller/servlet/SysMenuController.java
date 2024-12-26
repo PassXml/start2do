@@ -32,7 +32,7 @@ import org.start2do.util.BeanValidatorUtil;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("menu")
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "menu", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "menu",havingValue = "true",matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.SERVLET)
 public class SysMenuController {
 

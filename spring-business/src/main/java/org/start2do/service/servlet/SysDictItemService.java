@@ -6,7 +6,7 @@ import org.start2do.ebean.service.AbsService;
 import org.start2do.entity.business.SysDictItem;
 
 @Service
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "dict", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "dict", havingValue = "true",matchIfMissing = true)
 public class SysDictItemService extends AbsService<SysDictItem> {
 
 }

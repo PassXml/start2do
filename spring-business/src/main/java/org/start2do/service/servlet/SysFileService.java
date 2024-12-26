@@ -24,7 +24,7 @@ import org.start2do.util.Md5Util;
 
 @Service
 @ConditionalOnWebApplication(type = Type.SERVLET)
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "file", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "file", havingValue = "true",matchIfMissing = true)
 public class SysFileService extends AbsService<SysFile> {
 
     private final BusinessConfig businessConfig;

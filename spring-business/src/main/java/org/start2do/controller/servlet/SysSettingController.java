@@ -35,7 +35,7 @@ import org.start2do.util.BeanValidatorUtil;
 @RequiredArgsConstructor
 @RequestMapping("sys/setting")
 @ConditionalOnWebApplication(type = Type.SERVLET)
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "setting", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "setting",havingValue = "true",matchIfMissing = true)
 public class SysSettingController {
 
     private final SysSettingService settingService;

@@ -84,23 +84,30 @@ public class ExcelUtil {
         //使用反射获取所有字段名称,并且获取ExcelSetting注解
 
         // 使用反射获取所有字段名称,并且获取ExcelSetting注解
-        List<Field> fields = new LinkedList<>();
+        List<FieldInfo> fields = new LinkedList<>();
         for (Field field : tClass.getDeclaredFields()) {
             ExcelSetting setting = field.getAnnotation(ExcelSetting.class);
-            if (setting != null && !setting.skin()) {
+            if (setting != null) {
+                if (!setting.skin()) {
+                    field.setAccessible(true);
+                    fields.add(new FieldInfo(field, setting));
+                }
+            } else {
                 field.setAccessible(true);
-                fields.add(field);
+                fields.add(new FieldInfo(field, null));
             }
         }
         // 填充数据
-        for (int rowIndex = 0; rowIndex < pojos.size(); rowIndex++) {
+
+        for (int dataRowIndex = 0, rowIndex = 0; dataRowIndex < pojos.size(); rowIndex++) {
             Row row = createRow(sheet, rowIndex);
-            T pojo = pojos.get(rowIndex);
+            boolean isAdd = false;
             for (int colIndex = 0; colIndex < fields.size(); colIndex++) {
-                Field field = fields.get(colIndex);
-                ExcelSetting setting = field.getAnnotation(ExcelSetting.class);
+                FieldInfo info = fields.get(colIndex);
                 Cell cell = createCell(row, colIndex);
+                Field field = info.getField();
                 if (rowIndex == 0) {
+                    ExcelSetting setting = info.getExcelSetting();
                     if (setting != null) {
                         if (setting.skin()) {
                             continue;
@@ -112,15 +119,21 @@ public class ExcelUtil {
                     continue;
                 }
                 try {
+                    T pojo = pojos.get(dataRowIndex);
                     Object value = field.get(pojo);
                     if (value != null) {
                         cell.setCellValue(value.toString());
                     } else {
                         cell.setCellValue("");
                     }
+                    isAdd = true;
                 } catch (IllegalAccessException e) {
+                    log.error(e.getMessage());
                     e.printStackTrace();
                 }
+            }
+            if (isAdd) {
+                dataRowIndex++;
             }
         }
 
@@ -414,5 +427,20 @@ public class ExcelUtil {
          * 设置数据
          */
         void invoke(Integer rowNumber, Object[] objects);
+    }
+
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    public static class FieldInfo {
+
+        private Field field;
+        private ExcelSetting excelSetting;
+
+        public FieldInfo(Field field, ExcelSetting excelSetting) {
+            this.field = field;
+            this.excelSetting = excelSetting;
+        }
     }
 }

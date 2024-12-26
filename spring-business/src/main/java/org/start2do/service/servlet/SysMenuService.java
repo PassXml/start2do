@@ -12,7 +12,7 @@ import org.start2do.entity.security.query.QSysRoleMenu;
 
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "menu", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "menu", havingValue = "true",matchIfMissing = true)
 public class SysMenuService extends AbsService<SysMenu> {
 
     private final SysRoleMenuService sysRoleMenuService;

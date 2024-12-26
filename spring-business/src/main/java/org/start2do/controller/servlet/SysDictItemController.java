@@ -29,7 +29,7 @@ import org.start2do.util.BeanValidatorUtil;
 @RequiredArgsConstructor
 @RequestMapping("/dict/item")
 @ConditionalOnWebApplication(type = Type.SERVLET)
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "dict", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "dict",havingValue = "true",matchIfMissing = true)
 public class SysDictItemController {
 
     private final SysDictItemService sysDictItemService;

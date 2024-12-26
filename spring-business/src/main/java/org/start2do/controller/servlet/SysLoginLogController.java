@@ -29,7 +29,7 @@ import org.start2do.service.servlet.SysLoginLogService;
 @RequestMapping("sys/login/log")
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "login-log", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "login-log",havingValue = "true",matchIfMissing = true)
 public class SysLoginLogController {
 
     private final SysLoginLogService service;

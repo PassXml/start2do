@@ -15,7 +15,7 @@ import org.start2do.util.ListUtil;
 
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "user", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "user", havingValue = "true", matchIfMissing = true)
 public class SysUserRoleService extends AbsService<SysUserRole> {
 
     @Transactional(rollbackFor = Exception.class)

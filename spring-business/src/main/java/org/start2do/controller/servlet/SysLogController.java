@@ -37,7 +37,7 @@ import org.start2do.util.ListUtil;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/log")
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "log", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "log",havingValue = "true",matchIfMissing = true)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class SysLogController {
 

@@ -31,7 +31,7 @@ import org.start2do.util.ListUtil;
 @RequiredArgsConstructor
 @RequestMapping("/dict")
 @ConditionalOnWebApplication(type = Type.SERVLET)
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "custom-dict", havingValue = "false")
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "custom-dict", havingValue = "false",matchIfMissing = true)
 public class SysDictCustomController {
 
     private final SysDictService sysDictService;

@@ -6,7 +6,7 @@ import org.start2do.ebean.service.AbsService;
 import org.start2do.entity.business.SysLog;
 
 @Service
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "log", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "log", havingValue = "true",matchIfMissing = true)
 public class SysLogService extends AbsService<SysLog> {
 
 }

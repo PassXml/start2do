@@ -30,9 +30,9 @@ import org.springframework.security.cas.userdetails.AbstractCasAssertionUserDeta
 import org.springframework.security.cas.web.CasAuthenticationEntryPoint;
 import org.springframework.security.cas.web.CasAuthenticationFilter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
@@ -199,46 +199,31 @@ public class CasStater {
     }
 
     @Bean
-    public WebSecurityConfig webSecurityConfig(SingleSignOutFilter singleSignOutFilter, LogoutFilter logoutFilter,
+    @ConditionalOnWebApplication(type = Type.SERVLET)
+    @ConditionalOnProperty(prefix = "cas", name = "is-http-security", havingValue = "true")
+    public SecurityFilterChain webSecurityConfig(HttpSecurity http, SingleSignOutFilter singleSignOutFilter,
+        LogoutFilter logoutFilter,
         CustomAuthenticationEntryPoint authenticationEntryPoint, CasAuthenticationFilter casAuthenticationFilter,
         CasConfig config
-    ) {
-        return new WebSecurityConfig(singleSignOutFilter, logoutFilter, authenticationEntryPoint,
-            casAuthenticationFilter, config);
-    }
-
-    /**
-     * 配置Web安全配置类，用于配置HTTP安全策略。
-     */
-    @RequiredArgsConstructor
-    @ConditionalOnProperty(name = "cas.enable", havingValue = "true")
-    public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-
-        private final SingleSignOutFilter singleSignOutFilter;
-        private final LogoutFilter logoutFilter;
-        private final CustomAuthenticationEntryPoint authenticationEntryPoint;
-        private final CasAuthenticationFilter casAuthenticationFilter;
-        private final CasConfig config;
-
-
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
-            List<String> whilteList = new ArrayList<>(
-                List.of(config.getLoginUri(), config.getLogoutUri(),
-                    config.getCasLogoutUri(), config.getCasLoginUri())
-            );
-            if (config.getWhileList() != null) {
-                whilteList.addAll(Arrays.asList(config.getWhileList()));
-            }
-            http.authorizeRequests().antMatchers(whilteList.toArray(new String[0])).permitAll().and()
-                .authorizeRequests().anyRequest()
-                .authenticated().and().csrf().disable().cors()
-                .disable().httpBasic().authenticationEntryPoint(authenticationEntryPoint).and().logout()
-                .logoutUrl(config.getLogoutUri()).logoutSuccessUrl(config.getSuccessUrl()).and()
-                .addFilterBefore(singleSignOutFilter, CasAuthenticationFilter.class)
-                .addFilterBefore(logoutFilter, LogoutFilter.class);
+    ) throws Exception {
+//        return new WebSecurityConfig(singleSignOutFilter, logoutFilter, authenticationEntryPoint,
+//            casAuthenticationFilter, config);
+        List<String> whilteList = new ArrayList<>(
+            List.of(config.getLoginUri(), config.getLogoutUri(),
+                config.getCasLogoutUri(), config.getCasLoginUri())
+        );
+        if (config.getWhileList() != null) {
+            whilteList.addAll(Arrays.asList(config.getWhileList()));
         }
-
+        return http.authorizeRequests().antMatchers(whilteList.toArray(new String[0])).permitAll().and()
+            .authorizeRequests().anyRequest()
+            .authenticated().and().csrf().disable().cors()
+            .disable().httpBasic().authenticationEntryPoint(authenticationEntryPoint).and().logout()
+            .logoutUrl(config.getLogoutUri()).logoutSuccessUrl(config.getSuccessUrl()).and()
+            .addFilter(casAuthenticationFilter)
+            .addFilterBefore(singleSignOutFilter, CasAuthenticationFilter.class)
+            .addFilterBefore(logoutFilter, LogoutFilter.class).build();
     }
+
 
 }

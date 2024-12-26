@@ -1,6 +1,5 @@
 package org.start2do;
 
-import javax.persistence.PersistenceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.availability.AvailabilityChangeEvent;
 import org.springframework.boot.availability.ReadinessState;
@@ -18,7 +17,7 @@ public class EbeanSpringInitListener implements ApplicationListener<Availability
                 if (SysSettingUtil.getSysSettingUtil() != null) {
                     SysSettingUtil.getSysSettingUtil().sync();
                 }
-            } catch (PersistenceException e) {
+            } catch (Throwable e) {
                 log.error(e.getMessage());
             }
         }

@@ -45,7 +45,7 @@ import org.start2do.util.StringUtils;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/user")
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "user", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "user",havingValue = "true",matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.SERVLET)
 public class SysUserController {
 

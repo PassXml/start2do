@@ -20,7 +20,7 @@ import org.start2do.util.ListUtil;
 
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "role", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "role", havingValue = "true", matchIfMissing = true)
 public class SysRoleService extends AbsService<SysRole> {
 
     private final SysRoleMenuService sysRoleMenuService;

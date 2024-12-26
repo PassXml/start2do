@@ -10,7 +10,7 @@ import org.start2do.entity.business.query.QSysDictItem;
 
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "dict", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "dict", havingValue = "true",matchIfMissing = true)
 public class SysDictService extends AbsService<SysDict> {
 
     private final SysDictItemService sysDictItemService;

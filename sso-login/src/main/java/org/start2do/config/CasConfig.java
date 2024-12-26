@@ -17,6 +17,7 @@ public class CasConfig {
 
     private Boolean enable;
     private String casUrl;
+    private Boolean isHttpSecurity = false;
     /**
      * cas 服务端ip 地址;可能存在和casUrl不一致的情况
      */

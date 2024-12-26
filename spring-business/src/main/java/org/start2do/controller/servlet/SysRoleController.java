@@ -48,7 +48,7 @@ import org.start2do.util.ListUtil;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("role")
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "role", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "role",havingValue = "true",matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.SERVLET)
 public class SysRoleController {
 

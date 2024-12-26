@@ -29,6 +29,11 @@ dependencies {
     compileOnly("org.apache.poi:poi")
     compileOnly 'org.apache.poi:poi-ooxml'
     compileOnly 'org.apache.poi:poi-ooxml-lite'
+    testImplementation("org.apache.poi:poi")
+    testImplementation 'org.apache.poi:poi-ooxml'
+    testImplementation 'org.apache.poi:poi-ooxml-lite'
+    testImplementation("org.slf4j:slf4j-api")
+    testImplementation("org.slf4j:slf4j-simple")
 
 }
 
