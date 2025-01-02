@@ -1,7 +1,6 @@
 package org.start2do.dto;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
@@ -10,7 +9,6 @@ import org.start2do.util.StringCodeToEnumConverterFactory;
 
 @Configuration
 @RequiredArgsConstructor
-@ConditionalOnMissingBean(WebMvcConfigurer.class)
 @ConditionalOnProperty(prefix = "start2do.business", name = "enable-dict-convert", havingValue = "true")
 public class DictConvertConfiguration implements WebMvcConfigurer {
 

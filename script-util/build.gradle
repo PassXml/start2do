@@ -21,8 +21,8 @@ dependencies {
     compileOnly("org.graalvm.polyglot:polyglot")
 
     testImplementation("org.graalvm.polyglot:polyglot")
-    testImplementation 'com.googlecode.aviator:aviator:5.4.3'
     testImplementation("org.graalvm.polyglot:js")
+    testImplementation 'com.googlecode.aviator:aviator:5.4.3'
     testImplementation "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
     testImplementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
     testImplementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: jacksonVersion

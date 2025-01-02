@@ -2,9 +2,7 @@ package org.start2do;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -18,8 +16,6 @@ import org.start2do.util.ValidateException;
 
 @Slf4j
 @ControllerAdvice
-@RequiredArgsConstructor
-@Import(SpringCommonConfig.class)
 public class ExceptionHandler {
 
     private final SpringCommonConfig config;
@@ -83,4 +79,10 @@ public class ExceptionHandler {
             .collect(Collectors.joining(";"));
         return R.failed(message);
     }
+
+    public ExceptionHandler(SpringCommonConfig config) {
+        log.info("初始化ExceptionHandler");
+        this.config = config;
+    }
 }
+

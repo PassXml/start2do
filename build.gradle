@@ -52,7 +52,7 @@ allprojects {
                       "spring-common"       : JavaVersion.VERSION_1_8,
                       "spring-util"         : JavaVersion.VERSION_1_8,
                       "bean-valiate"        : JavaVersion.VERSION_1_8,
-                      "script-util"        : JavaVersion.VERSION_11,
+                      "script-util"         : JavaVersion.VERSION_11,
         ]
     }
     idea.module.sourceDirs += file("${buildDir}/generated/sources/annotationProcessor/java")
@@ -178,7 +178,7 @@ allprojects {
                         "org.glassfish.jaxb:jaxb-runtime"                           : "4.0.4",
                         "com.alibaba:easyexcel"                                     : "4.0.3",
                         "org.slf4j:slf4j-api"                                       : "2.0.5",
-                        "org.slf4j:slf4j-simple"                                       : "2.0.5",
+                        "org.slf4j:slf4j-simple"                                    : "2.0.5",
                         "org.slf4j:log4j-over-slf4j"                                : "1.7.36",
                         "org.apache.commons:commons-lang3"                          : "3.12.0",
                         "javax.sip:jain-sip-ri"                                     : "1.3.0-91",
@@ -193,7 +193,7 @@ allprojects {
                         "com.fasterxml.jackson.core:jackson-databind"               : "2.15.2",
                         "com.fasterxml.jackson.core:jackson-core"                   : "2.15.2",
                         "com.fasterxml.jackson.dataformat:jackson-dataformat-xml"   : "2.15.2",
-                        "jakarta.validation:jakarta.validation-api"                 : "3.0.2",
+                        "jakarta.validation:jakarta.validation-api"                 : "2.0.2",
                         "one.util:streamex"                                         : "0.8.2",
                         "net.bramp.ffmpeg:ffmpeg"                                   : "0.8.0",
                         "io.vertx:vertx-core"                                       : vertxVersion,
@@ -214,7 +214,6 @@ allprojects {
                         'commons-codec:commons-codec'                               : '1.16.1',
                         'io.vavr:vavr'                                              : '0.10.4',
                         "javax.validation:validation-api"                           : "2.0.1.Final",
-                        "jakarta.validation:jakarta.validation-api"                 : "2.0.2",
                         "org.apache.poi:poi"                                        : "5.3.0",
                         "org.apache.poi:poi-ooxml-lite"                             : "5.3.0",
                         "org.apache.poi:poi-ooxml"                                  : "5.3.0",

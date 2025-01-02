@@ -15,21 +15,16 @@ public interface IUrl {
     String uri();
 
     default String getUrl() {
-        if (host() == null || uri() == null) {
-            return "";
-        }
-        if (host().endsWith("/") || uri().startsWith("/")) {
-            return host() + uri();
-        } else {
-            return host() + "/" + uri();
-        }
+        return getUrl(host(), uri());
     }
 
     static String getUrl(String host, String uri) {
         if (host == null || uri == null) {
             return "";
         }
-        if (host.endsWith("/") || uri.startsWith("/")) {
+        if (host.endsWith("/") && uri.startsWith("/")) {
+            return host + uri.substring(1);
+        } else if (host.endsWith("/") || uri.startsWith("/")) {
             return host + uri;
         } else {
             return host + "/" + uri;

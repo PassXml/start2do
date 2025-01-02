@@ -1,5 +1,6 @@
 package org.start2do.ebean.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.Optional;
 import org.start2do.dto.BusinessException;
 import org.start2do.ebean.dict.DictItems;
@@ -15,6 +16,7 @@ public enum YesOrNoType implements IDictItem {
         putItemBean(value, label);
     }
 
+    @JsonCreator
     public static YesOrNoType get(String value) {
         return find(value).orElseThrow(() -> new BusinessException("未知字典值:" + value));
     }

@@ -38,6 +38,8 @@ public class BusinessConfig {
         private boolean menu = true;
         private boolean file = true;
         private boolean setting = true;
+        private boolean dict = true;
+
         private boolean customDict = false;
         private boolean mock = false;
 
@@ -53,6 +55,7 @@ public class BusinessConfig {
         private boolean role = true;
         private boolean dept = true;
         private boolean log = true;
+        private boolean dict = true;
         private boolean loginLog = true;
         private boolean menu = true;
         private boolean file = true;
