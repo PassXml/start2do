@@ -1,6 +1,5 @@
 package org.start2do.controller.webflux;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -13,6 +12,7 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.codec.multipart.FilePart;
+import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,7 +36,7 @@ import reactor.core.publisher.Mono;
  */
 @Controller
 @RequestMapping("/file")
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "file", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "file", havingValue = "true",matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.REACTIVE)
 
 public class SysFileController {
@@ -73,8 +73,9 @@ public class SysFileController {
      * @return
      */
     @RequestMapping(value = "download_proxy/**", method = RequestMethod.GET)
-    public Mono<Void> downloadByPath(HttpServletRequest request, ServerHttpResponse response) throws IOException {
-        String path = request.getRequestURI().replaceFirst("/file/download_proxy", "");
+    public Mono<Void> downloadByPath(ServerHttpRequest request, ServerHttpResponse response) throws IOException {
+        String uri = request.getURI().toString();
+        String path = uri.replaceFirst("/file/download_proxy", "");
         String fileName = path.substring(path.lastIndexOf("/") + 1);
         response.getHeaders().add("Content-Disposition", "attachment;filename=" + fileName);
         response.getHeaders().add("Content-Type", "application/octet-stream");

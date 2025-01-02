@@ -29,7 +29,7 @@ import org.start2do.util.spring.SpringInitListenerUtil.WaitInitCompleteRunner;
 @Slf4j
 @RestController
 @RequestMapping("mock")
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "mock", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "mock", havingValue = "true", matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.REACTIVE)
 public class MockDataController implements WaitInitCompleteRunner {
 

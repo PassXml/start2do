@@ -18,7 +18,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @EnableConfigurationProperties({DataSourceProperties.class})
 @ConditionalOnWebApplication(type = Type.REACTIVE)
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "dept", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "dept", havingValue = "true", matchIfMissing = true)
 public class SysDeptReactiveService extends AbsMixService<SysDept, Integer> {
 
 

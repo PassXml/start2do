@@ -24,7 +24,7 @@ import org.start2do.util.spring.RedisCacheUtil;
 @Service
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = Type.SERVLET)
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "user", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "user", havingValue = "true", matchIfMissing = true)
 public class SysUserService extends AbsService<SysUser> {
 
     private final SysLoginRoleService sysRoleService;

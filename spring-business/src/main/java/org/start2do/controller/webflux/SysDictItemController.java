@@ -1,6 +1,7 @@
 package org.start2do.controller.webflux;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +31,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @RequestMapping("/dict/item")
 @ConditionalOnWebApplication(type = Type.REACTIVE)
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "dict", havingValue = "true",matchIfMissing = true)
 public class SysDictItemController {
 
     private final SysDictItemReactiveService sysDictItemService;

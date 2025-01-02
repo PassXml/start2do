@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = Type.REACTIVE)
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "dict", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "dict", havingValue = "true", matchIfMissing = true)
 public class SysDictReactiveService extends AbsMixService<SysDict, Integer> {
 
     private final SysDictItemReactiveService sysDictItemService;

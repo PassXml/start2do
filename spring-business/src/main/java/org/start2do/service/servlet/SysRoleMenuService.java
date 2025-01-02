@@ -11,7 +11,7 @@ import org.start2do.entity.security.SysRoleMenu;
 @RequiredArgsConstructor
 @Service
 @ConditionalOnWebApplication(type = Type.SERVLET)
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "role", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "role", havingValue = "true", matchIfMissing = true)
 public class SysRoleMenuService extends AbsService<SysRoleMenu> {
 
 }

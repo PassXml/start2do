@@ -1,4 +1,4 @@
-package org.start2do.controller.webflux;
+package org.start2do.controller.servlet;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,6 @@ import org.start2do.dto.resp.setting.SettingMenuResp;
 import org.start2do.ebean.dto.EnableType;
 import org.start2do.ebean.entity.query.QSysSetting;
 import org.start2do.ebean.service.SysSettingService;
-import reactor.core.publisher.Mono;
 
 /**
  * 系统设置
@@ -22,7 +21,7 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("sys/setting")
-@ConditionalOnWebApplication(type = Type.REACTIVE)
+@ConditionalOnWebApplication(type = Type.SERVLET)
 @ConditionalOnProperty(prefix = "start2do.business.controller", name = "custom-setting", havingValue = "false")
 public class SysSettingCustomController {
 
@@ -32,10 +31,9 @@ public class SysSettingCustomController {
      * 所有系统设置
      */
     @GetMapping("all")
-    public Mono<R<List<SettingMenuResp>>> all() {
-        return Mono.fromCallable(
-            () -> settingService.findAll(new QSysSetting().enable.eq(EnableType.Enable)).stream()
-                .map(SettingDtoMapper.INSTANCE::toSettingMenuResp).toList()).map(R::ok);
+    public R<List<SettingMenuResp>> all() {
+        return R.ok(settingService.findAll(new QSysSetting().enable.eq(EnableType.Enable)).stream()
+            .map(SettingDtoMapper.INSTANCE::toSettingMenuResp).toList());
     }
 
 }

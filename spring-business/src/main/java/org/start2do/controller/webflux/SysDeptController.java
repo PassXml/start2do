@@ -38,7 +38,7 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("dept")
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "dept", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "dept", havingValue = "true",matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.REACTIVE)
 public class SysDeptController {
 

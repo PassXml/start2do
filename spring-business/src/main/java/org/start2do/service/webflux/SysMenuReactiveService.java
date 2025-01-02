@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @EnableConfigurationProperties({DataSourceProperties.class})
 @ConditionalOnWebApplication(type = Type.REACTIVE)
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "menu", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "menu", havingValue = "true",matchIfMissing = true)
 public class SysMenuReactiveService extends AbsMixService<SysMenu, Integer> {
 
     private final SysRoleMenuReactiveService sysRoleMenuService;

@@ -1,14 +1,11 @@
-package org.start2do.service.webflux.impl;
+package org.start2do.service.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -22,13 +19,14 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Service;
 import org.start2do.BusinessConfig;
 import org.start2do.BusinessConfig.FileSetting;
+import org.start2do.dto.dto.file.FileUpdateResultDto;
 import org.start2do.entity.business.SysFile;
 import org.start2do.entity.business.query.QSysFile;
 import org.start2do.service.IFileMd5;
-import org.start2do.service.webflux.IFileOperationHookService;
-import org.start2do.service.webflux.IFileOperationService;
+import org.start2do.service.IFileOperationHookService;
+import org.start2do.service.IFileOperationService;
 import org.start2do.service.webflux.SysFileReactiveService;
-import org.start2do.util.DateUtil;
+import org.start2do.util.LocalFileUtils;
 import org.start2do.util.Md5Util;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -50,39 +48,17 @@ public class LocalFileOperationService implements IFileOperationService {
     }
 
     private SysFile uploadFile(String md5, String fileName, ByteArrayInputStream inputStream) {
-        String finalMd5;
-        if (md5 == null) {
-            finalMd5 = Md5Util.md5(inputStream);
-        } else {
-            finalMd5 = md5;
-        }
-        String uploadDir = businessConfig.getFileSetting().getUploadDir();
-        String subfix = getSubFix(fileName);
-        Path path = Paths.get(
-            uploadDir + File.separator + DateUtil.LocalDateToString(LocalDate.now(), "yyyyMMdd") + File.separator
-            + finalMd5 + "." + subfix);
-        try {
-            Files.createDirectories(path.getParent());
-            byte[] bytes = inputStream.readAllBytes();
-            File file = path.toFile();
-            //文件不存在
-            if (!file.exists()) {
-                Files.write(path, bytes);
-            }
-            String relativeFilePath = getRelativeFilePath(Paths.get(businessConfig.getFileSetting().getUploadDir()),
-                path);
-            return new SysFile(fileName, path.toString(), relativeFilePath, finalMd5,
-                businessConfig.getFileSetting().getHost(), Integer.valueOf(bytes.length).longValue(), subfix);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        FileUpdateResultDto dto = LocalFileUtils.upload(
+            businessConfig.getFileSetting().getUploadDir(), md5, fileName, inputStream);
+        return new SysFile(fileName, dto.getFullPath(), dto.getRelativePath(), dto.getMd5(),
+            businessConfig.getFileSetting().getHost(), dto.getSize(), dto.getSuffix());
     }
 
     @Override
     public Mono<SysFile> update(FilePart part, Boolean checkExist) {
-        return Mono.from(fileToBytes(part).map(DataBuffer::asByteBuffer).map(ByteBuffer::array)).flatMap(bytes -> {
+        return Mono.from(fileToBytes(part).map(DataBuffer::asByteBuffer).map(ByteBuffer::array)).flatMap(bytes_ -> {
+            byte[] bytes = hookService.uploadBefore(bytes_);
             String md5 = fileMd5.md5(bytes);
-            ;
             if (checkExist) {
                 return sysFileReactiveService.findOneReactive(new QSysFile().fileMd5.eq(md5)).switchIfEmpty(
                     Mono.just(uploadFile(md5, part.filename(), new ByteArrayInputStream(bytes)))
@@ -114,8 +90,9 @@ public class LocalFileOperationService implements IFileOperationService {
 
     @Override
     public Mono<SysFile> update(byte[] bytes, String fileName, Boolean checkExist) {
+        byte[] before = hookService.uploadBefore(bytes);
         return Mono.fromCallable(() -> {
-            String md5 = Md5Util.md5(bytes);
+            String md5 = Md5Util.md5(before);
             if (checkExist) {
                 return sysFileReactiveService.findOneReactive(new QSysFile().fileMd5.eq(md5)).switchIfEmpty(
                     Mono.just(uploadFile(md5, fileName, new ByteArrayInputStream(bytes)))

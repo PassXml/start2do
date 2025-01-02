@@ -34,8 +34,10 @@ public class BusinessConfig {
         private boolean dept = true;
         private boolean log = true;
         private boolean menu = true;
+        private boolean loginLog = true;
         private boolean file = true;
         private boolean setting = true;
+        private boolean customSetting = false;
         private boolean customDict = false;
         private boolean mock = false;
 

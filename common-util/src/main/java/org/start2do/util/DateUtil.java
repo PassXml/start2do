@@ -13,9 +13,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 import lombok.experimental.UtilityClass;
 
@@ -310,10 +312,39 @@ public class DateUtil {
     @Getter
     @Accessors(chain = true)
     @NoArgsConstructor
-    public static class TimeRange {
+    @AllArgsConstructor
+    @ToString
+    public static class DateRange {
 
         private LocalTime startTime;
         private LocalTime endTime;
+    }
+
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @ToString
+    public static class TimeRange {
+
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+    }
+
+    public static TimeRange getTimRange(LocalDateTime now, Integer step) {
+        // 将当前时间调整到上一个5分钟的整点时间
+        LocalDateTime previousIntervalEnd = now.truncatedTo(ChronoUnit.MINUTES)
+            .withMinute((now.getMinute() / step) * step)
+            .withSecond(0)
+            .withNano(0);
+        // 计算区间的开始时间
+        LocalDateTime previousIntervalStart = previousIntervalEnd.minusMinutes(step);
+        return new TimeRange(previousIntervalStart, previousIntervalEnd);
+    }
+
+    public static TimeRange getTimRange() {
+        return getTimRange(LocalDateTime.now(), 5);
     }
 
 }

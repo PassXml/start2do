@@ -29,7 +29,7 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 @EnableConfigurationProperties({DataSourceProperties.class})
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "role", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "role", havingValue = "true",matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.REACTIVE)
 public class SysRoleReactiveService extends AbsMixService<SysRole, Integer> {
 

@@ -21,7 +21,7 @@ import org.start2do.util.ListUtil;
 @RequiredArgsConstructor
 @EnableConfigurationProperties({DataSourceProperties.class})
 @ConditionalOnWebApplication(type = Type.SERVLET)
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "user", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "user", havingValue = "true", matchIfMissing = true)
 public class SysUserRoleService extends AbsService<SysUserRole> {
 
     @Transactional(rollbackFor = Exception.class)

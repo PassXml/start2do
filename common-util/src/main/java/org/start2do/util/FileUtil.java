@@ -4,16 +4,27 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.ClosedWatchServiceException;
+import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
+import lombok.Getter;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,13 +40,13 @@ public class FileUtil {
         Path path = Paths.get(filePath);
         File file = path.toFile();
         if (!file.exists()) {
-            return List.of();
+            return new ArrayList<>();
         }
         try {
             return Files.readAllLines(path);
         } catch (IOException e) {
             log.error(e.getMessage(), e);
-            return List.of();
+            return new ArrayList<>();
         }
     }
 
@@ -49,7 +60,7 @@ public class FileUtil {
             if (!Files.exists(parent)) {
                 parent.toFile().mkdirs();
             }
-            Files.writeString(path, body, options);
+            Files.write(path, body.getBytes(StandardCharsets.UTF_8), options);
             return true;
         } catch (IOException e) {
             log.error(e.getMessage(), e);
@@ -60,25 +71,34 @@ public class FileUtil {
     public List<String> readAllLine(Path path) {
         File file = path.toFile();
         if (!file.exists()) {
-            return List.of();
+            return new ArrayList<>();
         }
         try {
             return Files.readAllLines(path);
         } catch (IOException e) {
             log.error(e.getMessage(), e);
-            return List.of();
+            return new ArrayList<>();
         }
     }
 
+    /**
+     * 获取文件名,不带后缀
+     */
     public String getFileName(String name) {
         if (StringUtils.isEmpty(name)) {
             return null;
         }
+
         int i = name.lastIndexOf(".");
         if (i == -1) {
             return name;
         }
-        return name.substring(0, i);
+        int lasted = Math.max(name.lastIndexOf("/"), name.lastIndexOf("\\"));
+        if (lasted == -1) {
+            return name.substring(0, i);
+        } else {
+            return name.substring(lasted + 1, i);
+        }
     }
 
     public String getSuffix(String name) {
@@ -98,7 +118,7 @@ public class FileUtil {
             return "";
         }
         try {
-            return Files.readString(path);
+            return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
         } catch (IOException e) {
             log.error(e.getMessage(), e);
             return "";
@@ -139,7 +159,14 @@ public class FileUtil {
 
     public void writeFile(String filePath, InputStream inputStream) {
         try {
-            inputStream.transferTo(new FileOutputStream(Paths.get(filePath).toFile()));
+
+            FileOutputStream outputStream = new FileOutputStream(Paths.get(filePath).toFile());
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+            outputStream.flush();
             inputStream.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -148,26 +175,25 @@ public class FileUtil {
 
     public void delete(String path) {
         try {
-            Files.walkFileTree(Paths.get(path), new FileVisitor<>() {
+            Files.walkFileTree(Paths.get(path), new FileVisitor<Path>() {
+
                 @Override
-                public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes basicFileAttributes) {
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
                     return FileVisitResult.CONTINUE;
                 }
 
                 @Override
-                public FileVisitResult visitFile(Path path, BasicFileAttributes basicFileAttributes) {
-                    path.toFile().delete();
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     return FileVisitResult.CONTINUE;
                 }
 
                 @Override
-                public FileVisitResult visitFileFailed(Path path, IOException e) throws IOException {
+                public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
                     return FileVisitResult.CONTINUE;
                 }
 
                 @Override
-                public FileVisitResult postVisitDirectory(Path path, IOException e) throws IOException {
-                    path.toFile().delete();
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
                     return FileVisitResult.CONTINUE;
                 }
             });
@@ -226,5 +252,64 @@ public class FileUtil {
             return null;
         }
         return dest.substring(0, dest.lastIndexOf(".")) + "." + newSuffix;
+    }
+
+    public static String getRelativeFilePath(Path basePath, Path path) {
+        String string = basePath.relativize(path).toString();
+        return string.replaceAll("\\\\", "/");
+    }
+
+    @Getter
+    private static final Map<String, Thread> THREAD_MAP = new ConcurrentHashMap<>();
+
+    public static void watch(String dirPath, Consumer<WatchEvent<?>> callback) {
+        watch(Paths.get(dirPath), callback);
+    }
+
+    /**
+     * 监听文件目录,如果文件变更,则调用Callback
+     */
+    public static void watch(Path dir, Consumer<WatchEvent<?>> callback) {
+        String path = dir.toAbsolutePath().toString();
+        log.info("开始监听文件夹,{}", path);
+        Thread thread = THREAD_MAP.get(path);
+        if (thread != null) {
+            log.info("存在重复监听任务,{},停止之前的监听", path);
+            thread.interrupt(); // 使用 interrupt 代替 stop
+        }
+        if (!Files.exists(dir)) {
+            log.info("脚本文件目录不存在,不监听了");
+            return;
+        }
+        try {
+            WatchService watcher = FileSystems.getDefault().newWatchService();
+            dir.register(watcher, StandardWatchEventKinds.ENTRY_MODIFY);
+            thread = new Thread(() -> {
+                while (!Thread.currentThread().isInterrupted()) { // 检查中断状态
+                    try {
+                        WatchKey key;
+                        try {
+                            key = watcher.take();
+                        } catch (InterruptedException x) {
+                            Thread.currentThread().interrupt(); // 重新设置中断状态
+                            break; // 退出循环
+                        }
+                        for (WatchEvent<?> event : key.pollEvents()) {
+                            callback.accept(event);
+                        }
+                        boolean valid = key.reset();
+                        if (!valid) {
+                            break;
+                        }
+                    } catch (ClosedWatchServiceException x) {
+                        break;
+                    }
+                }
+            });
+            thread.start();
+            THREAD_MAP.put(path, thread);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

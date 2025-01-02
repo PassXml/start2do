@@ -9,7 +9,7 @@ import org.start2do.entity.business.SysDictItem;
 
 @Service
 @ConditionalOnWebApplication(type = Type.REACTIVE)
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "dict", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "dict", havingValue = "true", matchIfMissing = true)
 public class SysDictItemReactiveService extends AbsMixService<SysDictItem, Integer> {
 
 }

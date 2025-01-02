@@ -33,7 +33,7 @@ import org.start2do.entity.security.SysMenu;
 import org.start2do.entity.security.SysRole;
 import org.start2do.entity.security.query.QSysRole;
 import org.start2do.entity.security.query.QSysUser;
-import org.start2do.service.servlet.SysRoleService;
+import org.start2do.service.webflux.SysRoleReactiveService;
 import org.start2do.service.webflux.SysUserReactiveService;
 import org.start2do.util.BeanValidatorUtil;
 import org.start2do.util.StringUtils;
@@ -45,14 +45,13 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/user")
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "user", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "user", havingValue = "true",matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.REACTIVE)
-
 public class SysUserController {
 
     private final SysUserReactiveService sysUserService;
     private final PasswordEncoder passwordEncoder;
-    private final SysRoleService sysRoleService;
+    private final SysRoleReactiveService sysRoleService;
 
 
     /**

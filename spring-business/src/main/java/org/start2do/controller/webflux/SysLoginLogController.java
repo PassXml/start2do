@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +32,7 @@ import reactor.core.publisher.Mono;
 @RequestMapping("sys/login/log")
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = Type.REACTIVE)
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "login-log", havingValue = "true",matchIfMissing = true)
 public class SysLoginLogController {
 
     private final SysLoginLogReactiveService service;

@@ -24,7 +24,7 @@ import org.start2do.util.Md5Util;
 
 @Service
 @ConditionalOnWebApplication(type = Type.SERVLET)
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "file", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "file", havingValue = "true", matchIfMissing = true)
 public class SysFileService extends AbsService<SysFile> {
 
     private final BusinessConfig businessConfig;
@@ -64,7 +64,7 @@ public class SysFileService extends AbsService<SysFile> {
         String subfix = fileName.substring(fileName.lastIndexOf(".") + 1);
         Path path = Paths.get(
             uploadDir + File.separator + DateUtil.LocalDateToString(LocalDate.now(), "yyyyMMdd") + File.separator + md5
-                + "." + subfix);
+            + "." + subfix);
         Files.createDirectories(path.getParent());
         Files.write(path, byteArray);
         String relativeFilePath = getRelativeFilePath(path);
@@ -95,7 +95,7 @@ public class SysFileService extends AbsService<SysFile> {
         String subfix = filename.substring(filename.lastIndexOf(".") + 1);
         Path path = Paths.get(
             uploadDir + File.separator + DateUtil.LocalDateToString(LocalDate.now(), "yyyyMMdd") + File.separator + md5
-                + "." + subfix);
+            + "." + subfix);
         Files.createDirectories(path.getParent());
         file.transferTo(path);
         String relativeFilePath = getRelativeFilePath(path);

@@ -29,7 +29,7 @@ import org.start2do.service.servlet.SysFileService;
  */
 @RestController
 @RequestMapping("/file")
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "file", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "file", havingValue = "true",matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.SERVLET)
 public class SysFileController {
 

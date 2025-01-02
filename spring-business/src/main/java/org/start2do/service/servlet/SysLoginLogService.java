@@ -8,7 +8,7 @@ import org.start2do.entity.security.SysLoginLog;
 
 @Service
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "login-log", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "login-log", havingValue = "true", matchIfMissing = true)
 public class SysLoginLogService extends AbsService<SysLoginLog> {
 
 }

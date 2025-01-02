@@ -1,7 +1,7 @@
 package org.start2do.controller.webflux;
 
-import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,9 +17,7 @@ import org.start2do.dto.req.setting.SettingAddReq;
 import org.start2do.dto.req.setting.SettingPageReq;
 import org.start2do.dto.req.setting.SettingUpdateReq;
 import org.start2do.dto.resp.setting.SettingDetailResp;
-import org.start2do.dto.resp.setting.SettingMenuResp;
 import org.start2do.dto.resp.setting.SettingPageResp;
-import org.start2do.ebean.dto.EnableType;
 import org.start2do.ebean.entity.SysSetting;
 import org.start2do.ebean.entity.query.QSysSetting;
 import org.start2do.ebean.service.SysSettingService;
@@ -34,6 +32,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @RequestMapping("sys/setting")
 @ConditionalOnWebApplication(type = Type.REACTIVE)
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "setting", havingValue = "true",matchIfMissing = true)
 public class SysSettingController {
 
     private final SysSettingService settingService;

@@ -1,8 +1,6 @@
 package org.start2do;
 
 
-import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
-import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
@@ -17,7 +15,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScans;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.annotation.Order;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,8 +25,7 @@ import org.start2do.service.impl.FileFilterEmptyImpl;
 import org.start2do.service.impl.FileMD5DefaultImpl;
 import org.start2do.service.impl.FileOperationHookServiceEmptyImp;
 import org.start2do.service.impl.RestPwServiceEmptyImpl;
-import org.start2do.service.webflux.IFileOperationHookService;
-import org.start2do.util.spring.ILogConfigBean;
+import org.start2do.service.IFileOperationHookService;
 
 @ComponentScans(value = {@ComponentScan(value = "org.start2do.controller"),
     @ComponentScan(value = "org.start2do.service"), @ComponentScan(value = "org.start2do.util"),

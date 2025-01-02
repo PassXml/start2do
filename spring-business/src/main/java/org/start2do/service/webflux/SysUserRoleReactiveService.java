@@ -24,7 +24,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @EnableConfigurationProperties({DataSourceProperties.class})
 @ConditionalOnWebApplication(type = Type.REACTIVE)
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "user", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "user", havingValue = "true", matchIfMissing = true)
 public class SysUserRoleReactiveService extends AbsMixService<SysUserRole, Integer> {
 
     public Mono<Boolean> save(Integer roleId, List<Integer> userId) {

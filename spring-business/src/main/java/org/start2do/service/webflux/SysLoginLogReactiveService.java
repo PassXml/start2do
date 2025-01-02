@@ -9,7 +9,7 @@ import org.start2do.entity.security.SysLoginLog;
 
 @Service
 @ConditionalOnWebApplication(type = Type.REACTIVE)
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "login-log", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "login-log", havingValue = "true",matchIfMissing = true)
 public class SysLoginLogReactiveService extends AbsMixService<SysLoginLog, String> {
 
 }

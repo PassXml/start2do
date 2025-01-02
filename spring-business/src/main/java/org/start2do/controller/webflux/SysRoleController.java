@@ -46,9 +46,8 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("role")
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "role", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "role", havingValue = "true",matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.REACTIVE)
-
 public class SysRoleController {
 
     private final SysRoleReactiveService sysRoleService;

@@ -18,7 +18,7 @@ import org.start2do.entity.security.query.QSysRoleMenu;
 @RequiredArgsConstructor
 @EnableConfigurationProperties({DataSourceProperties.class})
 @ConditionalOnWebApplication(type = Type.SERVLET)
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "menu", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "menu", havingValue = "true", matchIfMissing = true)
 public class SysMenuService extends AbsService<SysMenu> {
 
     private final SysRoleMenuService sysRoleMenuService;

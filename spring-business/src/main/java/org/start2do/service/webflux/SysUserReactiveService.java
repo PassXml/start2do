@@ -27,7 +27,7 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = Type.REACTIVE)
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "user", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "user", havingValue = "true",matchIfMissing = true)
 public class SysUserReactiveService extends AbsMixService<SysUser, Integer> {
 
     private final SysLoginRoleReactiveService sysLoginRoleReactiveService;

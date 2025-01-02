@@ -17,7 +17,7 @@ import org.start2do.entity.security.query.QSysUser;
 @RequiredArgsConstructor
 @EnableConfigurationProperties({DataSourceProperties.class})
 @ConditionalOnWebApplication(type = Type.SERVLET)
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "dept", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "dept", havingValue = "true", matchIfMissing = true)
 public class SysDeptService extends AbsService<SysDept> {
 
     private final SysUserService sysUserService;
