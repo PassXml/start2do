@@ -1,3 +1,5 @@
+package test;
+
 import java.util.Arrays;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
