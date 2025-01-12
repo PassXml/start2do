@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
-import org.start2do.script.impl.ScriptRunnerAvImpl;
-import org.start2do.script.impl.ScriptRunnerJsImpl;
+import org.start2do.script.util.impl.ScriptRunnerAvImpl;
+import org.start2do.script.util.impl.ScriptRunnerJsImpl;
 
 public class TestMain {
 
@@ -38,6 +38,4 @@ public class TestMain {
             
             """, Map.of("a", "2", "c", "3"));
     }
-}
- }
 }

@@ -20,4 +20,11 @@ public class ScriptRunnerResult {
         this.success = true;
         this.result = result;
     }
+
+    public static ScriptRunnerResult fail(String errorInfo) {
+        ScriptRunnerResult result = new ScriptRunnerResult();
+        result.setSuccess(false);
+        result.setErrorInfo(errorInfo);
+        return result;
+    }
 }

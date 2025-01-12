@@ -12,6 +12,7 @@ import com.googlecode.aviator.runtime.function.AbstractFunction;
 import java.lang.reflect.Constructor;
 import java.time.Duration;
 import java.util.List;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.start2do.script.IScriptRunner;
 import org.start2do.script.dto.ScriptRunnerInput;
@@ -24,10 +25,11 @@ import org.start2do.util.Md5Util;
  * js脚本 必须有main方法而且必须有返回
  */
 @Slf4j
-public class ScriptRunnerAvImpl implements IScriptRunner {
+public class ScriptRunnerAvImpl implements IScriptRunner<Expression> {
 
-    private static Cache<String, Expression> SCRIPT_CACHE;
-    private static AviatorEvaluatorInstance INSTANCE;
+    private Cache<String, Expression> SCRIPT_CACHE;
+    @Getter
+    private AviatorEvaluatorInstance INSTANCE;
 
     private void inti() {
         INSTANCE = AviatorEvaluator.newInstance(EvalMode.ASM)
@@ -40,21 +42,23 @@ public class ScriptRunnerAvImpl implements IScriptRunner {
 
     public ScriptRunnerAvImpl() {
         inti();
-        ScriptRunnerAvImpl.SCRIPT_CACHE = Caffeine.newBuilder().maximumSize(2000)
+        SCRIPT_CACHE = Caffeine.newBuilder().maximumSize(2000)
             .expireAfterAccess(Duration.ofMinutes(10)).build();
     }
 
     public ScriptRunnerAvImpl(List<Class<? extends AbstractFunction>> functions) {
         inti();
-        ScriptRunnerAvImpl.SCRIPT_CACHE = Caffeine.newBuilder().maximumSize(2000)
+        SCRIPT_CACHE = Caffeine.newBuilder().maximumSize(2000)
             .expireAfterAccess(Duration.ofMinutes(10)).build();
-        for (Class<? extends AbstractFunction> aClass : functions) {
-            try {
-                Constructor<? extends AbstractFunction> constructor = aClass.getDeclaredConstructor();
-                AbstractFunction instance = constructor.newInstance();
-                INSTANCE.addFunction(instance);
-            } catch (Exception e) {
-                log.error("初始化函数失败,{},{}", aClass.getName(), e.getMessage());
+        if (functions != null) {
+            for (Class<? extends AbstractFunction> aClass : functions) {
+                try {
+                    Constructor<? extends AbstractFunction> constructor = aClass.getDeclaredConstructor();
+                    AbstractFunction instance = constructor.newInstance();
+                    INSTANCE.addFunction(instance);
+                } catch (Exception e) {
+                    log.error("初始化函数失败,{},{}", aClass.getName(), e.getMessage());
+                }
             }
         }
     }
@@ -66,12 +70,19 @@ public class ScriptRunnerAvImpl implements IScriptRunner {
 
     @Override
     public ScriptRunnerResult eval(String script, Object... params) {
-        INSTANCE.validate(script);
         String md5 = Md5Util.md5(script);
-        Expression cache = SCRIPT_CACHE.getIfPresent(md5);
-        if (cache == null) {
-            cache = INSTANCE.compile(script, true);
-            SCRIPT_CACHE.put(md5, cache);
+        return evalMain(md5, script, true, params);
+    }
+
+    public ScriptRunnerResult evalMain(String id, String script, boolean isCache, Object... params) {
+        Expression cache;
+        if (isCache) {
+            cache = SCRIPT_CACHE.getIfPresent(id);
+            if (cache == null) {
+                cache = preLoad(id, script);
+            }
+        } else {
+            cache = INSTANCE.compile(script, false);
         }
         try {
             Object execute = cache.execute(cache.newEnv(params));
@@ -80,5 +91,57 @@ public class ScriptRunnerAvImpl implements IScriptRunner {
             log.error("脚本执行失败", e);
             return new ScriptRunnerResult().setSuccess(false).setErrorInfo(e.getMessage());
         }
+
     }
+
+    @Override
+    public ScriptRunnerResult evalById(String id, Object... params) {
+        return evalMain(id, null, true, params);
+    }
+
+    @Override
+    public void clearAllCache() {
+        INSTANCE.clearExpressionCache();
+        SCRIPT_CACHE.invalidateAll();
+    }
+
+    @Override
+    public boolean hasCacheByScript(String script) {
+        return hasCacheById(Md5Util.md5(script));
+    }
+
+    @Override
+    public boolean hasCacheById(String id) {
+        Expression expression = SCRIPT_CACHE.getIfPresent(id);
+        return expression != null;
+    }
+
+    @Override
+    public void removeById(String id) {
+        SCRIPT_CACHE.invalidate(id);
+    }
+
+    @Override
+    public void removeByScript(String script) {
+        SCRIPT_CACHE.invalidate(Md5Util.md5(script));
+    }
+
+    @Override
+    public ScriptRunnerResult evalNoCache(String scprit, Object[] objects) {
+        return evalMain(null, scprit, false, objects);
+    }
+
+    @Override
+    public Expression preLoad(String script) {
+        String md5 = Md5Util.md5(script);
+        return preLoad(md5, script);
+    }
+
+    public Expression preLoad(String md5, String script) {
+        INSTANCE.validate(script);
+        Expression cache = INSTANCE.compile(md5, script, true);
+        SCRIPT_CACHE.put(md5, cache);
+        return cache;
+    }
+
 }

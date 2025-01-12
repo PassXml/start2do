@@ -13,17 +13,20 @@ import org.graalvm.polyglot.Value;
 @NoArgsConstructor
 public class ScriptJsCache {
 
-    private String scriptMd5;
+    /**
+     * 没有的话,默认ID
+     */
+    private String id;
     private Value script;
     private ByteArrayOutputStream consoleInfo = new ByteArrayOutputStream();
     private ByteArrayOutputStream errorInfo = new ByteArrayOutputStream();
 
     public ScriptJsCache(String scriptMd5) {
-        this.scriptMd5 = scriptMd5;
+        this.id = scriptMd5;
     }
 
-    public ScriptJsCache(String scriptMd5, Value script) {
-        this.scriptMd5 = scriptMd5;
+    public ScriptJsCache(String id, Value script) {
+        this.id = id;
         this.script = script;
     }
 

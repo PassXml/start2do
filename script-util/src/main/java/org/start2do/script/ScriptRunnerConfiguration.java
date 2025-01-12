@@ -46,6 +46,9 @@ public class ScriptRunnerConfiguration {
     public static class AvSetting {
 
         private List<Class<? extends AbstractFunction>> functions;
+        private Boolean enableJacksonFunction = false;
+        private Boolean enableHikariDataSource = false;
+        private Boolean enableOkhttpClient = false;
     }
 
 }
