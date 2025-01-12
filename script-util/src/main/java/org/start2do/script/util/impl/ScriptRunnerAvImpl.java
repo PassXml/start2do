@@ -15,6 +15,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.start2do.script.IScriptRunner;
+import org.start2do.script.ScriptRunnerConfiguration.Type;
 import org.start2do.script.dto.ScriptRunnerInput;
 import org.start2do.script.dto.ScriptRunnerResult;
 import org.start2do.script.util.impl.av_function.ConsoleFunction;
@@ -129,6 +130,11 @@ public class ScriptRunnerAvImpl implements IScriptRunner<Expression> {
     @Override
     public ScriptRunnerResult evalNoCache(String scprit, Object[] objects) {
         return evalMain(null, scprit, false, objects);
+    }
+
+    @Override
+    public Type getKey() {
+        return Type.Aviator;
     }
 
     @Override

@@ -18,13 +18,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class ScriptRunnerConfiguration {
 
     private boolean enable = false;
-    private Type type = Type.JS;
+    private Type defaultRunner = Type.JS;
 
     private JsSetting jsSetting;
     private AvSetting avSetting;
 
     public enum Type {
-        JS, Aviator
+        JS, Aviator,Groovy
     }
 
     @Setter
@@ -33,6 +33,7 @@ public class ScriptRunnerConfiguration {
     @NoArgsConstructor
     public static class JsSetting {
 
+        private boolean enable = false;
         private String globalScript;
         private List<Class<?>> clazzList;
         private Integer maxSize;
@@ -44,7 +45,7 @@ public class ScriptRunnerConfiguration {
     @Accessors(chain = true)
     @NoArgsConstructor
     public static class AvSetting {
-
+        private boolean enable = false;
         private List<Class<? extends AbstractFunction>> functions;
         private Boolean enableJacksonFunction = false;
         private Boolean enableHikariDataSource = false;

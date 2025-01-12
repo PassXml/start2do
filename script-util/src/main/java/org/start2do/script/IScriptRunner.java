@@ -1,6 +1,7 @@
 package org.start2do.script;
 
 
+import org.start2do.script.ScriptRunnerConfiguration.Type;
 import org.start2do.script.dto.ScriptRunnerInput;
 import org.start2do.script.dto.ScriptRunnerResult;
 
@@ -31,5 +32,8 @@ public interface IScriptRunner<T> {
     void removeById(String id);
     void removeByScript(String script);
 
-    ScriptRunnerResult evalNoCache(String scprit, Object[] objects);
+    ScriptRunnerResult evalNoCache(String scirpt, Object[] objects);
+
+
+    Type getKey();
 }

@@ -20,6 +20,7 @@ import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
 import org.graalvm.polyglot.io.IOAccess;
 import org.start2do.script.IScriptRunner;
+import org.start2do.script.ScriptRunnerConfiguration.Type;
 import org.start2do.script.dto.ScriptJsCache;
 import org.start2do.script.dto.ScriptRunnerInput;
 import org.start2do.script.dto.ScriptRunnerResult;
@@ -196,6 +197,11 @@ public class ScriptRunnerJsImpl implements IScriptRunner<ScriptJsCache> {
     @Override
     public ScriptRunnerResult evalNoCache(String script, Object[] objects) {
         return evalMain(null, script, false, objects);
+    }
+
+    @Override
+    public Type getKey() {
+        return Type.JS;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package org.start2do.script.util.impl.av_function;
+package org.start2do.script.util.impl.functions;
 
 import java.io.IOException;
 import java.util.Map;
@@ -24,6 +24,10 @@ public class HttpUtil {
             .connectTimeout(connectTimeout, TimeUnit.SECONDS).readTimeout(readTimeout, TimeUnit.SECONDS)
             .writeTimeout(writeTimeout, TimeUnit.SECONDS).hostnameVerifier((hostname, session) -> true)
             .build();
+    }
+
+    public void reCreateClient(OkHttpClient.Builder builder) {
+        client = builder.build();
     }
 
     public Response get(String url, Map<String, String> header) {
