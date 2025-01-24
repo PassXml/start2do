@@ -9,9 +9,11 @@ import com.googlecode.aviator.EvalMode;
 import com.googlecode.aviator.Expression;
 import com.googlecode.aviator.Options;
 import com.googlecode.aviator.runtime.function.AbstractFunction;
+import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Constructor;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.start2do.script.IScriptRunner;
@@ -86,8 +88,13 @@ public class ScriptRunnerAvImpl implements IScriptRunner<Expression> {
             cache = INSTANCE.compile(script, false);
         }
         try {
-            Object execute = cache.execute(cache.newEnv(params));
-            return new ScriptRunnerResult(execute);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            Map<String, Object> env = cache.newEnv(params);
+            env.put(ConsoleFunction.CONSOLEKEY, outputStream);
+            Object execute = cache.execute(env);
+            ScriptRunnerResult result = new ScriptRunnerResult(execute);
+            result.setConsoleInfo(outputStream.toString());
+            return result;
         } catch (Exception e) {
             log.error("脚本执行失败", e);
             return new ScriptRunnerResult().setSuccess(false).setErrorInfo(e.getMessage());
@@ -120,11 +127,12 @@ public class ScriptRunnerAvImpl implements IScriptRunner<Expression> {
     @Override
     public void removeById(String id) {
         SCRIPT_CACHE.invalidate(id);
+        INSTANCE.invalidateCacheByKey(id);
     }
 
     @Override
     public void removeByScript(String script) {
-        SCRIPT_CACHE.invalidate(Md5Util.md5(script));
+        removeById(Md5Util.md5(script));
     }
 
     @Override

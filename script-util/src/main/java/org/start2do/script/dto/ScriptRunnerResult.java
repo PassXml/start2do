@@ -3,12 +3,14 @@ package org.start2do.script.dto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 
 @Setter
 @Getter
 @Accessors(chain = true)
 @NoArgsConstructor
+@ToString
 public class ScriptRunnerResult {
 
     private boolean success;

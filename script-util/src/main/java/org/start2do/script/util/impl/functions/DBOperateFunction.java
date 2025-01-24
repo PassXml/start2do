@@ -12,6 +12,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,8 +41,8 @@ public class DBOperateFunction {
         }).build();
 
     public static void EnableHikariDataSource() {
-        dataSourceCaffeine = Caffeine.newBuilder()
-            .expireAfterAccess(Duration.of(5, ChronoUnit.MINUTES)).removalListener((key, value, cause) -> {
+        dataSourceCaffeine = Caffeine.newBuilder().expireAfterAccess(Duration.of(5, ChronoUnit.MINUTES))
+            .removalListener((key, value, cause) -> {
                 if (value instanceof HikariDataSource) {
                     ((HikariDataSource) value).close();
                 }
@@ -56,14 +57,15 @@ public class DBOperateFunction {
      * @param params
      * @return
      */
-    public static Map<String, Object> query(DataSource dataSource, String sql, List<Object> params) {
+    public static List<Object> query(DataSource dataSource, String sql, List<Object> params) {
         try {
             return query(dataSource.getConnection(), sql, params);
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
         }
-        return new HashMap<>();
+        return new ArrayList<>();
     }
+
 
     /**
      * 注入数据源,查询sql,并且通过Map返回结果
@@ -73,8 +75,8 @@ public class DBOperateFunction {
      * @param params
      * @return
      */
-    public static Map<String, Object> query(Connection connection, String sql, List<Object> params) {
-        Map<String, Object> result = new HashMap<>();
+    public static List<Object> query(Connection connection, String sql, List<Object> params) {
+        List<Object> result = new ArrayList<>();
         if (StringUtils.isEmpty(sql)) {
             return result;
         }
@@ -88,8 +90,14 @@ public class DBOperateFunction {
                 ResultSetMetaData metaData = resultSet.getMetaData();
                 int columnCount = metaData.getColumnCount();
                 while (resultSet.next()) {
-                    for (int i = 1; i <= columnCount; i++) {
-                        result.put(metaData.getColumnName(i), resultSet.getObject(i));
+                    if (columnCount > 1) {
+                        Map<String, Object> map = new HashMap<>();
+                        for (int i = 1; i <= columnCount; i++) {
+                            map.put(metaData.getColumnName(i), resultSet.getObject(i));
+                        }
+                        result.add(map);
+                    } else {
+                        result.add(resultSet.getObject(1));
                     }
                 }
             }
@@ -160,19 +168,15 @@ public class DBOperateFunction {
      * 获取jdbc连接
      */
     public static Connection getConn(String clazz, String jdbcUrl, String username, String password) {
-        return connectCache.get(
-            String.join(
-                ",", clazz, jdbcUrl, username, password
-            ), s -> {
-                try {
-                    Class<?> aClass = Class.forName(clazz);
-                    return DriverManager.getConnection(jdbcUrl, username, password);
-                } catch (Exception e) {
-                    log.error("获取连接发生错误,{}", e.getMessage());
-                }
-                return null;
+        return connectCache.get(String.join(",", clazz, jdbcUrl, username, password), s -> {
+            try {
+                Class<?> aClass = Class.forName(clazz);
+                return DriverManager.getConnection(jdbcUrl, username, password);
+            } catch (Exception e) {
+                log.error("获取连接发生错误,{}", e.getMessage());
             }
-        );
+            return null;
+        });
     }
 
     /**

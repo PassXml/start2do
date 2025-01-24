@@ -4,6 +4,9 @@ package org.start2do.script.util;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.googlecode.aviator.AviatorEvaluatorInstance;
+import com.googlecode.aviator.FunctionMissing;
+import com.googlecode.aviator.runtime.JavaMethodReflectionFunctionMissing;
+import java.lang.reflect.Constructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -54,7 +57,7 @@ public class ScriptRunnerAutoConfiguration {
         }
         if (configuration.getDefaultRunner() == Type.JS) {
             ScriptRunner.setDefaultInstance(runnerJs);
-        }else {
+        } else {
             ScriptRunner.addImpl(runnerJs);
         }
         return runnerJs;
@@ -70,19 +73,42 @@ public class ScriptRunnerAutoConfiguration {
             runnerAv = new ScriptRunnerAvImpl();
         } else {
             runnerAv = new ScriptRunnerAvImpl(avSetting.getFunctions());
-            if (avSetting.getEnableJacksonFunction()) {
+            if (Boolean.TRUE.equals(avSetting.getEnableJacksonFunction())) {
                 addFunction(runnerAv.getINSTANCE(), "JSON", JacksonOperateFunction.class);
             }
-            if (avSetting.getEnableHikariDataSource()) {
+            if (Boolean.TRUE.equals(avSetting.getEnableHikariDataSource())) {
                 addFunction(runnerAv.getINSTANCE(), "DB", DBOperateFunction.class);
             }
-            if (avSetting.getEnableOkhttpClient()) {
+            if (Boolean.TRUE.equals(avSetting.getEnableOkhttpClient())) {
                 addFunction(runnerAv.getINSTANCE(), "HTTP", HttpUtil.class);
+            }
+            if (Boolean.TRUE.equals(avSetting.getEnableSystemFunctionMissing())) {
+                runnerAv.getINSTANCE().setFunctionMissing(JavaMethodReflectionFunctionMissing.getInstance());
+            } else {
+                Class<? extends FunctionMissing> aClass = avSetting.getCustomFunctionMissingImpl();
+                if (aClass != null) {
+                    Constructor<?>[] constructors = aClass.getDeclaredConstructors();
+                    try {
+                        Object instance = constructors[0].newInstance();
+                        runnerAv.getINSTANCE().setFunctionMissing((FunctionMissing) instance);
+                    } catch (Exception e) {
+                        log.error("初始化错误:{}", e.getMessage());
+                    }
+                }
+            }
+            if (avSetting.getImportStaticFunction() != null) {
+                for (Class<?> aClass : avSetting.getImportStaticFunction()) {
+                    try {
+                        runnerAv.getINSTANCE().importFunctions(aClass);
+                    } catch (Exception e) {
+                        log.error("import Functions error,{}", e.getMessage());
+                    }
+                }
             }
         }
         if (configuration.getDefaultRunner() == Type.Aviator) {
             ScriptRunner.setDefaultInstance(runnerAv);
-        }else {
+        } else {
             ScriptRunner.addImpl(runnerAv);
         }
         return runnerAv;

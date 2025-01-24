@@ -9,6 +9,7 @@ import org.start2do.script.IScriptRunner;
 import org.start2do.script.ScriptRunnerConfiguration.Type;
 import org.start2do.script.dto.ScriptRunnerInput;
 import org.start2do.script.dto.ScriptRunnerResult;
+import org.start2do.util.Md5Util;
 
 @UtilityClass
 public class ScriptRunner {
@@ -151,6 +152,22 @@ public class ScriptRunner {
             throw new RuntimeException("没有配置脚本执行器");
         }
         runner.clearAllCache();
+    }
+
+    public void removeById(String id) {
+        removeById(defaultImpl, id);
+    }
+
+    public void removeByScript(String script) {
+        removeById(defaultImpl, Md5Util.md5(script));
+    }
+
+    public void removeById(Type implKey, String id) {
+        IScriptRunner runner = map.get(implKey);
+        if (runner == null) {
+            throw new RuntimeException("没有配置脚本执行器");
+        }
+        runner.removeById(id);
     }
 
 }

@@ -1,6 +1,7 @@
 package org.start2do.script;
 
 
+import com.googlecode.aviator.FunctionMissing;
 import com.googlecode.aviator.runtime.function.AbstractFunction;
 import java.time.Duration;
 import java.util.List;
@@ -24,7 +25,7 @@ public class ScriptRunnerConfiguration {
     private AvSetting avSetting;
 
     public enum Type {
-        JS, Aviator,Groovy
+        JS, Aviator, Groovy
     }
 
     @Setter
@@ -45,11 +46,17 @@ public class ScriptRunnerConfiguration {
     @Accessors(chain = true)
     @NoArgsConstructor
     public static class AvSetting {
+
         private boolean enable = false;
         private List<Class<? extends AbstractFunction>> functions;
         private Boolean enableJacksonFunction = false;
         private Boolean enableHikariDataSource = false;
         private Boolean enableOkhttpClient = false;
+        private Boolean enableSystemFunctionMissing = false;
+        private Class<? extends FunctionMissing> customFunctionMissingImpl;
+        private List<Class<?>> importStaticFunction;
+
+
     }
 
 }
