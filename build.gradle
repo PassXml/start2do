@@ -53,6 +53,7 @@ allprojects {
                       "spring-util"         : JavaVersion.VERSION_1_8,
                       "bean-valiate"        : JavaVersion.VERSION_1_8,
                       "script-util"         : JavaVersion.VERSION_11,
+                      "script-js-impl"      : JavaVersion.VERSION_17,
         ]
     }
     idea.module.sourceDirs += file("${buildDir}/generated/sources/annotationProcessor/java")

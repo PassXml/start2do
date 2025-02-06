@@ -21,4 +21,6 @@ include 'zl-media-kit-util'
 include 'sso-login'
 include 'sso-login-test'
 include 'script-util'
+include 'script-util:script-js-impl'
+findProject(':script-util:script-js-impl')?.name = 'script-js-impl'
 

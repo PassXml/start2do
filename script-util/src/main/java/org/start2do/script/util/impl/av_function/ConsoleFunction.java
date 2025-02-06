@@ -22,25 +22,40 @@ public class ConsoleFunction extends AbstractFunction {
     }
 
     @Override
+    public AviatorObject call(Map<String, Object> env) {
+        if (env.containsKey(CONSOLEKEY)) {
+            Object object = env.get(CONSOLEKEY);
+            if (object instanceof OutputStream) {
+                OutputStream outputStream = (OutputStream) object;
+                write(outputStream, "\n");
+            }
+        }
+        return AviatorNil.NIL;
+    }
+
+    private void write(OutputStream outputStream, Object consoleInfo) {
+        try {
+            if (consoleInfo instanceof String) {
+                outputStream.write(((String) consoleInfo).getBytes(StandardCharsets.UTF_8));
+                outputStream.flush();
+            } else if (consoleInfo != null) {
+                outputStream.write(JacksonOperateFunction.toBytes(consoleInfo));
+                outputStream.write(bytes);
+                outputStream.flush();
+            }
+        } catch (IOException e) {
+            log.error("写入控制台失败,{}", e.getMessage());
+        }
+    }
+
+    @Override
     public AviatorObject call(Map<String, Object> env, AviatorObject arg1) {
         if (env.containsKey(CONSOLEKEY)) {
             Object object = env.get(CONSOLEKEY);
             if (object instanceof OutputStream) {
                 Object consoleInfo = arg1.getValue(env);
-                try {
-                    OutputStream outputStream = (OutputStream) object;
-                    if (consoleInfo instanceof String) {
-                        outputStream.write(((String) consoleInfo).getBytes(StandardCharsets.UTF_8));
-                        outputStream.flush();
-                    } else if (consoleInfo != null) {
-                        outputStream.write(JacksonOperateFunction.toBytes(consoleInfo));
-                        outputStream.write(bytes);
-                        outputStream.flush();
-                    }
-                } catch (IOException e) {
-                    log.error("写入控制台失败,{}", e.getMessage());
-                }
-
+                OutputStream outputStream = (OutputStream) object;
+                write(outputStream, consoleInfo);
             }
         }
         return AviatorNil.NIL;

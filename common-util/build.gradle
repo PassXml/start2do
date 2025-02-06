@@ -19,7 +19,15 @@ dependencies {
     compileOnly("org.springframework:spring-web:5.3.19")
     compileOnly('javax.servlet:javax.servlet-api:4.0.1')
     compileOnly "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
+//
     compileOnly 'org.apache.commons:commons-compress:1.27.1'
+//    compileOnly 'net.openhft:chronicle-map:3.22.9'
+//    implementation 'net.openhft:chronicle-map:3.22.9'
+//    testImplementation 'net.openhft:chronicle-map:3.22.9'
+//    testImplementation 'org.apache.commons:commons-lang3:3.17.0'
+//    compileOnly 'org.apache.commons:commons-lang3:3.17.0'
+
+
 }
 
 test {

@@ -40,7 +40,7 @@ public class ScriptRunner {
         }
     }
 
-    protected static void setDefaultInstance(IScriptRunner INSTANCE) {
+    public static void setDefaultInstance(IScriptRunner INSTANCE) {
         defaultImpl = INSTANCE.getKey();
         map.put(defaultImpl, INSTANCE);
     }

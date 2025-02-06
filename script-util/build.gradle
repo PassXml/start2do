@@ -16,16 +16,14 @@ dependencies {
     api("com.github.ben-manes.caffeine:caffeine:3.1.8")
     compileOnly("org.slf4j:slf4j-api:2.0.5")
     compileOnly(project(":common-util"))
-    compileOnly("org.graalvm.polyglot:js")
     compileOnly 'com.googlecode.aviator:aviator:5.4.3'
-    compileOnly("org.graalvm.polyglot:polyglot")
+
     compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
     compileOnly("com.zaxxer:HikariCP:6.2.1")
     compileOnly 'com.squareup.okhttp3:okhttp:4.10.0'
     compileOnly("com.squareup.okhttp3:logging-interceptor:4.10.0")
 
-    testImplementation("org.graalvm.polyglot:polyglot")
-    testImplementation("org.graalvm.polyglot:js")
+
     testImplementation 'com.googlecode.aviator:aviator:5.4.3'
     testImplementation "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
     testImplementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion

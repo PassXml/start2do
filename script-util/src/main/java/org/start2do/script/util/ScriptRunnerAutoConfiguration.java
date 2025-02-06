@@ -1,8 +1,6 @@
 package org.start2do.script.util;
 
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.googlecode.aviator.AviatorEvaluatorInstance;
 import com.googlecode.aviator.FunctionMissing;
 import com.googlecode.aviator.runtime.JavaMethodReflectionFunctionMissing;
@@ -20,11 +18,8 @@ import org.springframework.context.annotation.Import;
 import org.start2do.script.IScriptRunner;
 import org.start2do.script.ScriptRunnerConfiguration;
 import org.start2do.script.ScriptRunnerConfiguration.AvSetting;
-import org.start2do.script.ScriptRunnerConfiguration.JsSetting;
 import org.start2do.script.ScriptRunnerConfiguration.Type;
-import org.start2do.script.dto.ScriptJsCache;
 import org.start2do.script.util.impl.ScriptRunnerAvImpl;
-import org.start2do.script.util.impl.ScriptRunnerJsImpl;
 import org.start2do.script.util.impl.functions.DBOperateFunction;
 import org.start2do.script.util.impl.functions.HttpUtil;
 import org.start2do.script.util.impl.functions.JacksonOperateFunction;
@@ -41,27 +36,6 @@ import org.start2do.script.util.impl.functions.JacksonOperateFunction;
 @Import(ScriptRunnerConfiguration.class)
 @ConditionalOnProperty(prefix = "start2do.script", name = "enable", havingValue = "true")
 public class ScriptRunnerAutoConfiguration {
-
-    @Bean
-    @ConditionalOnProperty(prefix = "start2do.script.js-setting", name = "enable", havingValue = "true")
-    @ConditionalOnMissingBean(IScriptRunner.class)
-    public IScriptRunner js(ScriptRunnerConfiguration configuration) {
-        ScriptRunnerJsImpl runnerJs;
-        JsSetting jsSetting = configuration.getJsSetting();
-        if (jsSetting == null) {
-            runnerJs = new ScriptRunnerJsImpl();
-        } else {
-            Cache<String, ScriptJsCache> caffeine = Caffeine.newBuilder()
-                .expireAfterAccess(jsSetting.getExpireAfterAccess()).build();
-            runnerJs = new ScriptRunnerJsImpl(jsSetting.getClazzList(), caffeine, jsSetting.getGlobalScript());
-        }
-        if (configuration.getDefaultRunner() == Type.JS) {
-            ScriptRunner.setDefaultInstance(runnerJs);
-        } else {
-            ScriptRunner.addImpl(runnerJs);
-        }
-        return runnerJs;
-    }
 
     @Bean
     @ConditionalOnProperty(prefix = "start2do.script.av-setting", name = "enable", havingValue = "true")
