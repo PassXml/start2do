@@ -25,5 +25,9 @@ public class UtilConfig {
     public static class RedisConfig {
 
         private boolean enable;
+        /**
+         * key统一前缀
+         */
+        private String keyPrefix;
     }
 }
