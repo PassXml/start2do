@@ -19,6 +19,7 @@ dependencies {
     compileOnly group: 'net.java.dev.jna', name: 'jna', version: '5.14.0'
     compileOnly("org.springframework:spring-web")
     compileOnly("jakarta.servlet:jakarta.servlet-api")
+    compileOnly 'org.apache.commons:commons-compress:1.27.1'
 
 }
 

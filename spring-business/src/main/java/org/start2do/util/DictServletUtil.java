@@ -22,7 +22,7 @@ import org.start2do.service.servlet.SysDictService;
 @Component
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = Type.SERVLET)
-@ConditionalOnProperty(prefix = "start2do.business.service", name = "dict", havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do.business.service", name = "dict", havingValue = "true",matchIfMissing = true)
 public class DictServletUtil {
 
     private final SysDictService DICT_SERVICE;

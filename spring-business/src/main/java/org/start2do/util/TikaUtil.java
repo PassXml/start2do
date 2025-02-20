@@ -1,5 +1,6 @@
 package org.start2do.util;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -127,6 +128,7 @@ public class TikaUtil {
         }
 
 
+        @JsonCreator
         public static FileType get(String value) {
             return find(value).orElseThrow(() -> new BusinessException("未知字典值:" + value));
         }

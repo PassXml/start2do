@@ -31,6 +31,7 @@ allprojects {
         vertxVersion = '4.3.4'
         springBootVersion = '3.3.5'
         springVersion = '6.3.5'
+        jacksonVersion = "2.15.2"
         springCloudVersion = '2022.0.0'
         reactorVersion = '3.5.8'
         springCloudStarterVersion = '3.1.7'
@@ -151,8 +152,9 @@ allprojects {
                     "jakarta.xml.bind:jakarta.xml.bind-api"                     : "2.3.3",
                     "org.glassfish.jaxb:jaxb-runtime"                           : "2.3.6",
                     "com.alibaba:easyexcel"                                     : "3.1.1",
-                    "org.slf4j:slf4j-api"                                       : "2.0.5",
-                    "org.slf4j:log4j-over-slf4j"                                : "1.7.36",
+                    "org.slf4j:slf4j-api"                                       : "2.0.16",
+                    "org.slf4j:slf4j-simple"                                    : "2.0.16",
+                    "org.slf4j:log4j-over-slf4j"                                : "2.0.16",
                     "org.apache.commons:commons-lang3"                          : "3.12.0",
                     "javax.sip:jain-sip-ri"                                     : "1.3.0-91",
                     "org.quartz-scheduler:quartz"                               : "2.3.2",
@@ -170,6 +172,8 @@ allprojects {
                     "org.apache.poi:poi"                                        : "5.3.0",
                     "org.apache.poi:poi-ooxml-lite"                             : "5.3.0",
                     "org.apache.poi:poi-ooxml"                                  : "5.3.0",
+                    "org.graalvm.polyglot:polyglot"                             : "24.1.1",
+                    "org.graalvm.polyglot:js"                                   : "24.1.1",
             ]
             dependencySubstitution {
                 for (final def jar in jars) {

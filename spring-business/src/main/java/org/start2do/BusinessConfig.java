@@ -1,6 +1,5 @@
 package org.start2do;
 
-import java.time.temporal.ChronoUnit;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,12 +15,14 @@ import org.start2do.util.StringUtils;
 public class BusinessConfig {
 
     private Boolean enable;
+    private boolean enableDictConvert = false;
     private SysLogConfig sysLog;
     private RateLimitConfig rateLimit;
     private Controller controller = new Controller();
+    private Service service = new Service();
     private String dateTimePattern = "yyyy-MM-dd HH:mm:ss";
     private String datePattern = "yyyy-MM-dd";
-    private Service service = new Service();
+
 
     @Setter
     @Getter
@@ -33,11 +34,12 @@ public class BusinessConfig {
         private boolean role = true;
         private boolean dept = true;
         private boolean log = true;
-        private boolean menu = true;
         private boolean loginLog = true;
+        private boolean menu = true;
         private boolean file = true;
         private boolean setting = true;
-        private boolean customSetting = false;
+        private boolean dict = true;
+
         private boolean customDict = false;
         private boolean mock = false;
 
@@ -52,9 +54,9 @@ public class BusinessConfig {
         private boolean user = true;
         private boolean role = true;
         private boolean dept = true;
-        private boolean loginLog = true;
-        private boolean removeFile = true;
         private boolean log = true;
+        private boolean dict = true;
+        private boolean loginLog = true;
         private boolean menu = true;
         private boolean file = true;
 
@@ -90,68 +92,50 @@ public class BusinessConfig {
          * last_tokens：当前时刻桶容量
          *  </pre>
          */
-        private String luaScript = """
-            redis.replicate_commands()
-            
-            local tokens_key = KEYS[1]
-            local timestamp_key = KEYS[2]
-            --redis.log(redis.LOG_WARNING, "tokens_key " .. tokens_key)
-            
-            local rate = tonumber(ARGV[1])
-            local capacity = tonumber(ARGV[2])
-            local now = tonumber(ARGV[3])
-            local requested = tonumber(ARGV[4])
-            
-            local fill_time = capacity / rate
-            local ttl = math.floor(fill_time * 2)
-            
-            -- for testing, it should use redis system time in production
-            if now == nil then
-              now = redis.call('TIME')[1]
-            end
-            
-            --redis.log(redis.LOG_WARNING, "rate " .. ARGV[1])
-            --redis.log(redis.LOG_WARNING, "capacity " .. ARGV[2])
-            --redis.log(redis.LOG_WARNING, "now " .. now)
-            --redis.log(redis.LOG_WARNING, "requested " .. ARGV[4])
-            --redis.log(redis.LOG_WARNING, "filltime " .. fill_time)
-            --redis.log(redis.LOG_WARNING, "ttl " .. ttl)
-            
-            local last_tokens = tonumber(redis.call("get", tokens_key))
-            if last_tokens == nil then
-              last_tokens = capacity
-            end
-            --redis.log(redis.LOG_WARNING, "last_tokens " .. last_tokens)
-            
-            local last_refreshed = tonumber(redis.call("get", timestamp_key))
-            if last_refreshed == nil then
-              last_refreshed = 0
-            end
-            --redis.log(redis.LOG_WARNING, "last_refreshed " .. last_refreshed)
-            
-            local delta = math.max(0, now-last_refreshed)
-            local filled_tokens = math.min(capacity, last_tokens+(delta*rate))
-            local allowed = filled_tokens >= requested
-            local new_tokens = filled_tokens
-            local allowed_num = 0
-            if allowed then
-              new_tokens = filled_tokens - requested
-              allowed_num = 1
-            end
-            
-            --redis.log(redis.LOG_WARNING, "delta " .. delta)
-            --redis.log(redis.LOG_WARNING, "filled_tokens " .. filled_tokens)
-            --redis.log(redis.LOG_WARNING, "allowed_num " .. allowed_num)
-            --redis.log(redis.LOG_WARNING, "new_tokens " .. new_tokens)
-            
-            if ttl > 0 then
-              redis.call("setex", tokens_key, ttl, new_tokens)
-              redis.call("setex", timestamp_key, ttl, now)
-            end
-            
-            -- return { allowed_num, new_tokens, capacity, filled_tokens, requested, new_tokens }
-            return { allowed_num, new_tokens }
-            """;
+        private String luaScript = new StringBuilder().append("            redis.replicate_commands()\n")
+            .append("            \n").append("            local tokens_key = KEYS[1]\n")
+            .append("            local timestamp_key = KEYS[2]\n")
+            .append("            --redis.log(redis.LOG_WARNING, \"tokens_key \" .. tokens_key)\n")
+            .append("            \n").append("            local rate = tonumber(ARGV[1])\n")
+            .append("            local capacity = tonumber(ARGV[2])\n")
+            .append("            local now = tonumber(ARGV[3])\n")
+            .append("            local requested = tonumber(ARGV[4])\n").append("            \n")
+            .append("            local fill_time = capacity / rate\n")
+            .append("            local ttl = math.floor(fill_time * 2)\n").append("            \n")
+            .append("            -- for testing, it should use redis system time in production\n")
+            .append("            if now == nil then\n").append("              now = redis.call('TIME')[1]\n")
+            .append("            end\n").append("            \n")
+            .append("            --redis.log(redis.LOG_WARNING, \"rate \" .. ARGV[1])\n")
+            .append("            --redis.log(redis.LOG_WARNING, \"capacity \" .. ARGV[2])\n")
+            .append("            --redis.log(redis.LOG_WARNING, \"now \" .. now)\n")
+            .append("            --redis.log(redis.LOG_WARNING, \"requested \" .. ARGV[4])\n")
+            .append("            --redis.log(redis.LOG_WARNING, \"filltime \" .. fill_time)\n")
+            .append("            --redis.log(redis.LOG_WARNING, \"ttl \" .. ttl)\n").append("            \n")
+            .append("            local last_tokens = tonumber(redis.call(\"get\", tokens_key))\n")
+            .append("            if last_tokens == nil then\n").append("              last_tokens = capacity\n")
+            .append("            end\n")
+            .append("            --redis.log(redis.LOG_WARNING, \"last_tokens \" .. last_tokens)\n")
+            .append("            \n")
+            .append("            local last_refreshed = tonumber(redis.call(\"get\", timestamp_key))\n")
+            .append("            if last_refreshed == nil then\n").append("              last_refreshed = 0\n")
+            .append("            end\n")
+            .append("            --redis.log(redis.LOG_WARNING, \"last_refreshed \" .. last_refreshed)\n")
+            .append("            \n").append("            local delta = math.max(0, now-last_refreshed)\n")
+            .append("            local filled_tokens = math.min(capacity, last_tokens+(delta*rate))\n")
+            .append("            local allowed = filled_tokens >= requested\n")
+            .append("            local new_tokens = filled_tokens\n").append("            local allowed_num = 0\n")
+            .append("            if allowed then\n").append("              new_tokens = filled_tokens - requested\n")
+            .append("              allowed_num = 1\n").append("            end\n").append("            \n")
+            .append("            --redis.log(redis.LOG_WARNING, \"delta \" .. delta)\n")
+            .append("            --redis.log(redis.LOG_WARNING, \"filled_tokens \" .. filled_tokens)\n")
+            .append("            --redis.log(redis.LOG_WARNING, \"allowed_num \" .. allowed_num)\n")
+            .append("            --redis.log(redis.LOG_WARNING, \"new_tokens \" .. new_tokens)\n")
+            .append("            \n").append("            if ttl > 0 then\n")
+            .append("              redis.call(\"setex\", tokens_key, ttl, new_tokens)\n")
+            .append("              redis.call(\"setex\", timestamp_key, ttl, now)\n").append("            end\n")
+            .append("            \n").append(
+                "            -- return { allowed_num, new_tokens, capacity, filled_tokens, requested, new_tokens }\n")
+            .append("            return { allowed_num, new_tokens }\n").toString();
 
     }
 
@@ -180,24 +164,5 @@ public class BusinessConfig {
         local, qn
     }
 
-    private CacheSetting cache;
 
-    @Setter
-    @Getter
-    @Accessors(chain = true)
-    @NoArgsConstructor
-    public static class CacheSetting {
-
-        private Boolean enable;
-        private Type type;
-        private Long entryTtl;
-        private ChronoUnit timeUnit;
-        private String redisCachePrefix = "Cache:";
-
-        public enum Type {
-            Redis, Ehcache, Caffeine, JCache;
-
-
-        }
-    }
 }

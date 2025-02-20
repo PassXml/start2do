@@ -19,12 +19,18 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.Accessors;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -310,6 +316,93 @@ public class FileUtil {
             THREAD_MAP.put(path, thread);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 获取文件夹下的所有文件
+     *
+     * @param targetPath  目标路径
+     * @param excludePath 排除路径
+     * @return 文件列表
+     */
+    public List<Path> walk(Path targetPath, String... excludePath) {
+        List<Path> collect = new LinkedList<>();
+        try {
+            if (!targetPath.toFile().exists()) {
+                log.warn("文件不存在");
+                return collect;
+            }
+            collect.addAll(Files.walk(targetPath).filter(p -> {
+                if (p.equals(targetPath)) {
+                    return false;
+                }
+                for (String string : excludePath) {
+                    Path resolve = targetPath.resolve(string);
+                    String all = resolve.relativize(p).toString();
+                    if (resolve.equals(p) || !all.startsWith(".")) {
+                        return false;
+                    }
+                }
+                return true;
+            }).collect(Collectors.toList()));
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+        return collect;
+    }
+
+    public List<DeleteResult> delete(Path destPath, String... excludePath) {
+        List<Path> paths = walk(destPath, excludePath);
+        List<Path> dirPath = new LinkedList<>();
+        List<DeleteResult> results = new ArrayList<>();
+        for (Path p : paths) {
+            try {
+                if (!Files.isDirectory(p)) {
+                    Files.deleteIfExists(p);
+                    results.add(new DeleteResult(
+                        true, p
+                    ));
+                } else {
+                    dirPath.add(p);
+                }
+
+            } catch (IOException e) {
+                log.error("删除文件失败,{}", e.getMessage());
+                results.add(new DeleteResult(
+                    false, p
+                ));
+            }
+        }
+        for (Path dir : dirPath) {
+            try {
+                Files.deleteIfExists(dir);
+                results.add(new DeleteResult(
+                    true, dir
+                ));
+            } catch (IOException e) {
+                log.error("删除文件目录失败,{}", e.getMessage());
+                results.add(new DeleteResult(
+                    false, dir
+                ));
+            }
+        }
+        return results;
+    }
+
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    @ToString
+    public static class DeleteResult {
+
+        private boolean success;
+        private Path path;
+
+        public DeleteResult(boolean success, Path path) {
+            this.success = success;
+            this.path = path;
         }
     }
 }

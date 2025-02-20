@@ -111,7 +111,7 @@ public final class SpringBeanUtil implements BeanFactoryAware, ApplicationContex
         for (Entry<String, RequestMappingHandlerMapping> entry : beans.entrySet()) {
             RequestMappingHandlerMapping requestMappingHandlerMapping = entry.getValue();
             Map<RequestMappingInfo, HandlerMethod> handlerMethods = requestMappingHandlerMapping.getHandlerMethods();
-            for (Entry<RequestMappingInfo, HandlerMethod> entryM : handlerMethods.entrySet()) {
+            for (Map.Entry<RequestMappingInfo, HandlerMethod> entryM : handlerMethods.entrySet()) {
                 RequestMappingInfo mappingInfo = entryM.getKey();
                 HandlerMethod handlerMethod = entryM.getValue();
                 UrlInfo info = handlerMethod.getMethodAnnotation(UrlInfo.class);
