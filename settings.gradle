@@ -22,4 +22,5 @@ include 'eventbus'
 include 'script-util'
 include 'nlp-util'
 include 'script-util:script-js-impl'
+include 'updater'
 
