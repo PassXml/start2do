@@ -31,6 +31,7 @@ dependencies {
     compileOnly group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.15.2'
     compileOnly(project(":common-util"))
     testImplementation("io.vertx:vertx-core:$vertxVersion")
+    compileOnly 'com.squareup.okhttp3:okhttp:4.12.0'
 
 }
 
