@@ -22,5 +22,6 @@ include 'sso-login'
 include 'sso-login-test'
 include 'script-util'
 include 'script-util:script-js-impl'
+include 'updater'
 findProject(':script-util:script-js-impl')?.name = 'script-js-impl'
 
