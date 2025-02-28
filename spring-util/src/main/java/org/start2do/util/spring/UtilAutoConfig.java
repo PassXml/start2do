@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.lang.annotation.Annotation;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -48,18 +50,23 @@ public class UtilAutoConfig {
         objectMapper.activateDefaultTyping(objectMapper.getPolymorphicTypeValidator(),
             ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        objectMapper.setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
-            @Override
-            protected boolean _isIgnorable(Annotated a) {
-                for (Class aClass : JacksonConstant.JPAAnnotation) {
-                    Annotation annotation = a.getAnnotation(aClass);
-                    if (annotation != null) {
-                        return true;
+        try {
+            Class<?> aClass = Class.forName("javax.persistence.ManyToOne");
+            objectMapper.setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
+                @Override
+                protected boolean _isIgnorable(Annotated a) {
+                    for (Class aClass : JacksonConstant.JPAAnnotation) {
+                        Annotation annotation = a.getAnnotation(aClass);
+                        if (annotation != null) {
+                            return true;
+                        }
                     }
+                    return super._isIgnorable(a);
                 }
-                return super._isIgnorable(a);
-            }
-        });
+            });
+        } catch (ClassNotFoundException e) {
+        }
+
         return objectMapper;
     }
 
