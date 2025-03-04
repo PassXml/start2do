@@ -23,4 +23,6 @@ include 'script-util'
 include 'nlp-util'
 include 'script-util:script-js-impl'
 include 'updater'
+findProject(':script-util:script-js-impl')?.name = 'script-js-impl'
+
 
