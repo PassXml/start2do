@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -17,6 +18,7 @@ import org.start2do.redis.PrefixedKeySerializer;
 import org.start2do.util.spring.UtilConfig.RedisConfig;
 
 
+@Slf4j
 @Import({UtilConfig.class, LogAopConfig.class})
 @ConditionalOnProperty(prefix = "start2do.util", value = "enable", havingValue = "true")
 public class UtilAutoConfig {
@@ -30,12 +32,17 @@ public class UtilAutoConfig {
 
     @Bean
     @ConditionalOnMissingBean(LogAop.JSON.class)
-    public LogAop.JSON json(ObjectMapper objectMapper) {
+    public LogAop.JSON json(LogAopConfig logAopConfig, ObjectMapper objectMapper) {
         return object -> {
             try {
-                return objectMapper.writeValueAsString(object);
+                String json = objectMapper.writeValueAsString(object);
+                int maxLength = logAopConfig.getMaxLogLength() != null ? logAopConfig.getMaxLogLength() : 2000;
+                if (json.length() > maxLength) {
+                    return json.substring(0, maxLength) + "...";
+                }
+                return json;
             } catch (JsonProcessingException e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
                 return e.getMessage();
             }
         };

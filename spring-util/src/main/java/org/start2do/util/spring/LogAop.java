@@ -26,12 +26,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
- * @author ：chicunxiang
- * @date ：Created in 2022/3/25 11:10
- * @description：
- * @version: 1.0
+ * @author ：lijie
  */
-
 @Aspect
 @Component
 @RequiredArgsConstructor

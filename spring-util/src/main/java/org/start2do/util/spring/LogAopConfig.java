@@ -32,7 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class LogAopConfig {
 
     private boolean enable;
-
+    private Integer maxLogLength;
     private List<Class> skinClazz;
     private String name;
     private Set<String> skipUrl;
