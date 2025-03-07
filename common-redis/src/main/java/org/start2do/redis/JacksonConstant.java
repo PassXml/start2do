@@ -1,4 +1,4 @@
-package org.start2do.util.spring;
+package org.start2do.redis;
 
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;

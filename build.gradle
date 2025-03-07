@@ -220,6 +220,7 @@ allprojects {
                         "org.apache.poi:poi-ooxml"                                  : "5.3.0",
                         "org.graalvm.polyglot:polyglot"                             : "24.1.1",
                         "org.graalvm.polyglot:js"                                   : "24.1.1",
+                        "org.apache.commons:commons-pool2"                          : "2.12.1",
             ]
             dependencySubstitution {
                 for (final def jar in jars) {

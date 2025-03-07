@@ -1,4 +1,6 @@
-package start2do;
+package org.start2do;
+
+import static org.start2do.redis.RedisOMConfig.jacksonOM;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import javax.persistence.ManyToOne;
@@ -15,7 +17,7 @@ public class OMTest {
     @Test
     public void test() throws JsonProcessingException {
         TestItem item = new TestItem("123", new TestItem("456"));
-        System.out.println(UtilAutoConfig.jacksonOM().writeValueAsString(item));
+        System.out.println(jacksonOM().writeValueAsString(item));
     }
 
     @Setter

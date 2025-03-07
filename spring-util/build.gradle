@@ -40,7 +40,7 @@ dependencies {
     //okhttp
     compileOnly 'com.squareup.okhttp3:okhttp:4.10.0'
     compileOnly("com.squareup.okhttp3:logging-interceptor:4.10.0")
-
+    api(project(":common-redis"))
 }
 
 

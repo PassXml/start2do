@@ -23,5 +23,7 @@ include 'sso-login-test'
 include 'script-util'
 include 'script-util:script-js-impl'
 include 'updater'
+include 'muilt-redis'
 findProject(':script-util:script-js-impl')?.name = 'script-js-impl'
+include 'common-redis'
 

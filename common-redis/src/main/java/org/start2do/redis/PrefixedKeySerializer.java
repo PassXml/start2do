@@ -1,4 +1,4 @@
-package org.start2do.util.spring;
+package org.start2do.redis;
 
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.util.StringUtils;
