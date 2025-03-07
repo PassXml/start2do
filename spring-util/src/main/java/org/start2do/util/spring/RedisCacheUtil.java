@@ -77,7 +77,7 @@ public class RedisCacheUtil implements CommandLineRunner {
             return scan(RedisCacheUtil.redisCacheUtil.redisTemplate, key, 1000);
         } catch (IllegalStateException e) {
             log.error(e.getMessage(), e);
-            return List.of();
+            return new ArrayList<>();
         }
     }
 
@@ -89,7 +89,7 @@ public class RedisCacheUtil implements CommandLineRunner {
             return scan(RedisCacheUtil.redisCacheUtil.redisTemplate, key, maxCount);
         } catch (IllegalStateException e) {
             log.error(e.getMessage(), e);
-            return List.of();
+            return new ArrayList<>();
         }
     }
 

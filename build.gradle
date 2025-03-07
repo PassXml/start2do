@@ -129,6 +129,7 @@ allprojects {
                     "org.springframework:spring-webmvc"                         : "6.1.14",
                     "org.springframework.cloud:spring-cloud-context"            : '4.0.2',
                     "org.springframework.security:spring-security-core"         : "6.3.4",
+                    "org.springframework.security:spring-security-web"          : "6.3.4",
                     "org.mybatis.spring.boot:mybatis-spring-boot-starter"       : "3.0.3",
                     "io.minio:minio"                                            : "8.5.7",
                     "org.antlr:stringtemplate"                                  : "4.0.2",
@@ -174,6 +175,7 @@ allprojects {
                     "org.apache.poi:poi-ooxml"                                  : "5.3.0",
                     "org.graalvm.polyglot:polyglot"                             : "24.1.1",
                     "org.graalvm.polyglot:js"                                   : "24.1.1",
+                    "org.apache.commons:commons-pool2"                          : "2.12.1",
             ]
             dependencySubstitution {
                 for (final def jar in jars) {

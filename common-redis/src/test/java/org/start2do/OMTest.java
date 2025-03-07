@@ -1,0 +1,43 @@
+package org.start2do;
+
+import static org.start2do.redis.RedisOMConfig.jacksonOM;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import javax.persistence.ManyToOne;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.Accessors;
+import org.junit.jupiter.api.Test;
+
+public class OMTest {
+
+
+    @Test
+    public void test() throws JsonProcessingException {
+        TestItem item = new TestItem("123", new TestItem("456"));
+        System.out.println(jacksonOM().writeValueAsString(item));
+    }
+
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    public static class TestItem {
+
+        private String id;
+        @ManyToOne
+        private TestItem testItem;
+
+        public TestItem(String id) {
+            this.id = id;
+        }
+
+        public TestItem(String id, TestItem testItem) {
+            this.id = id;
+            this.testItem = testItem;
+        }
+
+    }
+
+}

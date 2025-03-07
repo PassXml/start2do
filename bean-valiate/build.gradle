@@ -12,7 +12,7 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     //jdk11
 //    api 'jakarta.validation:jakarta.validation-api:2.0.2'
-    api 'jakarta.validation:jakarta.validation-api:3.1.0'
+    api 'jakarta.validation:jakarta.validation-api:3.1.1'
 //    api 'javax.validation:validation-api:2.0.1.Final'
 //    api 'jakarta.el:jakarta.el-api:5.0.0'
 //    https://mvnrepository.com/artifact/jakarta.el/jakarta.el-api

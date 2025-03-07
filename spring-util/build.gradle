@@ -11,27 +11,39 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-    compileOnly("org.springframework:spring-webmvc:6.0.3")
-    compileOnly("org.springframework:spring-webflux:6.0.3")
-    compileOnly group: 'org.springframework.security', name: 'spring-security-web', version: '6.0.3'
-    compileOnly("org.springframework.boot:spring-boot:$springBootVersion")
-    compileOnly("jakarta.annotation:jakarta.annotation-api:2.1.1")
+    compileOnly("org.springframework:spring-webmvc")
+    compileOnly("org.springframework:spring-webflux")
+    compileOnly('org.springframework.security:spring-security-web')
+    compileOnly("org.springframework.boot:spring-boot")
+    compileOnly("jakarta.annotation:jakarta.annotation-api:1.3.5")
     compileOnly("org.slf4j:slf4j-api:1.7.32")
     compileOnly("org.aspectj:aspectjrt:1.9.7")
     compileOnly("org.aspectj:aspectjweaver:1.9.7")
-    compileOnly group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.0.0'
     compileOnly("io.vertx:vertx-web-client:$vertxVersion")
     compileOnly("io.vertx:vertx-core:$vertxVersion")
     compileOnly group: 'jakarta.persistence', name: 'jakarta.persistence-api', version: '3.1.0'
     //
 
     annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: springBootVersion
-    compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.15.2'
     compileOnly("org.springframework.boot:spring-boot-starter-data-redis:$springBootVersion")
-    compileOnly group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.15.2'
+    compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
+    compileOnly group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: jacksonVersion
+    //
+    testImplementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
+    testImplementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: jacksonVersion
+    testImplementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: jacksonVersion
+    testImplementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
+    testImplementation("org.springframework.data:spring-data-redis:$springBootVersion")
+    testImplementation('jakarta.persistence:jakarta.persistence-api')
+    compileOnly('jakarta.persistence:jakarta.persistence-api')
+    //okhttp
+    compileOnly 'com.squareup.okhttp3:okhttp:4.12.0'
+    compileOnly("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    //
+    api(project(":common-redis"))
     compileOnly(project(":common-util"))
     testImplementation("io.vertx:vertx-core:$vertxVersion")
-    compileOnly 'com.squareup.okhttp3:okhttp:4.12.0'
+    compileOnly("jakarta.servlet:jakarta.servlet-api:6.1.0")
 
 }
 
