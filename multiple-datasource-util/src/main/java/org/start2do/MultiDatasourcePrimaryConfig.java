@@ -13,6 +13,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 public class MultiDatasourcePrimaryConfig {
 
+    private String dateType = "";
     private Class<DataSource> type;
     private String driverClassName;
     private String username;

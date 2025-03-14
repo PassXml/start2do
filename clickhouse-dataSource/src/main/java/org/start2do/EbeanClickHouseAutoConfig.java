@@ -56,7 +56,7 @@ public class EbeanClickHouseAutoConfig {
         // mapper的xml形式文件位置必须要配置，不然将报错：no statement （这种错误也可能是mapper的xml中，namespace与项目的路径不一致导致）
         Resource[] mapperRes = new PathMatchingResourcePatternResolver().getResources(config.getMapperLocations());
         Resource configRes = new PathMatchingResourcePatternResolver().getResource(config.getConfigLocation());
-        return MybatisDatasourceFactory.sqlSessionFactory(dataSource, mapperRes, configRes);
+        return MybatisDatasourceFactory.sqlSessionFactory(null, dataSource, mapperRes, configRes);
     }
 
 

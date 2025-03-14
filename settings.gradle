@@ -26,4 +26,8 @@ include 'updater'
 include 'muilt-redis'
 findProject(':script-util:script-js-impl')?.name = 'script-js-impl'
 include 'common-redis'
+//include 'spring-plugin-manage'
+//include 'spring-plugin-manage-api'
+//include 'spring-plugin-manage-demo'
+include 'ops'
 

@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.ClosedWatchServiceException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
@@ -268,14 +267,17 @@ public class FileUtil {
     @Getter
     private static final Map<String, Thread> THREAD_MAP = new ConcurrentHashMap<>();
 
-    public static void watch(String dirPath, Consumer<WatchEvent<?>> callback) {
-        watch(Paths.get(dirPath), callback);
+    /**
+     * StandardWatchEventKinds.OVERFLOW
+     */
+    public static void watch(String dirPath, Consumer<WatchEvent<?>> callback, Runnable closeHandler) {
+        watch(Paths.get(dirPath), callback, null);
     }
 
     /**
      * 监听文件目录,如果文件变更,则调用Callback
      */
-    public static void watch(Path dir, Consumer<WatchEvent<?>> callback) {
+    public static void watch(Path dir, Consumer<WatchEvent<?>> callback, Runnable closeHandler) {
         String path = dir.toAbsolutePath().toString();
         log.info("开始监听文件夹,{}", path);
         Thread thread = THREAD_MAP.get(path);
@@ -291,8 +293,8 @@ public class FileUtil {
             WatchService watcher = FileSystems.getDefault().newWatchService();
             dir.register(watcher, StandardWatchEventKinds.ENTRY_MODIFY);
             thread = new Thread(() -> {
-                while (!Thread.currentThread().isInterrupted()) { // 检查中断状态
-                    try {
+                try {
+                    while (!Thread.currentThread().isInterrupted()) { // 检查中断状态
                         WatchKey key;
                         try {
                             key = watcher.take();
@@ -307,14 +309,20 @@ public class FileUtil {
                         if (!valid) {
                             break;
                         }
-                    } catch (ClosedWatchServiceException x) {
-                        break;
+
+                    }
+                } finally {
+                    if (closeHandler != null) {
+                        closeHandler.run();
                     }
                 }
             });
             thread.start();
             THREAD_MAP.put(path, thread);
         } catch (IOException e) {
+            if (closeHandler != null) {
+                closeHandler.run();
+            }
             throw new RuntimeException(e);
         }
     }
@@ -360,34 +368,39 @@ public class FileUtil {
             try {
                 if (!Files.isDirectory(p)) {
                     Files.deleteIfExists(p);
-                    results.add(new DeleteResult(
-                        true, p
-                    ));
+                    results.add(new DeleteResult(true, p));
                 } else {
                     dirPath.add(p);
                 }
 
             } catch (IOException e) {
                 log.error("删除文件失败,{}", e.getMessage());
-                results.add(new DeleteResult(
-                    false, p
-                ));
+                results.add(new DeleteResult(false, p));
             }
         }
         for (Path dir : dirPath) {
             try {
                 Files.deleteIfExists(dir);
-                results.add(new DeleteResult(
-                    true, dir
-                ));
+                results.add(new DeleteResult(true, dir));
             } catch (IOException e) {
                 log.error("删除文件目录失败,{}", e.getMessage());
-                results.add(new DeleteResult(
-                    false, dir
-                ));
+                results.add(new DeleteResult(false, dir));
             }
         }
         return results;
+    }
+
+    public boolean isFileAllowed(List<String> subfixs, String filePath) {
+        return subfixs.contains(getSuffix(filePath));
+    }
+
+    public boolean isPathAllowed(List<String> paths, String path) {
+        Path normalizedPath = Paths.get(path).normalize();
+        String normalizedPathStr = normalizedPath.toString();
+        // 检查白名单路径
+        return paths.stream().map(allowedPath -> Paths.get(allowedPath).normalize())
+            .anyMatch(allowedPath -> normalizedPathStr.startsWith(allowedPath.toString()));
+
     }
 
     @Setter

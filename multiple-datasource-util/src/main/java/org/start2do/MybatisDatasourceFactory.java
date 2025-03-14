@@ -1,6 +1,7 @@
 package org.start2do;
 
 
+import java.util.Arrays;
 import javax.sql.DataSource;
 import lombok.experimental.UtilityClass;
 import org.apache.ibatis.io.VFS;
@@ -24,7 +25,8 @@ public class MybatisDatasourceFactory {
             .type(config.getType()).username(config.getUsername()).password(config.getPassword()).build();
     }
 
-    public SqlSessionFactory sqlSessionFactory(DataSource dataSource, Resource[] mapperLocations, Resource configLocation)
+    public SqlSessionFactory sqlSessionFactory(String dataType, DataSource dataSource,
+        Resource[] mapperLocations, Resource configLocation)
         throws Exception {
         SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
         VFS.addImplClass(SpringBootVFS.class);
@@ -35,8 +37,20 @@ public class MybatisDatasourceFactory {
         if (mapperLocations != null) {
             bean.setMapperLocations(mapperLocations);
         } else {
-            bean.setMapperLocations(
-                new PathMatchingResourcePatternResolver().getResources("classpath*:mybatis/mapper/*.xml"));
+            Resource[] resources = new PathMatchingResourcePatternResolver().getResources(
+                "classpath*:mybatis/mapper/*.xml");
+            String t;
+            if (dataType != null && !dataType.isEmpty()) {
+                t = "_" + dataType + ".xml";
+            } else {
+                t = null;
+            }
+            bean.setMapperLocations(Arrays.stream(resources).filter(resource -> {
+                if (t == null) {
+                    return true;
+                }
+                return resource.getFilename() != null && resource.getFilename().endsWith(t);
+            }).toArray(Resource[]::new));
         }
         if (configLocation != null) {
             bean.setConfigLocation(configLocation);
