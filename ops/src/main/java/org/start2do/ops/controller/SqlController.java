@@ -7,10 +7,12 @@ import java.util.concurrent.ForkJoinPool;
 import javax.sql.DataSource;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.start2do.ops.dto.sql.SqlQueryReq;
 import org.start2do.util.spring.SpringBeanUtil;
@@ -18,6 +20,7 @@ import org.start2do.util.spring.SpringBeanUtil;
 @Slf4j
 @Controller
 @RequestMapping("sql")
+@ConditionalOnProperty(prefix = "start2do.ops", name = "enable")
 public class SqlController {
 
     /**

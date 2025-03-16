@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 import org.start2do.dto.BusinessException;
 import org.start2do.dto.R;
@@ -30,22 +31,29 @@ import org.start2do.util.ZipUtil;
 @Controller
 @RequestMapping("deploy")
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "org.start2do.ops", name = "enable")
+@ConditionalOnProperty(prefix = "start2do.ops", name = "enable")
 @ConditionalOnWebApplication(type = Type.SERVLET)
 public class DeployController {
 
     private final OpsConfig opsConfig;
     private final DeployService deployService;
 
+    /**
+     * 部署前端
+     */
     @PostMapping({"", "/"})
+    @ResponseBody
     public R deploy(@Valid DeployReq req) throws IOException {
         if (!FileUtil.isPathAllowed(opsConfig.getWhitePath(), req.getDestPath())) {
-            throw new BusinessException("不在白名单内");
+            throw new BusinessException(req.getDestPath() + ",不在白名单内");
         }
         deployService.deploy(req.getDestPath(), req.getFile().getInputStream(), req.getRootFileName());
         return R.ok();
     }
 
+    /**
+     * 下载指定文件夹
+     */
     @GetMapping("/download")
     public void downloadFiles(@RequestParam List<String> paths, HttpServletResponse response) {
         try {

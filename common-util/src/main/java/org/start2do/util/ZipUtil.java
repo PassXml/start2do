@@ -1,5 +1,6 @@
 package org.start2do.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.compress.utils.IOUtils;
 
 @Slf4j
 @UtilityClass
@@ -36,21 +38,34 @@ public class ZipUtil {
                 return result;
             }
         }
+        FileUtil.delete(destPath);
+        // 首先将输入流转换为字节数组，以便多次读取
+        byte[] zipBytes;
+        try {
+            zipBytes = IOUtils.toByteArray(zipFileInputStream);
+            zipFileInputStream.close();
+        } catch (IOException e) {
+            log.error("读取ZIP文件失败,{}", e.getMessage());
+            return result;
+        }
 
-        try (ZipArchiveInputStream zipInputStream = new ZipArchiveInputStream(zipFileInputStream)) {
+        try (ZipArchiveInputStream zipInputStream = new ZipArchiveInputStream(new ByteArrayInputStream(zipBytes))) {
             // 查找 index.html 所在的根目录
-            String rootDir = findRootDirectory(zipInputStream, rootFileName);
-
+            ZipArchiveInputStream inputStream = new ZipArchiveInputStream(new ByteArrayInputStream(zipBytes));
+            String rootDir = findRootDirectory(inputStream, rootFileName);
+            inputStream.close();
             // 解压文件
             ZipArchiveEntry entry;
             while ((entry = zipInputStream.getNextZipEntry()) != null) {
                 // 如果指定了 index.html，只解压根目录下的文件
-                if (rootDir != null && !entry.getName().startsWith(rootDir)) {
+                String entryName = entry.getName();
+                if (rootDir != null && !entryName.startsWith(rootDir) || entryName.substring(0, entryName.length() - 1)
+                    .equals(rootDir)) {
                     continue;
                 }
 
                 Path entryPath = destPath.resolve(
-                    entry.isDirectory() ? entry.getName() : removeRootDir(entry.getName(), rootDir));
+                    entry.isDirectory() ? entryName : removeRootDir(entryName, rootDir));
                 result.add(entryPath.toString());
 
                 if (entry.isDirectory()) {

@@ -18,6 +18,8 @@ public class SpringCommonConfig {
     private ReplaceFilter replaceFilter;
     private ErrorTrace errorTrace;
 
+    public boolean enableException = true;
+
     @Setter
     @Getter
     @Accessors(chain = true)

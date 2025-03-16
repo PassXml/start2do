@@ -47,6 +47,9 @@ public class R<T> implements Serializable {
     @Getter
     @Setter
     private T data;
+    @Getter
+    @Setter
+    private String error;
 
     public static <T> R<T> ok() {
         return new R(0, null, "");

@@ -4,11 +4,13 @@ import java.io.InputStream;
 import java.nio.file.Paths;
 import javax.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.start2do.util.ZipUtil;
 
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "start2do.ops", name = "enable")
 public class DeployService {
 
     public void deploy(@NotEmpty String filePath, InputStream inputStream, String rootFileName) {

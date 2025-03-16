@@ -383,7 +383,6 @@ public class FileUtil {
                 Files.deleteIfExists(dir);
                 results.add(new DeleteResult(true, dir));
             } catch (IOException e) {
-                log.error("删除文件目录失败,{}", e.getMessage());
                 results.add(new DeleteResult(false, dir));
             }
         }
@@ -399,7 +398,8 @@ public class FileUtil {
         String normalizedPathStr = normalizedPath.toString();
         // 检查白名单路径
         return paths.stream().map(allowedPath -> Paths.get(allowedPath).normalize())
-            .anyMatch(allowedPath -> normalizedPathStr.startsWith(allowedPath.toString()));
+            .map(Path::toString)
+            .anyMatch(normalizedPathStr::startsWith);
 
     }
 

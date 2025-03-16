@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.start2do.util.FileUtil;
@@ -23,6 +24,7 @@ import org.start2do.util.FileUtil;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "start2do.ops", name = "enable")
 public class TailService {
 
     public void tailFile(String filePath, SseEmitter emitter) {
