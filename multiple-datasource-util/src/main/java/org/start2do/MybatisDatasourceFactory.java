@@ -30,7 +30,11 @@ public class MybatisDatasourceFactory {
         throws Exception {
         SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
         VFS.addImplClass(SpringBootVFS.class);
-        bean.setDefaultEnumTypeHandler(AutoGenericEnumTypeHandler.class);
+        try {
+            Class<?> aClass = Class.forName("org.start2do.ebean.dict.IDictItem");
+            bean.setDefaultEnumTypeHandler(AutoGenericEnumTypeHandler.class);
+        } catch (Exception e) {
+        }
         bean.setTypeHandlers(new UUIDTypeHandler());
         bean.setDataSource(dataSource);
         // mapper的xml形式文件位置必须要配置，不然将报错：no statement （这种错误也可能是mapper的xml中，namespace与项目的路径不一致导致）
