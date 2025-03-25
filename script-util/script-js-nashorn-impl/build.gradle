@@ -12,9 +12,9 @@ repositories {
 
 dependencies {
     compileOnly(project(":script-util:script-common"))
-    compileOnly("com.github.ben-manes.caffeine:caffeine")
     compileOnly(project(":common-util"))
     compileOnly("org.slf4j:slf4j-api")
+    compileOnly("com.github.ben-manes.caffeine:caffeine")
     compileOnly("org.openjdk.nashorn:nashorn-core:15.6")
 
 }

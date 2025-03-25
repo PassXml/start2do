@@ -17,6 +17,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class NashornJsConfig {
 
     private boolean enable = false;
+    private int maxPoolSize = 20;
     private String globalScript;
     private long maxCPUTime;
     private long maxMemory;

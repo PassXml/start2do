@@ -46,7 +46,7 @@ public class NashornAutoConfig {
                                    + "var HTTP = Java.type('org.start2do.script.util.impl.functions.HttpUtil');\r\n");
         }
         IScriptRunner runnerJs = new ScriptJsNashornImpl(config.getWhiteList(), caffeine, config.getGlobalScript(),
-            config.getMaxCPUTime(), config.getMaxMemory());
+            config.getMaxCPUTime(), config.getMaxMemory(),config.getMaxPoolSize());
         if (configuration.getDefaultRunner() == Type.Nashorn) {
             ScriptRunner.setDefaultInstance(runnerJs);
         } else {

@@ -42,10 +42,13 @@ public interface IScriptRunner<T> {
 
     default Map<String, Object> objectsToMap(Object... params) {
         Map<String, Object> map = new HashMap<>();
-        if (params != null) {
-            for (int i = 0; i < params.length; i++) {
-                map.put(String.valueOf(i), params[i]);
-            }
+        if (params.length % 2 != 0) {
+            throw new RuntimeException("参数个数必须为偶数");
+        }
+        for (int i = 0; i < params.length; i += 2) {
+            Object param = params[i];
+
+            map.put(String.valueOf(param), params[i + 1]);
         }
         return map;
     }

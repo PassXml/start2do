@@ -2,13 +2,12 @@ package org.start2do.script.impl.nashornl;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -29,12 +28,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import org.start2do.script.IScriptRunner;
 import org.start2do.script.ScriptRunnerConfiguration.Type;
+import org.start2do.script.dto.BindingDto;
 import org.start2do.script.dto.ScriptRunnerInput;
 import org.start2do.script.dto.ScriptRunnerResult;
 import org.start2do.script.util.impl.functions.DBOperateFunction;
 import org.start2do.script.util.impl.functions.HttpUtil;
 import org.start2do.script.util.impl.functions.JacksonOperateFunction;
-import org.start2do.script.util.impl.functions.SystemConsole;
 import org.start2do.util.Md5Util;
 import org.start2do.util.StringUtils;
 
@@ -50,17 +49,17 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
     private long maxMemory;
     private String GLOBAL_SCRIPT;
     // 添加 Bindings 池相关字段
-    private final Deque<Bindings> bindingsPool = new ArrayDeque<>();
+    private final Deque<BindingDto> bindingsPool = new ArrayDeque<>();
     private final Lock poolLock = new ReentrantLock();
     // 设置池的最大大小
-    private static final int MAX_POOL_SIZE = 20;
+    private int MAX_POOL_SIZE;
     private ExecutorService executorService;
 
     // 添加获取 Bindings 的方法
-    private Bindings getBindings() {
+    private BindingDto getBindings() {
         poolLock.lock();
         try {
-            Bindings bindings = bindingsPool.pollFirst();
+            BindingDto bindings = bindingsPool.pollFirst();
             if (bindings == null) {
                 bindings = apply(engine.createBindings());
             }
@@ -71,15 +70,16 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
     }
 
     // 添加归还 Bindings 的方法
-    private void returnBindings(Bindings bindings) {
+    private void returnBindings(BindingDto bindings) {
         if (bindings == null) {
             return;
         }
-        bindings.clear();
+        bindings.getBindings().clear();
+        bindings.getOutputStream().reset();
         poolLock.lock();
         try {
             if (bindingsPool.size() < MAX_POOL_SIZE) {
-                bindingsPool.offerFirst(apply(remove(bindings)));
+                bindingsPool.offerFirst(remove(bindings));
             }
         } finally {
             poolLock.unlock();
@@ -89,11 +89,13 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
     public ScriptJsNashornImpl(Set<String> whiteList) {
         maxMemory = 100 * 1024 * 1024;
         maxCPUTime = 60 * 1000 * 3;
+        this.MAX_POOL_SIZE = 20;
         init(whiteList, Caffeine.newBuilder().expireAfterAccess(Duration.ofMinutes(15)).build(), null);
     }
 
     public ScriptJsNashornImpl(Set<Class<?>> clazzList, Cache<String, CompiledScript> caffeine, String globalScript,
-        long maxCPUTime, long maxMemory) {
+        long maxCPUTime, long maxMemory, int maxPoolSize) {
+        this.MAX_POOL_SIZE = maxPoolSize;
         ScriptJsNashornImpl.INSTANCE = this;
         if (clazzList == null) {
             clazzList = new HashSet<>();
@@ -104,12 +106,20 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
 
     }
 
-    private Bindings apply(Bindings bindings) {
-        bindings.put("console", SystemConsole.INSTANCE);
-        return bindings;
+    private BindingDto apply(Bindings bindings) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        SystemConsole console = new SystemConsole(outputStream);
+        bindings.put("console", console);
+        return new BindingDto(
+            bindings,
+            outputStream,
+            new SystemConsole(outputStream)
+        );
     }
 
-    private Bindings remove(Bindings bindings) {
+    private BindingDto remove(BindingDto dto) {
+        Bindings bindings = dto.getBindings();
+        dto.getOutputStream().reset();
         bindings.remove("quit");
         bindings.remove("exit");
         bindings.remove("load");
@@ -117,7 +127,8 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
         bindings.remove("__noSuchProperty__");
         bindings.remove("engine");
         bindings.remove("context");
-        return bindings;
+        bindings.put("console", dto.getSystemConsole());
+        return dto;
     }
 
     private void init(Set<String> set, Cache<String, CompiledScript> caffeine, String globalScript) {
@@ -137,7 +148,7 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
         poolLock.lock();
         try {
             for (int i = 0; i < MAX_POOL_SIZE; i++) {
-                bindingsPool.offerFirst(apply(remove(engine.createBindings())));
+                bindingsPool.offerFirst(apply(engine.createBindings()));
             }
         } finally {
             poolLock.unlock();
@@ -159,6 +170,7 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
         whiteList.add(BigDecimal.class.getName());
         maxMemory = 100 * 1024 * 1024;
         maxCPUTime = 60 * 1000 * 3;
+        this.MAX_POOL_SIZE = 20;
         init(whiteList, Caffeine.newBuilder().expireAfterAccess(Duration.ofMinutes(15)).build(), null);
     }
 
@@ -219,12 +231,12 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
 
     public ScriptRunnerResult evalMain(String id, String script, boolean isCache, Object... params) {
         log.debug("脚本:\r\n{}", script);
-        Bindings bindings = null;
+        BindingDto bindings = null;
         try {
             Map map = objectsToMap(params);
-            Object result;
             bindings = getBindings();
-            bindings.putAll(map);
+            bindings.getBindings().putAll(map);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             CompiledScript compiledScript = null;
             if (isCache) {
                 if (StringUtils.isEmpty(id) && StringUtils.isEmpty(script)) {
@@ -246,7 +258,8 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
                     return new ScriptRunnerResult().setSuccess(false).setErrorInfo("脚本为空");
                 }
             }
-            SandboxThread sandboxThread = new SandboxThread(getEngine(), compiledScript, script, bindings, maxCPUTime,
+            SandboxThread sandboxThread = new SandboxThread(getEngine(), compiledScript, script, bindings.getBindings(),
+                maxCPUTime,
                 maxMemory);
             executorService.execute(sandboxThread);
             sandboxThread.monitoring();
@@ -259,7 +272,9 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
                 return new ScriptRunnerResult().setSuccess(false)
                     .setErrorInfo(sandboxThread.getException().getMessage());
             }
-            return new ScriptRunnerResult(sandboxThread.getResult());
+            return new ScriptRunnerResult(sandboxThread.getResult()).setConsoleInfo(
+                new String(bindings.getOutputStream().toByteArray())
+            );
         } catch (Exception e) {
             log.error("脚本执行失败,{},{}", id, script, e);
             return new ScriptRunnerResult().setSuccess(false).setErrorInfo(e.getMessage());
