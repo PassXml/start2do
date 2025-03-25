@@ -67,7 +67,11 @@ public class ZipUtil {
                 Path entryPath = destPath.resolve(
                     entry.isDirectory() ? entryName : removeRootDir(entryName, rootDir));
                 result.add(entryPath.toString());
-
+                Path parent = entryPath.getParent();
+                if (!Files.exists(parent)) {
+                    //创建目录
+                    Files.createDirectories(parent);
+                }
                 if (entry.isDirectory()) {
                     Files.createDirectories(entryPath);
                 } else {
@@ -75,7 +79,7 @@ public class ZipUtil {
                 }
             }
         } catch (Exception e) {
-            log.error("解压文件失败,{}", e.getMessage());
+            log.error("解压文件失败,{}", e.getMessage(), e);
         }
         return result;
     }
