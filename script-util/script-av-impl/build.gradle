@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+    id 'java-library'
+
+}
+
+group = "org.start2do"
+version = "2.0.9.2.10-SNAPSHOT"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly(project(":common-util"))
+    compileOnly(project(":script-util:script-common"))
+    compileOnly("org.slf4j:slf4j-api")
+    compileOnly("com.googlecode.aviator:aviator:5.4.3")
+    compileOnly("com.github.ben-manes.caffeine:caffeine")
+    compileOnly("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
+}
+
+tasks.test {
+    useJUnitPlatform()
+}

@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  org.start2do.script.ScriptRunnerJsAutoConfiguration
+  org.start2do.script.config.AVScriptAutoConfig

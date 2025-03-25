@@ -8,7 +8,7 @@ plugins {
 }
 group 'org.start2do'
 
-version '2.0.9.2.10-SNAPSHOT'
+version '2.0.9.2.12-SNAPSHOT'
 allprojects {
     apply {
         plugin 'java'
@@ -18,9 +18,9 @@ allprojects {
         plugin "idea"
     }
     repositories {
+        maven { url 'https://mirrors.huaweicloud.com/repository/maven/' }
         maven { url 'https://mirrors.163.com/maven/repository/maven-public/' }
         maven { url 'https://mirrors.cloud.tencent.com/nexus/repository/maven-public/' }
-        maven { url 'https://mirrors.huaweicloud.com/repository/maven/' }
         maven { url 'https://maven.aliyun.com/nexus/content/groups/public/' }
         mavenCentral()
     }
@@ -41,19 +41,21 @@ allprojects {
         springCloudStarterVersion = '3.1.7'
         springAliCloudVersion = '2021.0.6.2'
         curVersion = project.version == 'unspecified' ? this.rootProject.version : project.version
-        jdkVersion = ["ebean-common"        : JavaVersion.VERSION_11,
-                      "spring-security-api" : JavaVersion.VERSION_11,
-                      "spring-security-core": JavaVersion.VERSION_11,
-                      "http-log-sdk"        : JavaVersion.VERSION_11,
-                      "sso-login"           : JavaVersion.VERSION_11,
-                      "sso-login-test"      : JavaVersion.VERSION_11,
-                      "spring-business"     : JavaVersion.VERSION_11,
-                      "common-util"         : JavaVersion.VERSION_1_8,
-                      "spring-common"       : JavaVersion.VERSION_1_8,
-                      "spring-util"         : JavaVersion.VERSION_1_8,
-                      "bean-valiate"        : JavaVersion.VERSION_1_8,
-                      "script-util"         : JavaVersion.VERSION_11,
-                      "script-js-impl"      : JavaVersion.VERSION_17,
+        jdkVersion = ["ebean-common"          : JavaVersion.VERSION_11,
+                      "spring-security-api"   : JavaVersion.VERSION_11,
+                      "spring-security-core"  : JavaVersion.VERSION_11,
+                      "http-log-sdk"          : JavaVersion.VERSION_11,
+                      "sso-login"             : JavaVersion.VERSION_11,
+                      "sso-login-test"        : JavaVersion.VERSION_11,
+                      "spring-business"       : JavaVersion.VERSION_11,
+                      "common-util"           : JavaVersion.VERSION_1_8,
+                      "spring-common"         : JavaVersion.VERSION_1_8,
+                      "spring-util"           : JavaVersion.VERSION_1_8,
+                      "bean-valiate"          : JavaVersion.VERSION_1_8,
+                      "script-common"         : JavaVersion.VERSION_11,
+                      "script-av-impl"        : JavaVersion.VERSION_11,
+                      "script-js-nashorn-impl": JavaVersion.VERSION_11,
+                      "script-js-impl"        : JavaVersion.VERSION_17,
         ]
     }
     idea.module.sourceDirs += file("${buildDir}/generated/sources/annotationProcessor/java")
