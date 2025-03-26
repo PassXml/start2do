@@ -197,7 +197,8 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
     @Override
     public CompiledScript preLoad(String id, String script) {
         try {
-            return ((Compilable) engine).compile(GLOBAL_SCRIPT + script);
+            return ((Compilable) engine).compile(
+                StringUtils.isNotEmpty(GLOBAL_SCRIPT) ? GLOBAL_SCRIPT + script : script);
         } catch (ScriptException e) {
             log.error("脚本加载失败,{}", e.getMessage());
             throw new RuntimeException(e);
