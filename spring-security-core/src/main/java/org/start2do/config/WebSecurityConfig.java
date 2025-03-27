@@ -2,12 +2,11 @@ package org.start2do.config;
 
 import javax.annotation.Resource;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,6 +21,7 @@ import org.start2do.filter.JwtRequestFilter;
 import org.start2do.util.JwtTokenUtil;
 
 
+@Slf4j
 @Configuration(proxyBeanMethods = false)
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
@@ -48,16 +48,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
 
-    @Bean
-    @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
-    }
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         if (Boolean.TRUE.equals(config.getEnable())) {
+            log.info("配置认证");
             ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry security = httpSecurity.csrf()
                 .disable().authorizeRequests().antMatchers("/auth/login", "/auth/code").permitAll();
 
