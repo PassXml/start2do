@@ -15,11 +15,14 @@ repositories {
 dependencies {
     implementation platform('org.junit:junit-bom:5.10.0')
     implementation 'org.junit.jupiter:junit-jupiter'
-    implementation(project(":spring-security-api"))
+//    implementation(project(":spring-security-api"))
     implementation(project(":spring-util"))
     implementation(project(":bean-valiate"))
-    implementation(project(":spring-common"))
-    implementation(project(":ebean-common"))
+//    implementation(project(":spring-common"))
+//    implementation(project(":ebean-common"))
+    implementation(project(":common-util"))
+    implementation(project(":script-util:script-common"))
+    implementation(project(":script-util:script-js-nashorn-impl"))
 //    spring依赖
 //    implementation("org.springframework.boot:spring-boot-starter-actuator:2.7.18") {
 //        exclude group: 'jakarta.validation', module: 'jakarta.validation-api'
@@ -44,6 +47,9 @@ dependencies {
     implementation(project(":sso-login"))
     implementation 'com.zaxxer:HikariCP:6.2.1'
     implementation 'org.slf4j:slf4j-simple'
+    implementation("com.github.ben-manes.caffeine:caffeine")
+    implementation("org.openjdk.nashorn:nashorn-core:15.6")
+    testImplementation("org.slf4j:slf4j-api")
 }
 
 test {

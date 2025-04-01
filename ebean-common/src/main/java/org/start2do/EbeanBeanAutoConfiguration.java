@@ -27,6 +27,8 @@ import org.springframework.core.annotation.Order;
 import org.start2do.ebean.EbeanBeanPersistController;
 import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 import org.start2do.ebean.id_generators.UUIDStrIdGenerator;
+import org.start2do.ebean.service.SysSettingService;
+import org.start2do.ebean.util.SysSettingUtil;
 import org.start2do.util.Snowflake;
 import org.start2do.util.StringUtils;
 
@@ -164,5 +166,12 @@ public class EbeanBeanAutoConfiguration {
     public DataSource dataSource2(HikariConfig config) {
         log.info("使用HikariConfig初始化DataSource:{}", config.getJdbcUrl());
         return new HikariDataSource(config);
+    }
+
+    @Bean
+    @ConditionalOnBean(DataSource.class)
+    public SysSettingUtil sysSettingUtil(DataSource dataSource, SysSettingService sysSettingService) {
+        SysSettingUtil util = new SysSettingUtil(sysSettingService);
+        return util;
     }
 }

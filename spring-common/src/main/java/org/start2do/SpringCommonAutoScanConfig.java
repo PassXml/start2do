@@ -7,6 +7,6 @@ import org.springframework.context.annotation.Import;
 @Configuration(proxyBeanMethods = false)
 @ComponentScan("org.start2do")
 @Import(SpringCommonConfig.class)
-public class AutoScanConfig {
+public class SpringCommonAutoScanConfig {
 
 }

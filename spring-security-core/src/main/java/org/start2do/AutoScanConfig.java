@@ -2,6 +2,7 @@ package org.start2do;
 
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +17,7 @@ import org.start2do.util.JwtTokenUtil;
 @Configuration(proxyBeanMethods = false)
 @ComponentScan("org.start2do")
 @Import({Start2doSecurityConfig.class, KaptchaConfig.class})
+@ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
 @RequiredArgsConstructor
 public class AutoScanConfig {
 
@@ -32,6 +34,7 @@ public class AutoScanConfig {
     }
 
     @Bean
+    @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }

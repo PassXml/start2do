@@ -5,9 +5,7 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
-import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -22,7 +20,7 @@ import org.start2do.util.ValidateException;
 
 @Slf4j
 @ControllerAdvice
-@ConditionalOnProperty(prefix = "start2do", name = "enableException", matchIfMissing = true, havingValue = "true")
+@ConditionalOnProperty(prefix = "start2do", name = "enable-exception", matchIfMissing = true, havingValue = "true")
 public class ExceptionHandler {
 
     private final SpringCommonConfig config;

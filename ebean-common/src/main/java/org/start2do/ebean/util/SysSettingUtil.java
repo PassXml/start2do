@@ -2,14 +2,9 @@ package org.start2do.ebean.util;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 import org.start2do.ebean.dto.EnableType;
 import org.start2do.ebean.entity.SysSetting;
 import org.start2do.ebean.entity.query.QSysSetting;
@@ -17,23 +12,21 @@ import org.start2do.ebean.service.SysSettingService;
 import org.start2do.util.StringUtils;
 
 @Slf4j
-@Component
 public class SysSettingUtil {
 
-    @Lazy
-    @Setter
-    @Resource
-    private SysSettingService sysSettingService;
+    private final SysSettingService sysSettingService;
+
 
     @Getter
     private static SysSettingUtil sysSettingUtil;
     private ConcurrentHashMap<String, ConcurrentHashMap<String, String>> hashMap;
 
-    @PostConstruct
-    public void init() {
+    public SysSettingUtil(SysSettingService sysSettingService) {
+        this.sysSettingService = sysSettingService;
         hashMap = new ConcurrentHashMap<>();
         SysSettingUtil.sysSettingUtil = this;
     }
+
 
     public static String getLabel(String type, String key) {
         if (StringUtils.isEmpty(type)) {
@@ -55,13 +48,11 @@ public class SysSettingUtil {
 
     @Scheduled(cron = "0 0/10 0 * * ?")
     public void sync() {
-        if (hashMap == null) {
-            init();
-        }
         if (sysSettingService == null) {
             log.warn("需要注入SysSettingService");
             return;
         }
+        hashMap.clear();
         for (SysSetting dto : sysSettingService.findAll(new QSysSetting().enable.eq(EnableType.Enable))) {
             if (dto.getType() == null) {
                 continue;

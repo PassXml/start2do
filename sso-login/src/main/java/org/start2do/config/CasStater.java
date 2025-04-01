@@ -21,6 +21,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
@@ -42,6 +43,7 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
  * CAS单点登录配置类，当配置文件中cas.enable属性为true时生效。
  */
 @Import(CasConfig.class)
+@ComponentScan("org.start2do.config")
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = Type.SERVLET)
 @ConditionalOnProperty(value = "cas.enable", havingValue = "true")

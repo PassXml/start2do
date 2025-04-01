@@ -1,7 +1,6 @@
 package com.zte.service;
 
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jasig.cas.client.validation.Assertion;
 import org.springframework.security.cas.userdetails.AbstractCasAssertionUserDetailsService;
@@ -12,8 +11,8 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class CasUserDetailsService extends AbstractCasAssertionUserDetailsService {
+
 
 
     @Override
