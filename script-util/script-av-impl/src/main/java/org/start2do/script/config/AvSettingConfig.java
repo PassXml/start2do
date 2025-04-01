@@ -9,13 +9,11 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
 @Setter
 @Getter
 @Accessors(chain = true)
 @NoArgsConstructor
-@Configuration
 @ConfigurationProperties(prefix = "start2do.script.av-setting")
 @ConditionalOnProperty(prefix = "start2do.script", name = "enable", havingValue = "true")
 public class AvSettingConfig {

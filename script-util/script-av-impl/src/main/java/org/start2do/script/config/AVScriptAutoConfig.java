@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.start2do.script.IScriptRunner;
 import org.start2do.script.ScriptRunnerConfiguration;
 import org.start2do.script.ScriptRunnerConfiguration.Type;
@@ -19,6 +20,7 @@ import org.start2do.script.util.impl.functions.HttpUtil;
 import org.start2do.script.util.impl.functions.JacksonOperateFunction;
 
 @Slf4j
+@Import(AvSettingConfig.class)
 @ConditionalOnProperty(prefix = "start2do.script", name = "enable", havingValue = "true")
 public class AVScriptAutoConfig {
 
