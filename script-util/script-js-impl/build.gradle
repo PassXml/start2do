@@ -13,12 +13,13 @@ repositories {
 dependencies {
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-    compileOnly("org.graalvm.polyglot:js")
+    api("org.graalvm.polyglot:polyglot")
+    api("org.graalvm.polyglot:js")
+//    api("org.graalvm.js:js-scriptengine")
     compileOnly(project(":common-util"))
     compileOnly(project(":script-util:script-common"))
     compileOnly("org.slf4j:slf4j-api:2.0.5")
     compileOnly("com.github.ben-manes.caffeine:caffeine")
-    compileOnly("org.graalvm.polyglot:polyglot")
     testImplementation("org.graalvm.polyglot:polyglot")
     testImplementation("org.graalvm.polyglot:js")
 }

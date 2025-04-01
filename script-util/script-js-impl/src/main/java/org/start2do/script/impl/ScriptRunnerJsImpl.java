@@ -24,6 +24,7 @@ import org.start2do.script.ScriptRunnerConfiguration.Type;
 import org.start2do.script.dto.ScriptJsCache;
 import org.start2do.script.dto.ScriptRunnerInput;
 import org.start2do.script.dto.ScriptRunnerResult;
+import org.start2do.script.util.ScriptFormatUtil;
 import org.start2do.util.Md5Util;
 import org.start2do.util.StringUtils;
 
@@ -116,11 +117,7 @@ public class ScriptRunnerJsImpl implements IScriptRunner<ScriptJsCache> {
             .allowHostClassLookup(PREDICATE).logHandler(cache.getConsoleInfo()).err(cache.getConsoleInfo())
             .out(cache.getErrorInfo()).option("engine.WarnInterpreterOnly", "false").timeZone(ZoneId.systemDefault())
             .build();
-        Value value = context.eval("js", script);
-        if (!value.canExecute()) {
-            script += "((args)=>{var result= main(args);if(result){return result;}else{return false;}})";
-            value = context.eval("js", script);
-        }
+        Value value = context.eval("js", ScriptFormatUtil.formatScript(script));
         cache.setScript(value);
         return cache;
     }
@@ -144,7 +141,7 @@ public class ScriptRunnerJsImpl implements IScriptRunner<ScriptJsCache> {
         }
         try {
             log.debug("脚本:\r\n{}", script);
-            Value execute = cache.getScript().execute(params);
+            Value execute = cache.getScript().execute(objectsToMap(params));
             return new ScriptRunnerResult(execute.as(Object.class)).setErrorInfo(cache.getConsoleOutInfo())
                 .setConsoleInfo(cache.getErrorOutInfo());
         } catch (Exception e) {

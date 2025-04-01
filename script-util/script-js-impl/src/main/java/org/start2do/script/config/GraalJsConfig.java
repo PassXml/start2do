@@ -6,11 +6,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Setter
 @Getter
 @Accessors(chain = true)
 @NoArgsConstructor
+@ConfigurationProperties(prefix = "start2do.script.graaljs")
 public class GraalJsConfig {
 
     private boolean enable = false;

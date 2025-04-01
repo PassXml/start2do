@@ -3,6 +3,7 @@ package org.start2do.script;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import java.time.Duration;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -33,15 +34,17 @@ import org.start2do.script.util.ScriptRunner;
 public class ScriptRunnerJsAutoConfiguration {
 
     @Bean
-    @ConditionalOnProperty(prefix = "start2do.script.js-setting", name = "enable", havingValue = "true")
+    @ConditionalOnProperty(prefix = "start2do.script.graaljs", name = "enable", havingValue = "true")
     @ConditionalOnMissingBean(IScriptRunner.class)
     public IScriptRunner js(ScriptRunnerConfiguration configuration, GraalJsConfig jsSetting) {
         ScriptRunnerJsImpl runnerJs;
         if (jsSetting == null) {
             runnerJs = new ScriptRunnerJsImpl();
         } else {
+            Duration duration =
+                jsSetting.getExpireAfterAccess() == null ? Duration.ofMinutes(15) : jsSetting.getExpireAfterAccess();
             Cache<String, ScriptJsCache> caffeine = Caffeine.newBuilder()
-                .expireAfterAccess(jsSetting.getExpireAfterAccess()).build();
+                .expireAfterAccess(duration).build();
             runnerJs = new ScriptRunnerJsImpl(jsSetting.getClazzList(), caffeine, jsSetting.getGlobalScript());
         }
         if (configuration.getDefaultRunner() == Type.GraalJS) {
