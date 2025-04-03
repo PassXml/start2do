@@ -26,6 +26,7 @@ import org.start2do.service.impl.FileFilterEmptyImpl;
 import org.start2do.service.impl.FileMD5DefaultImpl;
 import org.start2do.service.impl.FileOperationHookServiceEmptyImp;
 import org.start2do.service.impl.RestPwServiceEmptyImpl;
+import org.start2do.util.RateLimitUtil;
 import org.start2do.util.StringUtils;
 
 @ComponentScans(value = {@ComponentScan(value = "org.start2do.controller"),
@@ -123,7 +124,10 @@ public class BusinessAutoConfig {
         return new BCryptPasswordEncoder();
     }
 
-
-
+    @Bean
+    @ConditionalOnProperty(prefix = "start2do.business.rate-limit", value = "enable", havingValue = "true")
+    public RateLimitUtil rateLimitUtil(BusinessConfig businessConfig) {
+        return new RateLimitUtil(businessConfig);
+    }
 
 }

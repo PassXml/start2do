@@ -7,7 +7,6 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.List;
 import javax.validation.constraints.Min;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -16,7 +15,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-import org.start2do.BusinessConfig;
 import org.start2do.util.ELUtil;
 import org.start2do.util.RateLimitUtil;
 import org.start2do.util.StringUtils;
@@ -24,17 +22,11 @@ import org.start2do.util.StringUtils;
 @Aspect
 @Slf4j
 @Component
-@RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "start2do.business.rate-limit", value = "enable", havingValue = "true")
+@RequiredArgsConstructor
 public class RateLimiterReactiveAop {
 
-    @Getter
-    private RateLimitUtil rateLimitUtil;
-
-
-    public RateLimiterReactiveAop(BusinessConfig businessConfig) {
-        this.rateLimitUtil = new RateLimitUtil(businessConfig);
-    }
+    private final RateLimitUtil rateLimitUtil;
 
 
     @Around("@annotation(setting)")

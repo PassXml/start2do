@@ -16,6 +16,7 @@ import org.start2do.dto.BusinessException;
 import org.start2do.dto.DataNotFoundException;
 import org.start2do.dto.PermissionException;
 import org.start2do.dto.R;
+import org.start2do.dto.RateLimiterException;
 import org.start2do.util.ValidateException;
 
 @Slf4j
@@ -95,6 +96,12 @@ public class ExceptionHandler {
         String message = allErrors.stream().map(DefaultMessageSourceResolvable::getDefaultMessage)
             .collect(Collectors.joining(";"));
         return R.failed(message).setError(message);
+    }
+
+    @ResponseBody
+    @org.springframework.web.bind.annotation.ExceptionHandler(value = RateLimiterException.class)
+    public R RateLimiterException(RateLimiterException e) {
+        return R.failed(e.getMessage()).setError("速率限制");
     }
 
     public ExceptionHandler(SpringCommonConfig config) {
