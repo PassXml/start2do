@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.start2do"
-version = "2.0.9.2.10-SNAPSHOT"
+version = "2.0.9.2.12-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -15,7 +15,7 @@ dependencies {
     compileOnly(project(":common-util"))
     compileOnly("org.slf4j:slf4j-api")
     compileOnly("com.github.ben-manes.caffeine:caffeine")
-    compileOnly("org.openjdk.nashorn:nashorn-core:15.6")
+    api("org.openjdk.nashorn:nashorn-core:15.6")
 
 }
 

@@ -110,11 +110,7 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         SystemConsole console = new SystemConsole(outputStream);
         bindings.put("console", console);
-        return new BindingDto(
-            bindings,
-            outputStream,
-            new SystemConsole(outputStream)
-        );
+        return new BindingDto(bindings, outputStream, new SystemConsole(outputStream));
     }
 
     private BindingDto remove(BindingDto dto) {
@@ -197,8 +193,10 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
     @Override
     public CompiledScript preLoad(String id, String script) {
         try {
-            return ((Compilable) engine).compile(
+            CompiledScript compile = ((Compilable) engine).compile(
                 StringUtils.isNotEmpty(GLOBAL_SCRIPT) ? GLOBAL_SCRIPT + script : script);
+            SCRIPT_CACHE.put(id, compile);
+            return compile;
         } catch (ScriptException e) {
             log.error("脚本加载失败,{}", e.getMessage());
             throw new RuntimeException(e);
@@ -237,7 +235,6 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
             Map map = objectsToMap(params);
             bindings = getBindings();
             bindings.getBindings().putAll(map);
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             CompiledScript compiledScript = null;
             if (isCache) {
                 if (StringUtils.isEmpty(id) && StringUtils.isEmpty(script)) {
@@ -247,21 +244,16 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
                     compiledScript = SCRIPT_CACHE.getIfPresent(id);
                 } else if (StringUtils.isNotEmpty(script)) {
                     String key = Md5Util.md5(script);
-                    compiledScript = SCRIPT_CACHE.get(key, s -> {
-                        CompiledScript cs = preLoad(script);
-                        // 如果编译失败，从缓存中移除
-                        if (cs == null) {
-                            SCRIPT_CACHE.invalidate(key);
-                        }
-                        return cs;
-                    });
+                    compiledScript = SCRIPT_CACHE.getIfPresent(key);
+                    if (compiledScript == null) {
+                        compiledScript = preLoad(script);
+                    }
                 } else {
                     return new ScriptRunnerResult().setSuccess(false).setErrorInfo("脚本为空");
                 }
             }
             SandboxThread sandboxThread = new SandboxThread(getEngine(), compiledScript, script, bindings.getBindings(),
-                maxCPUTime,
-                maxMemory);
+                maxCPUTime, maxMemory);
             executorService.execute(sandboxThread);
             sandboxThread.monitoring();
             if (sandboxThread.isCpuTimeExceeded()) {
@@ -274,8 +266,7 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
                     .setErrorInfo(sandboxThread.getException().getMessage());
             }
             return new ScriptRunnerResult(sandboxThread.getResult()).setConsoleInfo(
-                new String(bindings.getOutputStream().toByteArray())
-            );
+                new String(bindings.getOutputStream().toByteArray()));
         } catch (Exception e) {
             log.error("脚本执行失败,{},{}", id, script, e);
             return new ScriptRunnerResult().setSuccess(false).setErrorInfo(e.getMessage());
@@ -308,7 +299,7 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
         protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
             if (!WHITE_LIST.contains(name)) {
                 log.warn("不允许加载的类:{}", name);
-//                throw new ClassNotFoundException("不允许加载的类" + name);
+                throw new ClassNotFoundException("不允许加载的类" + name);
             }
             return super.loadClass(name, resolve);
         }
