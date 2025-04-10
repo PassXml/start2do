@@ -35,6 +35,7 @@ public interface DBConstant {
      * 备注
      */
     int REMARK_LENGTH = 256;
+    int NOTE_LENGTH = 512;
     /**
      * 人名
      */

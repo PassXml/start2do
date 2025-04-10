@@ -36,7 +36,6 @@ dependencies {
         exclude group: "javax.validation", module: "validation-api"
     }
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-webflux', version: '2.7.18'
-
     implementation("org.springframework.boot:spring-boot-starter-aop:2.7.18")
     compileOnly("org.springframework.boot:spring-boot-starter-data-redis:2.7.18")
     implementation("org.springframework.boot:spring-boot-starter-data-redis:2.7.18")
