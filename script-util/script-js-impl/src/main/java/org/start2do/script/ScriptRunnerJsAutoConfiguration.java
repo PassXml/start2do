@@ -41,10 +41,13 @@ public class ScriptRunnerJsAutoConfiguration {
         if (jsSetting == null) {
             runnerJs = new ScriptRunnerJsImpl();
         } else {
-            Duration duration =
-                jsSetting.getExpireAfterAccess() == null ? Duration.ofMinutes(15) : jsSetting.getExpireAfterAccess();
-            Cache<String, ScriptJsCache> caffeine = Caffeine.newBuilder()
-                .expireAfterAccess(duration).build();
+            Cache<String, ScriptJsCache> caffeine;
+            if (jsSetting.getExpireAfterAccess() != null) {
+                Duration duration = jsSetting.getExpireAfterAccess();
+                caffeine = Caffeine.newBuilder().expireAfterAccess(duration).build();
+            } else {
+                caffeine = Caffeine.newBuilder().build();
+            }
             runnerJs = new ScriptRunnerJsImpl(jsSetting.getClazzList(), caffeine, jsSetting.getGlobalScript());
         }
         if (configuration.getDefaultRunner() == Type.GraalJS) {

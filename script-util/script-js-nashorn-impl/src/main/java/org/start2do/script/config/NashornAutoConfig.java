@@ -23,13 +23,16 @@ public class NashornAutoConfig {
     @ConditionalOnProperty(prefix = "start2do.script.nashorn", name = "enable", havingValue = "true")
     @ConditionalOnMissingBean(IScriptRunner.class)
     public IScriptRunner jsNashorn(ScriptRunnerConfiguration configuration, NashornJsConfig config) {
-        Duration duration;
+        Duration duration = null;
         if (config.getExpireAfterAccess() != null) {
             duration = config.getExpireAfterAccess();
-        } else {
-            duration = Duration.ofMinutes(15);
         }
-        Cache<String, CompiledScript> caffeine = Caffeine.newBuilder().expireAfterAccess(duration).build();
+        Cache<String, CompiledScript> caffeine;
+        if (duration != null) {
+            caffeine = Caffeine.newBuilder().expireAfterAccess(duration).build();
+        } else {
+            caffeine = Caffeine.newBuilder().build();
+        }
         if (StringUtils.isEmpty(config.getGlobalScript())) {
             config.setGlobalScript("");
         }
@@ -46,7 +49,7 @@ public class NashornAutoConfig {
                                    + "var HTTP = Java.type('org.start2do.script.util.impl.functions.HttpUtil');\r\n");
         }
         IScriptRunner runnerJs = new ScriptJsNashornImpl(config.getWhiteList(), caffeine, config.getGlobalScript(),
-            config.getMaxCPUTime(), config.getMaxMemory(),config.getMaxPoolSize());
+            config.getMaxCPUTime(), config.getMaxMemory(), config.getMaxPoolSize());
         if (configuration.getDefaultRunner() == Type.Nashorn) {
             ScriptRunner.setDefaultInstance(runnerJs);
         } else {

@@ -45,14 +45,12 @@ public class ScriptRunnerAvImpl implements IScriptRunner<Expression> {
 
     public ScriptRunnerAvImpl() {
         inti();
-        SCRIPT_CACHE = Caffeine.newBuilder().maximumSize(2000)
-            .expireAfterAccess(Duration.ofMinutes(10)).build();
+        SCRIPT_CACHE = Caffeine.newBuilder().maximumSize(2000).build();
     }
 
     public ScriptRunnerAvImpl(List<Class<? extends AbstractFunction>> functions) {
         inti();
-        SCRIPT_CACHE = Caffeine.newBuilder().maximumSize(2000)
-            .expireAfterAccess(Duration.ofMinutes(10)).build();
+        SCRIPT_CACHE = Caffeine.newBuilder().maximumSize(2000).build();
         if (functions != null) {
             for (Class<? extends AbstractFunction> aClass : functions) {
                 try {
