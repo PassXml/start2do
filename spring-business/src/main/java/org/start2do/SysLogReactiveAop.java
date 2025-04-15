@@ -16,8 +16,8 @@ import org.springframework.stereotype.Component;
 import org.start2do.dto.annotation.SysLogSetting;
 import org.start2do.entity.business.SysLog;
 import org.start2do.service.webflux.SysLogReactiveService;
-import org.start2do.util.spring.LogAop;
 import org.start2do.util.spring.LogAopConfig;
+import org.start2do.util.spring.dto.JSON;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -30,7 +30,7 @@ public class SysLogReactiveAop {
 
     private final SysLogReactiveService logReactiveService;
     private final LogAopConfig config;
-    public final LogAop.JSON json;
+    public final JSON json;
 
     //获取当前请求对象
     public static Mono<Optional<SysLog>> getLog() {

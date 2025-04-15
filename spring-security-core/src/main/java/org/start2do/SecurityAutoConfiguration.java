@@ -27,11 +27,12 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.start2do.config.KaptchaConfig;
+import org.start2do.dto.CustomContextInfo;
 import org.start2do.dto.req.login.IPasswordText;
 import org.start2do.dto.req.login.JwtRequest;
-import org.start2do.filter.JwtRequestWebFluxFilter.CustomContextInfo;
 import org.start2do.service.ILoginLogOwner;
 import org.start2do.service.ILoginLogOwnerImpl;
+import org.start2do.service.IRestPwService;
 import org.start2do.service.imp.SysLoginUserCustomInfoEmptyReactiveService;
 import org.start2do.service.reactive.ISysLoginUserCustomInfoReactiveService;
 import org.start2do.util.JwtTokenUtil;
@@ -121,8 +122,31 @@ public class SecurityAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CustomContextInfo.class)
     @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
+    public IRestPwService iRestPwService() {
+        return new IRestPwService() {
+            @Override
+            public void sendValidateEmailCode(String username, String email) {
+
+            }
+
+            @Override
+            public void sendValidateSMSCode(String username, String phone) {
+
+            }
+
+            @Override
+            public void validateCode(String username, String verificationCode) {
+
+            }
+        };
+    }
+
+
+    @Bean
+    @ConditionalOnMissingBean(CustomContextInfo.class)
+    @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
     public CustomContextInfo customContextInfo() {
-        return new CustomContextInfo() {
+        return new CustomContextInfo(){
 
             @Override
             public void loadReqBefore(JwtRequest request) {
@@ -131,17 +155,17 @@ public class SecurityAutoConfiguration {
 
             @Override
             public <R> Mono<R> loadUserBefore(Mono<R> mono) {
-                return mono;
+                return null;
             }
 
             @Override
             public Context injectContext(Context context, String jwtStr, Integer tenantId, Object otherInfo) {
-                return context;
+                return null;
             }
 
             @Override
             public Mono<Object> injectOtherInfo(String jwtStr) {
-                return Mono.just("");
+                return null;
             }
 
             @Override

@@ -1,0 +1,35 @@
+plugins {
+    id("java")
+    id("java-library")
+}
+
+group = "org.start2do"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation(platform("org.junit:junit-bom:5.10.0"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    api("org.graalvm.polyglot:js")
+    api("org.graalvm.polyglot:polyglot")
+//    api("org.graalvm.js:js-scriptengine")
+    compileOnly(project(":common-util"))
+    compileOnly(project(":script-util:script-common"))
+    compileOnly("org.slf4j:slf4j-api:2.0.5")
+    compileOnly("com.github.ben-manes.caffeine:caffeine")
+//
+    testImplementation("org.graalvm.polyglot:polyglot")
+    testImplementation("org.graalvm.polyglot:js")
+    testImplementation(project(":common-util"))
+    testImplementation(project(":script-util:script-common"))
+    testImplementation("com.github.ben-manes.caffeine:caffeine")
+    testImplementation("org.slf4j:slf4j-api")
+    testImplementation("org.slf4j:slf4j-simple")
+
+}
+
+tasks.test {
+    useJUnitPlatform()
+}

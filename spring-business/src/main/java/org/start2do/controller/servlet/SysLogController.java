@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -120,7 +119,6 @@ public class SysLogController {
      * 批量删除
      */
     @GetMapping("delete")
-    @DeleteMapping("delete")
     public R delete(IdsReq req) {
         BeanValidatorUtil.validate(req);
         sysLogService.delete(new QSysLog().id.in(req.getId()));

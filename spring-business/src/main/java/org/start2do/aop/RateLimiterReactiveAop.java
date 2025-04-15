@@ -17,6 +17,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.start2do.BusinessConfig;
+import org.start2do.util.ELUtil;
 import org.start2do.util.RateLimitUtil;
 import org.start2do.util.StringUtils;
 
@@ -55,7 +56,8 @@ public class RateLimiterReactiveAop {
                     method.getDeclaringClass().getName() + "." + method.getName() + "." + method.getParameterCount());
             }
         } else {
-            keys = rateLimitUtil.getKey(setting.id());
+            String spelValue = ELUtil.parseSpel(point, setting.id());
+            keys = rateLimitUtil.getKey(spelValue);
         }
         if (keys != null) {
             rateLimitUtil.getToken(keys, setting.await(), setting.requested(), setting.capacity(), setting.rate(),
@@ -110,5 +112,6 @@ public class RateLimiterReactiveAop {
         String errorMsg() default "获取令牌异常";
 
     }
+
 
 }

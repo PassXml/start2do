@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import lombok.experimental.UtilityClass;
-import org.start2do.dto.dto.file.FileUpdateResultDto;
+import org.start2do.dto.file.FileUpdateResultDto;
 
 @UtilityClass
 public class LocalFileUtils {
@@ -37,6 +37,14 @@ public class LocalFileUtils {
             return new FileUpdateResultDto(
                 fileName, path.toString(), suffix, relativeFilePath, md5, bytes.length
             );
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void move(String uploadDir, String relativeFilePath, String destPath) {
+        try {
+            Files.move(Paths.get(uploadDir + relativeFilePath), Paths.get(uploadDir + destPath));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

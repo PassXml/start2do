@@ -15,19 +15,5 @@ public class UtilConfig {
 
     private boolean enable;
     private boolean schedulingEnable;
-    private RedisConfig redis;
 
-
-    @Setter
-    @Getter
-    @Accessors(chain = true)
-    @NoArgsConstructor
-    public static class RedisConfig {
-
-        private boolean enable;
-        /**
-         * key统一前缀
-         */
-        private String keyPrefix;
-    }
 }

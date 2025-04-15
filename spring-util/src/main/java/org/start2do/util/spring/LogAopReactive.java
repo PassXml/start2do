@@ -1,10 +1,6 @@
 package org.start2do.util.spring;
 
 import jakarta.annotation.PostConstruct;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
@@ -21,6 +17,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+import org.start2do.util.spring.dto.JSON;
+import org.start2do.util.spring.dto.LogSetting;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -126,16 +124,5 @@ public class LogAopReactive {
             .block();
     }
 
-    public interface JSON {
-
-        String toJson(Object object);
-    }
-
-    @Target(ElementType.METHOD)
-    @Retention(RetentionPolicy.RUNTIME)
-    public @interface LogSetting {
-
-        boolean ignore() default false;
-    }
 
 }

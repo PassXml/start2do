@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "org.start2do"
-version = "2.0.9.2.10-SNAPSHOT"
+version = "3.0.5.1-SNAPSHOT"
 
 
 dependencies {

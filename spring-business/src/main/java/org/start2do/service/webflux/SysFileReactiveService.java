@@ -16,7 +16,7 @@ import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Service;
 import org.start2do.BusinessConfig;
-import org.start2do.dto.dto.file.FileUpdateByteDto;
+import org.start2do.dto.file.FileUpdateByteDto;
 import org.start2do.ebean.service.AbsMixService;
 import org.start2do.entity.business.SysFile;
 import org.start2do.service.IFileOperationService;
@@ -34,18 +34,18 @@ public class SysFileReactiveService extends AbsMixService<SysFile, Integer> impl
     private IFileOperationService operationService;
 
     public Mono<Boolean> removeFileById(String fileId) {
-        return operationService.remove(fileId);
+        return operationService.removeReactive(fileId);
     }
 
 
     public Mono<Boolean> download(ServerHttpResponse response, String fileId) {
-        return operationService.download(response, fileId);
+        return operationService.downloadReactive(response, fileId);
     }
 
     public Mono<List<SysFile>> uploadFile(Boolean checkExist, FileUpdateByteDto... dtos) {
         List<Mono<SysFile>> result = new ArrayList<>();
         for (FileUpdateByteDto dto : dtos) {
-            result.add(operationService.update(dto.getBytes(), dto.getFileName(), checkExist));
+            result.add(operationService.uploadReactive(dto.getBytes(), dto.getFileName(), checkExist));
         }
         //转化成result为 Mono<list<sysFile>>
         return Mono.zip(result, objects -> {
@@ -61,7 +61,7 @@ public class SysFileReactiveService extends AbsMixService<SysFile, Integer> impl
     public Mono<List<SysFile>> uploadFile(Boolean checkExist, FilePart... file) {
         List<Mono<SysFile>> result = new ArrayList<>();
         for (FilePart part : file) {
-            result.add(operationService.update(part, checkExist));
+            result.add(operationService.uploadReactive(part, checkExist));
         }
         //转化成result为 Mono<list<sysFile>>
         return Mono.zip(result, objects -> {

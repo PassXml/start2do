@@ -29,10 +29,12 @@ import lombok.experimental.Accessors;
  * @param <T>
  * @author lengleng
  */
+@Setter
+@Getter
+@Accessors(chain = true)
 @ToString
 @NoArgsConstructor
-@Accessors(chain = true)
-public class R<T> implements Serializable,Cloneable {
+public class R<T> implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 1L;
 
@@ -47,6 +49,7 @@ public class R<T> implements Serializable,Cloneable {
     @Getter
     @Setter
     private T data;
+    private String error;
 
     public static <T> R<T> ok() {
         return new R(0, null, "");
@@ -102,5 +105,4 @@ public class R<T> implements Serializable,Cloneable {
     public String toJson() {
         return "{" + "\"code\":" + code + ", \"msg\":\"" + msg + "\"" + ",\"data\":\"" + data + "\"" + '}';
     }
-
 }

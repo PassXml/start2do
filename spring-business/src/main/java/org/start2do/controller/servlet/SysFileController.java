@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.start2do.BusinessConfig;
@@ -29,7 +30,7 @@ import org.start2do.service.servlet.SysFileService;
  */
 @RestController
 @RequestMapping("/file")
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "file", havingValue = "true",matchIfMissing = true)
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "file", havingValue = "true", matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.SERVLET)
 public class SysFileController {
 
@@ -93,10 +94,11 @@ public class SysFileController {
      * 上传
      */
     @PostMapping("upload")
-    public R<SysFileUploadResp> upload(MultipartFile file,
+    public R<SysFileUploadResp> upload(@RequestPart("file") MultipartFile file,
         @RequestParam(defaultValue = "true", required = false, name = "replace") boolean replace) throws IOException {
         fileFilter.filter(file);
-        SysFile entity = sysFileService.updateFile(file);
-        return R.ok(new SysFileUploadResp(entity.getId(), entity.getRelativeFilePath()));
+        SysFile entity = sysFileService.updateFile(file, replace);
+        return R.ok(new SysFileUploadResp(entity.getId(), entity.getRelativeFilePath(),
+            entity.getUrl()));
     }
 }

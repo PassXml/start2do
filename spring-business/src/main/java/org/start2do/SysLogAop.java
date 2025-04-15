@@ -1,15 +1,15 @@
 package org.start2do;
 
 import io.ebean.config.CurrentUserProvider;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -27,8 +27,8 @@ import org.start2do.entity.business.SysLog;
 import org.start2do.entity.business.SysLog.Type;
 import org.start2do.service.servlet.SysLogService;
 import org.start2do.util.StringUtils;
-import org.start2do.util.spring.LogAop;
 import org.start2do.util.spring.LogAopConfig;
+import org.start2do.util.spring.dto.JSON;
 
 @Slf4j
 @Aspect
@@ -40,7 +40,7 @@ public class SysLogAop {
 
     private final SysLogService sysLogService;
     private final LogAopConfig config;
-    public final LogAop.JSON json;
+    public final JSON json;
     private final CurrentUserProvider currentUserProvider;
 
     private ExecutorService executorService = Executors.newFixedThreadPool(5);

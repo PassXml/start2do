@@ -133,8 +133,9 @@ public class EbeanBeanAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "spring.datasource", name = "url")
-    public SysSettingUtil sysSettingUtil(SysSettingService sysSettingService) {
-        return new SysSettingUtil(sysSettingService);
+    @ConditionalOnBean(DataSource.class)
+    public SysSettingUtil sysSettingUtil(DataSource dataSource, SysSettingService sysSettingService) {
+        SysSettingUtil util = new SysSettingUtil(sysSettingService);
+        return util;
     }
 }

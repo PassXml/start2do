@@ -7,10 +7,17 @@ import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.lang.annotation.Annotation;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+@Import(RedisConfiguration.class)
 public class RedisOMConfig {
 
     @Bean("JacksonOM")
@@ -54,5 +61,22 @@ public class RedisOMConfig {
             ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         return objectMapper;
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "start2do.util.redis", value = "enable", havingValue = "true")
+    public RedisTemplate<String, Object> objectRedisTemplate(RedisConnectionFactory factory,
+        @Qualifier("JacksonOM") ObjectMapper objectMapper, RedisConfiguration redisConfiguration) {
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+        if (redisConfiguration.getKeyPrefix() != null && !redisConfiguration.getKeyPrefix().isEmpty()) {
+            redisTemplate.setKeySerializer(new PrefixedKeySerializer(redisConfiguration.getKeyPrefix()));
+        } else {
+            redisTemplate.setKeySerializer(new StringRedisSerializer());
+        }
+        Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(
+            objectMapper, Object.class);
+        redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
+        redisTemplate.setConnectionFactory(factory);
+        return redisTemplate;
     }
 }

@@ -24,7 +24,7 @@ import org.start2do.service.IRestPwService;
 import org.start2do.service.impl.FileFilterEmptyImpl;
 import org.start2do.service.impl.FileMD5DefaultImpl;
 import org.start2do.service.impl.FileOperationHookServiceEmptyImp;
-import org.start2do.service.impl.RestPwServiceEmptyImpl;
+import org.start2do.service.imp.RestPwServiceEmptyImpl;
 import org.start2do.service.IFileOperationHookService;
 
 @ComponentScans(value = {@ComponentScan(value = "org.start2do.controller"),

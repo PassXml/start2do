@@ -2,10 +2,6 @@ package org.start2do.util.spring;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.StringJoiner;
@@ -24,6 +20,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.start2do.util.spring.dto.JSON;
+import org.start2do.util.spring.dto.LogSetting;
 
 /**
  * @author ：lijie
@@ -107,16 +105,5 @@ public class LogAop {
         return proceed;
     }
 
-    public interface JSON {
-
-        String toJson(Object object);
-    }
-
-    @Target(ElementType.METHOD)
-    @Retention(RetentionPolicy.RUNTIME)
-    public @interface LogSetting {
-
-        boolean ignore() default false;
-    }
 
 }

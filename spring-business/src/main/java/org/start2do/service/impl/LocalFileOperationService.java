@@ -1,129 +1,95 @@
 package org.start2do.service.impl;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.io.OutputStream;
 import java.nio.file.Paths;
-import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferUtils;
-import org.springframework.core.io.buffer.DefaultDataBufferFactory;
-import org.springframework.http.codec.multipart.FilePart;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Service;
 import org.start2do.BusinessConfig;
 import org.start2do.BusinessConfig.FileSetting;
-import org.start2do.dto.dto.file.FileUpdateResultDto;
+import org.start2do.dto.file.FileUpdateResultDto;
 import org.start2do.entity.business.SysFile;
 import org.start2do.entity.business.query.QSysFile;
 import org.start2do.service.IFileMd5;
 import org.start2do.service.IFileOperationHookService;
 import org.start2do.service.IFileOperationService;
-import org.start2do.service.webflux.SysFileReactiveService;
+import org.start2do.service.servlet.SysFileService;
 import org.start2do.util.LocalFileUtils;
-import org.start2do.util.Md5Util;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "start2do.business.file-setting", name = "type", havingValue = "local")
-@ConditionalOnWebApplication(type = Type.REACTIVE)
+@ConditionalOnWebApplication(type = Type.SERVLET)
 public class LocalFileOperationService implements IFileOperationService {
 
     private final BusinessConfig businessConfig;
-    private final SysFileReactiveService sysFileReactiveService;
+    private final SysFileService sysFileService;
     private final IFileOperationHookService hookService;
     private final IFileMd5 fileMd5;
 
     @Override
-    public Mono remove(String fileId) {
-        return null;
+    public boolean remove(String fileId) {
+        SysFile sysFile = sysFileService.findOne(new QSysFile().id.eq(fileId));
+        String relativeFilePath = sysFile.getRelativeFilePath();
+        LocalFileUtils.move(businessConfig.getFileSetting().getUploadDir(), relativeFilePath,
+            "Recycle/".concat(relativeFilePath));
+        sysFileService.delete(sysFile);
+        return true;
     }
 
     private SysFile uploadFile(String md5, String fileName, ByteArrayInputStream inputStream) {
-        FileUpdateResultDto dto = LocalFileUtils.upload(
-            businessConfig.getFileSetting().getUploadDir(), md5, fileName, inputStream);
+        FileUpdateResultDto dto = LocalFileUtils.upload(businessConfig.getFileSetting().getUploadDir(), md5, fileName,
+            inputStream);
         return new SysFile(fileName, dto.getFullPath(), dto.getRelativePath(), dto.getMd5(),
             businessConfig.getFileSetting().getHost(), dto.getSize(), dto.getSuffix());
     }
 
-    @Override
-    public Mono<SysFile> update(FilePart part, Boolean checkExist) {
-        return Mono.from(fileToBytes(part).map(DataBuffer::asByteBuffer).map(ByteBuffer::array)).flatMap(bytes_ -> {
-            byte[] bytes = hookService.uploadBefore(bytes_);
-            String md5 = fileMd5.md5(bytes);
-            if (checkExist) {
-                return sysFileReactiveService.findOneReactive(new QSysFile().fileMd5.eq(md5)).switchIfEmpty(
-                    Mono.just(uploadFile(md5, part.filename(), new ByteArrayInputStream(bytes)))
-                        .flatMap(sysFileReactiveService::saveReactive).map(file -> {
-                            hookService.uploadAfter(bytes, file);
-                            return file;
-                        }));
-            } else {
-                return Mono.just(uploadFile(md5, part.filename(), new ByteArrayInputStream(bytes)))
-                    .zipWhen(file -> sysFileReactiveService.findOneReactive(new QSysFile().fileMd5.eq(md5)))
-                    .flatMap(objects -> {
-                        SysFile newFile = objects.getT1();
-                        SysFile oldFile = objects.getT2();
-                        //更新oldFile的属性,从newfile读取
-                        oldFile.setFileName(newFile.getFileName());
-                        oldFile.setFilePath(newFile.getFilePath());
-                        oldFile.setFileMd5(newFile.getFileMd5());
-                        oldFile.setFileSize(newFile.getFileSize());
-                        oldFile.setRelativeFilePath(newFile.getRelativeFilePath());
-                        oldFile.setSuffix(newFile.getSuffix());
-                        return sysFileReactiveService.updateReactive(oldFile);
-                    }).map(file -> {
-                        hookService.uploadAfter(bytes, file);
-                        return file;
-                    });
-            }
-        });
-    }
 
     @Override
-    public Mono<SysFile> update(byte[] bytes, String fileName, Boolean checkExist) {
+    public SysFile upload(byte[] bytes, String fileName, Boolean checkExist) {
         byte[] before = hookService.uploadBefore(bytes);
-        return Mono.fromCallable(() -> {
-            String md5 = Md5Util.md5(before);
-            if (checkExist) {
-                return sysFileReactiveService.findOneReactive(new QSysFile().fileMd5.eq(md5)).switchIfEmpty(
-                    Mono.just(uploadFile(md5, fileName, new ByteArrayInputStream(bytes)))
-                        .flatMap(sysFileReactiveService::saveReactive)).map(file -> {
-                    hookService.uploadAfter(bytes, file);
-                    return file;
-                });
-            } else {
-                return Mono.just(uploadFile(md5, fileName, new ByteArrayInputStream(bytes)))
-                    .flatMap(sysFileReactiveService::saveReactive).map(file -> {
-                        hookService.uploadAfter(bytes, file);
-                        return file;
-                    });
+        String md5 = fileMd5.md5(before);
+        if (checkExist) {
+            SysFile sysFile = sysFileService.findOne(new QSysFile().fileMd5.eq(md5));
+            if (sysFile == null) {
+                sysFile = uploadFile(md5, fileName, new ByteArrayInputStream(bytes));
+                sysFileService.save(sysFile);
             }
-        }).flatMap(Function.identity());
+            hookService.uploadAfter(bytes, sysFile);
+            return sysFile;
+        } else {
+            SysFile sysFile = uploadFile(md5, fileName, new ByteArrayInputStream(bytes));
+            sysFileService.save(sysFile);
+            hookService.uploadAfter(bytes, sysFile);
+            return sysFile;
+        }
     }
 
     @Override
-    public Mono<Boolean> download(ServerHttpResponse response, String fileId) {
+    public boolean download(HttpServletResponse response, String fileId) {
         FileSetting fileSetting = businessConfig.getFileSetting();
-        return sysFileReactiveService.findOneByIdReactive(fileId).flatMap(sysFile -> {
-            response.getHeaders().add("Content-Disposition", "attachment;filename=" + sysFile.getFileName());
-            response.getHeaders().add("Content-Type", "application/octet-stream");
-            try (FileInputStream inputStream = new FileInputStream(
-                Paths.get(fileSetting.getUploadDir() + File.separator + sysFile.getFilePath()).toFile())) {
-                Flux<DataBuffer> dataBufferFlux = DataBufferUtils.readByteChannel(inputStream::getChannel,
-                    new DefaultDataBufferFactory(), 4096);
-                return response.writeWith(dataBufferFlux);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        SysFile sysFile = sysFileService.findOneById(fileId);
+        response.setHeader("Content-Disposition", "attachment;filename=" + sysFile.getFileName());
+        response.setContentType("application/octet-stream");
+        try (FileInputStream inputStream = new FileInputStream(
+            Paths.get(fileSetting.getUploadDir() + File.separator + sysFile.getFilePath())
+                .toFile()); OutputStream outputStream = response.getOutputStream()) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
             }
-        }).map(unused -> true);
+            outputStream.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return true;
     }
 }

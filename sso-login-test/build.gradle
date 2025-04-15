@@ -1,0 +1,47 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.zte'
+version = '1.0.1-SNAPSHOT'
+application {
+    mainClassName = 'com.zte.TestApplication'
+}
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation platform('org.junit:junit-bom:5.10.0')
+    implementation 'org.junit.jupiter:junit-jupiter'
+    implementation(project(":spring-util"))
+    implementation(project(":bean-valiate"))
+    implementation(project(":common-util"))
+    implementation(project(":script-util:script-common"))
+    implementation(project(":script-util:script-js-nashorn-impl"))
+    implementation("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.boot:spring-boot-starter-logging")
+    implementation("org.springframework.boot:spring-boot-starter-web") {
+        exclude group: "javax.validation", module: "validation-api"
+    }
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-webflux'
+
+    implementation("org.springframework.boot:spring-boot-starter-aop")
+    compileOnly("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation 'mysql:mysql-connector-java:8.0.26'
+    implementation 'org.springframework.data:spring-data-jdbc:2.4.18'
+    implementation 'org.springframework.boot:spring-boot-autoconfigure'
+    implementation(project(":sso-login"))
+    implementation 'com.zaxxer:HikariCP:6.2.1'
+    implementation("com.github.ben-manes.caffeine:caffeine")
+    implementation("org.openjdk.nashorn:nashorn-core:15.6")
+    testImplementation("org.slf4j:slf4j-api")
+    // 移除 slf4j-simple
+    // implementation 'org.slf4j:slf4j-simple'
+}
+
+test {
+    useJUnitPlatform()
+}
