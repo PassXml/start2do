@@ -1,5 +1,6 @@
 package org.start2do.redis;
 
+
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;

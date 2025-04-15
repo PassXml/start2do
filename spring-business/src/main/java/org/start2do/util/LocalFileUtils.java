@@ -41,4 +41,12 @@ public class LocalFileUtils {
             throw new RuntimeException(e);
         }
     }
+
+    public static void move(String uploadDir, String relativeFilePath, String destPath) {
+        try {
+            Files.move(Paths.get(uploadDir + relativeFilePath), Paths.get(uploadDir + destPath));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

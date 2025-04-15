@@ -22,6 +22,7 @@ dependencies {
     compileOnly("org.springframework.data:spring-data-redis:$springBootVersion")
     compileOnly("org.aspectj:aspectjrt:1.9.7")
     compileOnly("org.aspectj:aspectjweaver:1.9.7")
+    compileOnly 'com.qiniu:qiniu-java-sdk:7.15.1'
     //
     compileOnly "com.github.ben-manes.caffeine:caffeine"
     annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.7.18'

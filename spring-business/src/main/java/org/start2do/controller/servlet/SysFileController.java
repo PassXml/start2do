@@ -31,7 +31,7 @@ import org.start2do.service.servlet.SysFileService;
 @Slf4j
 @RestController
 @RequestMapping("/file")
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "file",havingValue = "true",matchIfMissing = true)
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "file", havingValue = "true", matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.SERVLET)
 public class SysFileController {
 
@@ -99,10 +99,10 @@ public class SysFileController {
      * 上传
      */
     @PostMapping("upload")
-    public R<SysFileUploadResp> upload(MultipartFile file,
+    public R<SysFileUploadResp> upload(@RequestParam("file") MultipartFile file,
         @RequestParam(defaultValue = "true", required = false, name = "replace") boolean replace) throws IOException {
         fileFilter.filter(file);
-        SysFile entity = sysFileService.updateFile(file);
-        return R.ok(new SysFileUploadResp(entity.getId(), entity.getRelativeFilePath()));
+        SysFile entity = sysFileService.updateFile(file, replace);
+        return R.ok(new SysFileUploadResp(entity.getId(), entity.getRelativeFilePath(), entity.getUrl()));
     }
 }

@@ -23,9 +23,9 @@ management:
 
 cas:
   enable: true
-  casUrl:
+  casUrl: http://127.0.0.1:8083/cas
   baseUrl: http://127.0.0.1:9090
-  key:
+  key: awdadwa
   success-url: http://127.0.0.1:9090
   cas-server-url:
 logging:

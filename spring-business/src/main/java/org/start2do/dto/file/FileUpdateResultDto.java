@@ -1,4 +1,4 @@
-package org.start2do.dto.dto.file;
+package org.start2do.dto.file;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

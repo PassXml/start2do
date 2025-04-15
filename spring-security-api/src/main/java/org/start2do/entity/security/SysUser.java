@@ -26,11 +26,11 @@ import org.start2do.ebean.entity.BaseModel2;
 
 @Setter
 @Getter
-@Accessors(chain = true)
-@Entity
-@Table(name = "sys_user")
-@NoArgsConstructor
 @Cache
+@Entity
+@NoArgsConstructor
+@Accessors(chain = true)
+@Table(name = "sys_user")
 public class SysUser extends BaseModel2 implements Serializable {
 
     @Id

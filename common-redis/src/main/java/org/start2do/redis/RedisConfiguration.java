@@ -1,4 +1,4 @@
-package org.start2do.util.spring;
+package org.start2do.redis;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,9 +10,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Getter
 @Accessors(chain = true)
 @NoArgsConstructor
-@ConfigurationProperties(prefix = "start2do.util")
-public class UtilConfig {
+@ConfigurationProperties(prefix = "start2do.util.redis")
+public class RedisConfiguration {
 
     private boolean enable;
-    private boolean schedulingEnable;
+    /**
+     * key统一前缀
+     */
+    private String keyPrefix;
 }

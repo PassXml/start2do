@@ -6,12 +6,15 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.NoHandlerFoundException;
 import org.start2do.dto.BusinessException;
 import org.start2do.dto.DataNotFoundException;
 import org.start2do.dto.PermissionException;
@@ -108,5 +111,14 @@ public class ExceptionHandler {
         log.info("初始化ExceptionHandler");
         this.config = config;
     }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @org.springframework.web.bind.annotation.ExceptionHandler(NoHandlerFoundException.class)
+    public R handleNotFound(NoHandlerFoundException ex) {
+        log(ex);
+        return R.failed("资源不存在").setError(ex.getMessage());
+    }
+
 }
 

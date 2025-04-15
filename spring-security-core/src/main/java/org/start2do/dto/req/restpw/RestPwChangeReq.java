@@ -1,34 +1,32 @@
-package org.start2do.dto.req.login;
+package org.start2do.dto.req.restpw;
 
-import java.io.Serializable;
 import javax.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.start2do.dto.req.login.IPasswordText;
 
 @Setter
 @Getter
 @Accessors(chain = true)
 @NoArgsConstructor
-public class JwtRequest implements Serializable, IPasswordText {
-
-    private static final long serialVersionUID = 5926468583005150707L;
+public class RestPwChangeReq implements IPasswordText {
 
     @NotEmpty
     private String username;
     @NotEmpty
-    private String password;
-    private String kaptchaKey;
-    private String kaptchaCode;
+    private String newPassword;
+    @NotEmpty
+    private String verificationCode;
 
     @Override
     public String getPassword_() {
-        return this.password;
+        return this.newPassword;
     }
 
     @Override
     public void setPassword_(String password) {
-        this.password = password;
+        this.newPassword = password;
     }
 }

@@ -21,9 +21,10 @@ import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 
 @Setter
 @Getter
-@Accessors(chain = true)
-@NoArgsConstructor
 @Entity
+@NoArgsConstructor
+@DbComment("岗位表")
+@Accessors(chain = true)
 @Table(name = "sys_position")
 public class SysPositionEntity extends BaseModel2 implements Serializable {
 
@@ -47,4 +48,12 @@ public class SysPositionEntity extends BaseModel2 implements Serializable {
     private EnableType status;
     @Column
     private Integer sort;
+
+    @DbComment("岗位来源类型：local-本地，third-第三方")
+    @Column(length = 32)
+    private String sourceType;
+
+    @DbComment("第三方岗位唯一标识")
+    @Column(length = 64)
+    private String sourceId;
 }

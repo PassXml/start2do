@@ -1,4 +1,4 @@
-package org.start2do.service.impl;
+package org.start2do.service.imp;
 
 import org.start2do.service.IRestPwService;
 

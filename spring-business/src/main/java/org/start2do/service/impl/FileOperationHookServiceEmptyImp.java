@@ -7,6 +7,16 @@ import org.start2do.service.IFileOperationHookService;
 public class FileOperationHookServiceEmptyImp implements IFileOperationHookService {
 
     @Override
+    public File uploadBefore(File localFile) {
+        return null;
+    }
+
+    @Override
+    public byte[] uploadBefore(byte[] localFileBytes) {
+        return new byte[0];
+    }
+
+    @Override
     public void uploadAfter(File localFile, SysFile file) {
 
     }
