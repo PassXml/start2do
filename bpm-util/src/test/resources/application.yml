@@ -4,3 +4,6 @@ spring:
     username: root
     password: zxwz@123
     driver-class-name: com.mysql.jdbc.Driver
+warm-flow:
+  banner: false
+  logic-delete-value: 1

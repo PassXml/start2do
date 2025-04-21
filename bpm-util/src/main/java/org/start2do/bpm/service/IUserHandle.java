@@ -16,4 +16,6 @@ public interface IUserHandle {
      * 获取当前用户Id
      */
     String getCurrentUserId();
+
+    String getUserHandler(String username);
 }

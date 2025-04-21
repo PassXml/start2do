@@ -17,6 +17,7 @@ dependencies {
     api fileTree(dir: 'libs', include: ['*.jar'])
     compileOnly(project(":spring-common"))
     compileOnly(project(":bean-valiate"))
+    api project(':script-util:script-common')
     compileOnly("org.springframework.boot:spring-boot-starter-web:2.7.18") {
         exclude group: "javax.validation", module: "validation-api"
     }

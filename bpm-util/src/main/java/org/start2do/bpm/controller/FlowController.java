@@ -58,6 +58,7 @@ public class FlowController {
     /**
      * 部署流程
      */
+    @ResponseBody
     @PostMapping("deploy")
     public R deploy(@Valid FlowDeployReq req) throws IOException {
         Definition definition = null;
@@ -76,6 +77,7 @@ public class FlowController {
     /**
      * 发布流程
      */
+    @ResponseBody
     @PostMapping("publish")
     public R publish(Long id) {
         return R.ok(defService.publish(id));
@@ -84,6 +86,7 @@ public class FlowController {
     /**
      * 取消发布流程
      */
+    @ResponseBody
     @PostMapping("unpublish")
     public R unpublish(Long id) {
         return R.ok(defService.unPublish(id));
@@ -92,6 +95,7 @@ public class FlowController {
     /**
      * 复制流程
      */
+    @ResponseBody
     @PostMapping("copy")
     public R copy(Long id) {
         return R.ok(defService.copyDef(id));
@@ -100,6 +104,7 @@ public class FlowController {
     /**
      * 激活流程
      */
+    @ResponseBody
     @PostMapping("active")
     public R active(Long id) {
         return R.ok(defService.active(id));
@@ -108,6 +113,7 @@ public class FlowController {
     /**
      * 取消激活流程
      */
+    @ResponseBody
     @PostMapping("unactive")
     public R unactive(Long id) {
         return R.ok(defService.unActive(id));
@@ -116,6 +122,7 @@ public class FlowController {
     /**
      * 删除流程
      */
+    @ResponseBody
     @PostMapping("delete")
     public R delete(Long id) {
         return R.ok(defService.removeDef(Collections.singletonList(id)));
@@ -124,9 +131,20 @@ public class FlowController {
     /**
      * * 查询流程定义
      */
-    @PostMapping("query")
+    @ResponseBody
+    @GetMapping("design")
     public R query(Long id) {
+        return R.ok(defService.queryDesign(id));
+    }
+
+    /**
+     * * 查询流程定义
+     */
+    @ResponseBody
+    @GetMapping("definition")
+    public R definition(Long id) {
         return R.ok(defService.getAllDataDefinition(id));
     }
+
 
 }

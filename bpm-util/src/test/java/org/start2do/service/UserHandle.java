@@ -20,4 +20,9 @@ public class UserHandle implements IUserHandle {
     public String getCurrentUserId() {
         return "1";
     }
+
+    @Override
+    public String getUserHandler(String username) {
+        return "管理员";
+    }
 }

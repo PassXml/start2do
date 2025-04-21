@@ -56,6 +56,7 @@ allprojects {
                       "script-av-impl"        : JavaVersion.VERSION_11,
                       "script-js-nashorn-impl": JavaVersion.VERSION_11,
                       "script-js-impl"        : JavaVersion.VERSION_17,
+                      "bpm-util"              : JavaVersion.VERSION_11,
         ]
     }
     idea.module.sourceDirs += file("${buildDir}/generated/sources/annotationProcessor/java")
