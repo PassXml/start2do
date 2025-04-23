@@ -25,10 +25,11 @@ include 'updater'
 include 'muilt-redis'
 include 'common-redis'
 include 'ops'
-include 'bpm-util'
 
 include 'script-util'
 include 'script-util:script-common'
 include 'script-util:script-js-impl'
 include 'script-util:script-av-impl'
 include 'script-util:script-js-nashorn-impl'
+include 'bpm-core'
+

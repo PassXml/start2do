@@ -1,0 +1,41 @@
+plugins {
+    id 'java'
+    id 'java-library'
+}
+
+group = 'org.start2do'
+version = '2.0.9.2.12-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    compileOnly 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly(project(":script-util:script-common"))
+    compileOnly(project(":spring-common"))
+    compileOnly(project(":bean-valiate"))
+//    api 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:3.4.4'
+    api 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:7.19.0'
+    compileOnly("org.slf4j:slf4j-api")
+    compileOnly("org.slf4j:slf4j-simple")
+    compileOnly("org.springframework.boot:spring-boot-starter-data-jpa:2.7.18")
+//
+    testImplementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'mysql:mysql-connector-java:8.0.26'
+    testImplementation(project(":spring-common"))
+    testImplementation(project(":bean-valiate"))
+    testImplementation("org.springframework.boot:spring-boot-starter-data-jpa:2.7.18")
+    testImplementation("org.slf4j:slf4j-api")
+    testImplementation("org.slf4j:slf4j-simple")
+    implementation 'javax.persistence:javax.persistence-api:2.2'
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
+    implementation 'com.sun.xml.bind:jaxb-impl:2.3.6'
+    implementation 'org.springframework:spring-core'
+}
+
+test {
+    useJUnitPlatform()
+}

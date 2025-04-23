@@ -56,7 +56,7 @@ allprojects {
                       "script-av-impl"        : JavaVersion.VERSION_11,
                       "script-js-nashorn-impl": JavaVersion.VERSION_11,
                       "script-js-impl"        : JavaVersion.VERSION_17,
-                      "bpm-util"              : JavaVersion.VERSION_11,
+                      "bpm-core"              : JavaVersion.VERSION_11,
         ]
     }
     idea.module.sourceDirs += file("${buildDir}/generated/sources/annotationProcessor/java")
@@ -178,8 +178,8 @@ allprojects {
                         "org.mapstruct:mapstruct"                                   : mapstructVersion,
                         "com.google.guava:guava"                                    : "33.2.1-jre",
                         "io.ebean:ebean-migration"                                  : "14.2.0",
-                        "jakarta.xml.bind:jakarta.xml.bind-api"                     : "4.0.1",
-                        "org.glassfish.jaxb:jaxb-runtime"                           : "4.0.4",
+                        "jakarta.xml.bind:jakarta.xml.bind-api"                     : "2.3.3",
+                        "org.glassfish.jaxb:jaxb-runtime"                           : "2.3.6",
                         "com.alibaba:easyexcel"                                     : "4.0.3",
                         "org.slf4j:slf4j-api"                                       : "2.0.5",
                         "org.slf4j:slf4j-simple"                                    : "2.0.5",
