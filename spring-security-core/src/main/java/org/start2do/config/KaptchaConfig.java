@@ -18,13 +18,13 @@ import org.springframework.context.annotation.Bean;
 @ConfigurationProperties(prefix = "jwt.kaptcha")
 public class KaptchaConfig {
 
-    private Boolean enable;
+    private Boolean enable=true;
     private String width = "400";
     private String height = "125";
     private String fontSize = "100";
 
     @Bean
-    @ConditionalOnProperty(prefix = "jwt.kaptcha", name = "enable", havingValue = "true")
+    @ConditionalOnProperty(prefix = "jwt.kaptcha", name = "enable", havingValue = "true",matchIfMissing = true)
     public DefaultKaptcha DefaultKaptcha() {
         DefaultKaptcha defaultKaptcha = new DefaultKaptcha();
         Properties properties = new Properties();

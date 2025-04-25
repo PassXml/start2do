@@ -1,6 +1,8 @@
 package org.start2do;
 
 import jakarta.annotation.PostConstruct;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.WebApplicationType;
@@ -26,6 +28,7 @@ import org.springframework.security.web.context.DelegatingSecurityContextReposit
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.stereotype.Service;
 import org.start2do.config.KaptchaConfig;
 import org.start2do.dto.CustomContextInfo;
 import org.start2do.dto.req.login.IPasswordText;
@@ -33,9 +36,12 @@ import org.start2do.dto.req.login.JwtRequest;
 import org.start2do.service.ILoginLogOwner;
 import org.start2do.service.ILoginLogOwnerImpl;
 import org.start2do.service.IRestPwService;
+import org.start2do.service.ISysLoginUserCustomInfoService;
+import org.start2do.service.imp.CustomContextInfoSMImpl;
 import org.start2do.service.imp.SysLoginUserCustomInfoEmptyReactiveService;
 import org.start2do.service.reactive.ISysLoginUserCustomInfoReactiveService;
 import org.start2do.util.JwtTokenUtil;
+import org.start2do.util.SM2Util;
 import org.start2do.util.StringUtils;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
@@ -54,7 +60,7 @@ public class SecurityAutoConfiguration {
     @Bean
     @ConditionalOnWebApplication(type = Type.SERVLET)
     @ConditionalOnExpression("${jwt.enable:false}")
-    SecurityContextRepository securityContextRepository() {
+    public SecurityContextRepository securityContextRepository() {
         return new DelegatingSecurityContextRepository(new RequestAttributeSecurityContextRepository(),
             new HttpSessionSecurityContextRepository());
     }
@@ -120,7 +126,7 @@ public class SecurityAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(CustomContextInfo.class)
+    @ConditionalOnMissingBean(IRestPwService.class)
     @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
     public IRestPwService iRestPwService() {
         return new IRestPwService() {
@@ -141,7 +147,11 @@ public class SecurityAutoConfiguration {
         };
     }
 
-
+    @Bean
+    @ConditionalOnProperty(name = "jwt.password-encrypt-config.enabled", havingValue = "true")
+    public CustomContextInfo customContextInfoSM2(Start2doSecurityConfig start2doSecurityConfig) {
+        return new CustomContextInfoSMImpl(start2doSecurityConfig.getPasswordEncryptConfig());
+    }
     @Bean
     @ConditionalOnMissingBean(CustomContextInfo.class)
     @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
@@ -150,7 +160,6 @@ public class SecurityAutoConfiguration {
 
             @Override
             public void loadReqBefore(JwtRequest request) {
-
             }
 
             @Override
@@ -172,6 +181,18 @@ public class SecurityAutoConfiguration {
             public void loadReqBefore(IPasswordText req) {
 
             }
+        };
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
+    @ConditionalOnWebApplication(type = Type.SERVLET)
+    @ConditionalOnMissingBean(ISysLoginUserCustomInfoService.class)
+    public ISysLoginUserCustomInfoService iSysLoginUserCustomInfoReactiveService() {
+        return userId -> {
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("pwExpired", false);
+            return map;
         };
     }
 }

@@ -1,10 +1,9 @@
 plugins {
     id 'java'
-    id "org.springframework.boot" version "3.0.6"
 }
 
 group 'org.start2do'
-version '3.0.5.1-SNAPSHOT'
+version '3.0.6.1-SNAPSHOT'
 
 
 dependencies {
@@ -15,13 +14,13 @@ dependencies {
     compileOnly "org.springframework:spring-context:$springVersion"
 
 
-    testImplementation("org.slf4j:slf4j-api:2.0.5")
+    testImplementation("org.slf4j:slf4j-api:2.0.17")
     testImplementation("io.ebean:ebean:$ebeanVersion")
     testImplementation "io.ebean:ebean-platform-oracle:$ebeanVersion"
 
 //    testImplementation("io.ebean:ebean-migration:$ebeanVersion")
     testImplementation "io.ebean:ebean-ddl-generator:$ebeanVersion"
-    testImplementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.3"
+    testImplementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.2"
     testImplementation "org.glassfish.jaxb:jaxb-runtime:2.3.6"
 
 

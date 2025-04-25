@@ -35,6 +35,5 @@ public interface DeptDtoMapper {
     DeptDetailResp toDeptDetailResp(SysDept byId);
 
     @Mapping(target = "children", ignore = true)
-    @Mapping(source = "sort", target = "weight")
     DeptTreeResp toDeptTreeResp(SysDept sysDept);
 }

@@ -52,8 +52,6 @@ public class BusinessAutoConfig {
         return new FileOperationHookServiceEmptyImp();
     }
 
-    @Bean
-    @ConditionalOnMissingBean(IRestPwService.class)
     public IRestPwService iRestPwService() {
         return new RestPwServiceEmptyImpl();
     }

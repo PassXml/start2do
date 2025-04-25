@@ -17,7 +17,7 @@ dependencies {
 //    api("org.graalvm.js:js-scriptengine")
     compileOnly(project(":common-util"))
     compileOnly(project(":script-util:script-common"))
-    compileOnly("org.slf4j:slf4j-api:2.0.5")
+    compileOnly("org.slf4j:slf4j-api:2.0.17")
     compileOnly("com.github.ben-manes.caffeine:caffeine")
 //
     testImplementation("org.graalvm.polyglot:polyglot")

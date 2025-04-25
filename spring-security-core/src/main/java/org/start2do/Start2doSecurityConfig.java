@@ -26,7 +26,7 @@ public class Start2doSecurityConfig {
     private Integer mockUserId = 1;
     private Integer tenantId = 1;
     private String mockUserName = "admin";
-    @Value("${spring.main.web-application-type}")
+    @Value("${spring.main.web-application-type:SERVLET}")
     private WebApplicationType webApplicationType;
 
 
@@ -34,5 +34,25 @@ public class Start2doSecurityConfig {
       *  记录登录尝试登录日志
      */
     private Boolean recordLoginLog = false;
+
+    /**
+     * 登录密码加密选型
+     */
+    private LoginPasswordEncryptConfig passwordEncryptConfig;
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    public static class LoginPasswordEncryptConfig {
+
+        private boolean enabled;
+        private Type type = Type.SM2;
+        private String secret;
+
+    }
+
+    public enum Type {
+        SM2, ASE
+    }
 
 }

@@ -1,0 +1,86 @@
+plugins {
+    id 'java'
+    id 'application'
+    id("org.springframework.boot") version "3.3.11"
+}
+
+group = 'org.start2do'
+version = '3.0.6.1-SNAPSHOT'
+
+def string = 'org.start2do.RunMain'
+application {
+    mainClassName string
+}
+bootJar {
+    manifestContentCharset 'utf-8'
+    metadataCharset 'utf-8'
+    manifest {
+        attributes "Manifest-Version": 1.0,
+                'Start-Class': string //  springboot项目的启动类
+    }
+}
+dependencies {
+    testImplementation 'org.testng:testng:7.1.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    implementation(project(":spring-common"))
+    implementation(project(":bean-valiate"))
+    implementation(project(":kaptcha"))
+    api(project(":spring-security-api"))
+    api(project(":common-util"))
+    implementation(project(":spring-util"))
+    implementation("org.springframework.boot:spring-boot:$springBootVersion")
+
+    api 'io.jsonwebtoken:jjwt-api:0.11.5'
+    api 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+    implementation group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.0.0'
+    implementation("org.springframework:spring-webmvc:$springVersion")
+    api "org.springframework.boot:spring-boot-starter-security:$springBootVersion"
+
+
+//    spring依赖
+    implementation("org.springframework.boot:spring-boot-starter-actuator:$springBootVersion") {
+        exclude group: 'jakarta.validation', module: 'jakarta.validation-api'
+    }
+//    testImplementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
+//    testImplementation("org.springframework.cloud:spring-cloud-starter-sleuth:3.1.7")
+
+//    implementation("com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery:$springAliCloudVersion")
+//    implementation("com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config:$springAliCloudVersion")
+
+    implementation("org.springframework.boot:spring-boot-starter-logging:$springBootVersion")
+    implementation("org.springframework.boot:spring-boot-starter-web:$springBootVersion") {
+        exclude group: "javax.validation", module: "validation-api"
+        exclude group: "jakarta.validation", module: "validation-api"
+    }
+    implementation("org.springframework.cloud:spring-cloud-context:4.0.2")
+    implementation("org.springframework.boot:spring-boot-starter-aop:$springBootVersion")
+    compileOnly("org.springframework.boot:spring-boot-starter-data-redis:$springBootVersion")
+    compileOnly("org.springframework.boot:spring-boot:$springBootVersion")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis:$springBootVersion")
+    implementation group: 'org.springframework', name: 'spring-jdbc', version: springVersion
+    implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.1")
+    implementation 'mysql:mysql-connector-java:8.0.26'
+    implementation project(":ebean-common")
+    implementation("io.ebean:ebean-querybean:$ebeanVersion")
+    annotationProcessor("io.ebean:querybean-generator:$ebeanVersion")
+    implementation group: 'io.projectreactor', name: 'reactor-core'
+//    testImplementation("org.slf4j:slf4j-simple:2.0.17")
+    implementation("org.slf4j:slf4j-api:1.7.36")
+    implementation 'io.ebean:ebean-migration:14.2.0'
+    implementation 'io.ebean:ebean-ddl-generator'
+    implementation "org.glassfish.jaxb:jaxb-runtime:4.0.5"
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.2'
+    implementation 'com.sun.xml.bind:jaxb-impl:4.0.3'
+    implementation("org.springframework.security:spring-security-core")
+    implementation("org.springframework.security:spring-security-config")
+    implementation("org.springframework.security:spring-security-web")
+    implementation "org.bouncycastle:bcprov-jdk18on"
+    implementation(project(":spring-business"))
+    implementation("org.mapstruct:mapstruct:$mapstructVersion")
+}
+
+test {
+    useJUnitPlatform()
+}

@@ -27,7 +27,7 @@ dependencies {
     }
     api "commons-codec:commons-codec:1.15"
 
-    compileOnly("org.slf4j:slf4j-api:1.7.32")
+    compileOnly("org.slf4j:slf4j-api:2.0.17")
     api group: 'com.lowagie', name: 'itext', version: '2.1.7'
 }
 

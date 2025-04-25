@@ -59,7 +59,7 @@ public class SysUserController {
      */
     @GetMapping("page")
     public Mono<R<Page<UserPageResp>>> page(UserPageReq req) {
-        QSysUser qClass = new QSysUser();
+        QSysUser qClass = new QSysUser().roles.fetch();
         Where.ready().like(req.getUsername(), qClass.username::like).notNull(req.getRole(), qClass.roles.id::eq);
         return sysUserService.pageReactive(qClass, req, UserDtoMapper.INSTANCE::toUserPageResp).map(R::ok);
     }

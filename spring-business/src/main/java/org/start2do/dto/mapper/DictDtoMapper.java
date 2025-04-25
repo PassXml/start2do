@@ -20,7 +20,6 @@ import org.start2do.entity.business.SysDict.Type;
 import org.start2do.entity.business.SysDictItem;
 
 @Mapper(imports = {Type.class})
-
 public interface DictDtoMapper {
 
     DictDtoMapper INSTANCE = Mappers.getMapper(DictDtoMapper.class);

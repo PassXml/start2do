@@ -9,6 +9,9 @@ import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
@@ -25,7 +28,8 @@ import org.start2do.util.StringUtils;
 @Slf4j
 @RequiredArgsConstructor
 @Configuration
-@ConditionalOnExpression("${jwt.enable:false} && '${spring.main.web-application-type}'==('servlet')")
+@ConditionalOnProperty(prefix = "jwt", value = "enable")
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final SecurityContextRepository securityContextRepository;

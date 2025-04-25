@@ -91,6 +91,7 @@ public class LoginController {
         }
         authenticate(username, req.getPassword(), request);
         UserCredentials userCredentials = userDetailsService.loadUserByUsername(username);
+
         JwtResponse response = new JwtResponse(userCredentials, JwtTokenUtil.generateToken(userCredentials));
         return R.ok(response);
     }

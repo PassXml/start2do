@@ -16,4 +16,7 @@ import org.springframework.context.annotation.Configuration;
 public class EbeanConfig {
 
     private boolean migration = false;
+    private boolean multipleDataSources = false;
+    private boolean enable = false;
+    private boolean enableSettingService = false;
 }

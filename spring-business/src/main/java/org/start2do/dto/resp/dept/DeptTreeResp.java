@@ -16,7 +16,7 @@ public class DeptTreeResp {
 
     private Integer id;
     private Integer parentId;
-    private Integer weight;
+    private Integer sort;
     private String name;
     private List<DeptTreeResp> children;
 }

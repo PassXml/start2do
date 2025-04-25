@@ -58,7 +58,7 @@ public class SysUserController {
      */
     @GetMapping("page")
     public R<Page<UserPageResp>> page(UserPageReq req) {
-        QSysUser qClass = new QSysUser();
+        QSysUser qClass = new QSysUser().roles.fetch();
         Where.ready().like(req.getUsername(), qClass.username::like).notNull(req.getRole(), qClass.roles.id::eq);
         return R.ok(sysUserService.page(qClass, req, UserDtoMapper.INSTANCE::toUserPageResp));
     }

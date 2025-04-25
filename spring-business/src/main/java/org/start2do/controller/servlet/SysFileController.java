@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.start2do.BusinessConfig;
 import org.start2do.BusinessConfig.FileSetting;
+import org.start2do.dto.Page;
 import org.start2do.dto.R;
+import org.start2do.dto.resp.file.FilePageResp;
 import org.start2do.dto.resp.file.SysFileUploadResp;
 import org.start2do.entity.business.SysFile;
 import org.start2do.service.IFileFilter;
@@ -100,5 +102,14 @@ public class SysFileController {
         SysFile entity = sysFileService.updateFile(file, replace);
         return R.ok(new SysFileUploadResp(entity.getId(), entity.getRelativeFilePath(),
             entity.getUrl()));
+    }
+
+
+    /**
+     * 分页
+     */
+    @GetMapping("page")
+    public R<Page<FilePageResp>> page(Page page) {
+        return R.ok();
     }
 }

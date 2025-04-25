@@ -4,12 +4,11 @@ plugins {
 }
 
 group 'org.start2do'
-version '3.0.5.1-SNAPSHOT'
+version '3.0.6.1-SNAPSHOT'
 
 dependencies {
     testImplementation 'org.testng:testng:7.1.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     implementation(project(":spring-common"))
     implementation(project(":bean-valiate"))
     implementation(project(":kaptcha"))
@@ -24,34 +23,9 @@ dependencies {
     compileOnly group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.0.0'
     compileOnly("org.springframework:spring-webmvc:$springVersion")
     api "org.springframework.boot:spring-boot-starter-security:$springBootVersion"
-
-
-//    spring依赖
-    testImplementation("org.springframework.boot:spring-boot-starter-actuator:$springBootVersion") {
-        exclude group: 'jakarta.validation', module: 'jakarta.validation-api'
-    }
-    testImplementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
-    testImplementation("org.springframework.cloud:spring-cloud-starter-sleuth:3.1.7")
-
-//    implementation("com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery:$springAliCloudVersion")
-//    implementation("com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config:$springAliCloudVersion")
-
-    testImplementation("org.springframework.boot:spring-boot-starter-logging:$springBootVersion")
-    testImplementation("org.springframework.boot:spring-boot-starter-web:$springBootVersion") {
-        exclude group: "javax.validation", module: "validation-api"
-        exclude group: "jakarta.validation", module: "validation-api"
-    }
-    testImplementation("org.springframework.cloud:spring-cloud-context:4.0.2")
-    testImplementation("org.springframework.boot:spring-boot-starter-aop:$springBootVersion")
     compileOnly("org.springframework.boot:spring-boot-starter-data-redis:$springBootVersion")
-    testImplementation("org.springframework.boot:spring-boot-starter-data-redis:$springBootVersion")
-    implementation group: 'org.springframework', name: 'spring-jdbc', version: springVersion
-    testImplementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.1")
-    testImplementation 'mysql:mysql-connector-java:5.1.49'
-    testImplementation project(":ebean-common")
-    testImplementation("io.ebean:ebean-querybean:$ebeanVersion")
-    testAnnotationProcessor("io.ebean:querybean-generator:$ebeanVersion")
-    testImplementation group: 'io.projectreactor', name: 'reactor-core'
+    compileOnly("org.springframework.boot:spring-boot:$springBootVersion")
+    compileOnly group: 'org.springframework', name: 'spring-jdbc', version: springVersion
 
 }
 

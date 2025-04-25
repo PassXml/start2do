@@ -1,7 +1,9 @@
 server:
-  port: ${PORT:0}
-  max-http-header-size: 512KB
+  port: ${PORT:8899}
+  max-http-request-header-size: 512KB
 spring:
+  main:
+    web-application-type: servlet
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
@@ -9,7 +11,7 @@ spring:
     name: admin-service
   profiles:
     active: ${ENV:dev}
-  cloud:
+#  cloud:
   #    nacos:
   #      config:
   #        server-addr: ${NACOS_HOST}
@@ -33,5 +35,11 @@ spring:
 #mybatis:
 #  config-location: classpath:mybatis/mybatis-config.xml
 #  mapper-locations: classpath*:mybatis/mapper/*.xml
-
+jwt:
+  enable: true
+start2do:
+  util:
+    redis:
+      key-prefix: ds
+      enable: true
 

@@ -3,23 +3,24 @@ plugins {
 }
 
 group 'org.start2do'
-version '3.0.5.1-SNAPSHOT'
+version '3.0.6.1-SNAPSHOT'
 
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-    compileOnly("org.slf4j:slf4j-api:2.0.5")
+    compileOnly("org.slf4j:slf4j-api:2.0.17")
     compileOnly group: 'io.ebean', name: 'ebean-annotation', version: '8.4'
     compileOnly 'jakarta.validation:jakarta.validation-api'
     compileOnly 'com.fasterxml.jackson.core:jackson-annotations:2.14.3'
     compileOnly 'com.fasterxml.jackson.core:jackson-annotations:2.14.3'
     testImplementation("org.slf4j:slf4j-simple:2.0.5")
-    testImplementation("org.slf4j:slf4j-api:2.0.5")
+    testImplementation("org.slf4j:slf4j-api:2.0.17")
     compileOnly group: 'net.java.dev.jna', name: 'jna', version: '5.14.0'
     compileOnly("org.springframework:spring-web")
     compileOnly("jakarta.servlet:jakarta.servlet-api")
     compileOnly 'org.apache.commons:commons-compress:1.27.1'
+    compileOnly "org.bouncycastle:bcprov-jdk18on"
 
 }
 

@@ -36,7 +36,7 @@ import org.start2do.ebean.dto.EnableType;
 import org.start2do.entity.security.SysLoginLog;
 import org.start2do.entity.security.query.QSysMenu;
 import org.start2do.service.ILoginLogOwner;
-import org.start2do.service.imp.SysLoginUserReactiveServiceImpl;
+import org.start2do.service.imp.SysLoginUserServiceImpl;
 import org.start2do.service.reactive.SysLoginMenuReactiveService;
 import org.start2do.util.BeanValidatorUtil;
 import org.start2do.util.HttpHeaderUtil;
@@ -54,7 +54,7 @@ import reactor.core.publisher.Mono;
 @CrossOrigin
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/auth")
+@RequestMapping
 @Slf4j
 @ConditionalOnWebApplication(type = Type.REACTIVE)
 @ConditionalOnExpression("${jwt.enable:false}")
@@ -65,7 +65,7 @@ public class WebFluxLoginController {
     private ReactiveAuthenticationManager authenticationManage;
 
     private final SysLoginMenuReactiveService sysLoginMenuService;
-    private final SysLoginUserReactiveServiceImpl userDetailsService;
+    private final SysLoginUserServiceImpl userDetailsService;
     private final KaptchaConfig config;
     private final CustomContextInfo customContextInfo;
     private final Start2doSecurityConfig securityConfig;
@@ -74,7 +74,7 @@ public class WebFluxLoginController {
     /**
      * 登录
      */
-    @PostMapping(value = "/login")
+    @PostMapping(value = "/auth/login")
     public Mono<R<JwtResponse>> createAuthenticationToken(@RequestBody JwtRequest req, ServerHttpRequest request) {
         BeanValidatorUtil.validate(req);
         String username = req.getUsername();
@@ -124,7 +124,7 @@ public class WebFluxLoginController {
     /**
      * 登出
      */
-    @GetMapping("/logout")
+    @GetMapping("/auth/logout")
     public Mono<R<String>> logout() {
         return Mono.just(R.ok());
     }
@@ -132,7 +132,7 @@ public class WebFluxLoginController {
     /**
      * 检查token
      */
-    @GetMapping("/check_token")
+    @GetMapping("/auth/check_token")
     public Mono<R<String>> checkToken() {
         return Mono.just(R.ok());
     }
@@ -140,7 +140,7 @@ public class WebFluxLoginController {
     /**
      * 用户菜单
      */
-    @GetMapping("menu")
+    @GetMapping("/auth/menu")
     public Mono<R<List<AuthRoleMenuResp>>> menu() {
         return Mono.deferContextual(contextView -> Mono.just(contextView.<String>get(JwtTokenUtil.AUTHORIZATIONStr)))
             .flatMap(jwtStr -> {
@@ -155,4 +155,18 @@ public class WebFluxLoginController {
     private Mono<Authentication> authenticate(String username, String password) {
         return authenticationManage.authenticate(new UsernamePasswordAuthenticationToken(username, password));
     }
+
+    private final SysLoginUserServiceImpl sysUserService;
+
+    /**
+     * 用户信息
+     */
+    @GetMapping("/user/info")
+    public Mono<R<JwtResponse>> userInfo() {
+        return JwtTokenUtil.getUserNameReactive().flatMap(sysUserService::findByUsername)
+            .cast(UserCredentials.class)
+            .map(userCredentials -> new JwtResponse(userCredentials, null))
+            .map(R::ok);
+    }
+
 }

@@ -17,7 +17,7 @@ import org.start2do.Start2doSecurityConfig;
 import org.start2do.dto.CustomContextInfo;
 import org.start2do.dto.R;
 import org.start2do.dto.UserCredentials;
-import org.start2do.service.imp.SysLoginUserReactiveServiceImpl;
+import org.start2do.service.imp.SysLoginUserServiceImpl;
 import org.start2do.util.JwtTokenUtil;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
@@ -29,7 +29,7 @@ import reactor.util.context.Context;
 @ConditionalOnExpression("${jwt.enable:false}")
 public class JwtRequestWebFluxFilter implements WebFilter {
 
-    private final SysLoginUserReactiveServiceImpl userService;
+    private final SysLoginUserServiceImpl userService;
     private final Start2doSecurityConfig config;
 
     private final CustomContextInfo customContextInfo;
