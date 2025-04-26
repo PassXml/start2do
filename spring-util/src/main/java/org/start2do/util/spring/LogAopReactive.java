@@ -3,8 +3,6 @@ package org.start2do.util.spring;
 import jakarta.annotation.PostConstruct;
 import java.lang.reflect.Method;
 import java.util.StringJoiner;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -37,13 +35,13 @@ public class LogAopReactive {
     private final JSON jsonUtils;
 
     private final LogAopConfig logAopConfig;
-    private ExecutorService executorService = Executors.newFixedThreadPool(5);
 
     @PostConstruct
     public void init() {
         log = LoggerFactory.getLogger(logAopConfig.getName());
         log.info("启用LogAOP");
     }
+
     @Around("within(@org.springframework.web.bind.annotation.RestController *) || within(@org.springframework.stereotype.Controller *)")
     public Object before(ProceedingJoinPoint point) throws Throwable {
         MethodSignature signature = (MethodSignature) point.getSignature();
@@ -61,67 +59,61 @@ public class LogAopReactive {
         } else if (proceed instanceof Flux) {
             return ((Flux<?>) proceed).doOnNext(result -> logRequest(point, startTime, result));
         } else {
-            logRequest(point, startTime, proceed);
+            logRequest(point, startTime, proceed).subscribe();
             return proceed;
         }
     }
 
-    private void logRequest(ProceedingJoinPoint point, long startTime, Object result) {
-        executorService.submit(() -> {
-            try {
-                ServerWebExchange exchange = getCurrentExchange();
-                if (exchange != null) {
-                    String requestURI = exchange.getRequest().getURI().getPath();
-                    if (logAopConfig.getSkipUrl().contains(requestURI)) {
-                        return;
-                    }
-                    StringJoiner headerString = new StringJoiner(",");
-                    exchange.getRequest().getHeaders().forEach((key, value) ->
-                        headerString.add(String.join(":", key, String.join(",", value))));
-
-                    String response = "";
-                    StringJoiner body = new StringJoiner(",");
-                    try {
-                        Object[] args = point.getArgs();
-                        for (Object arg : args) {
-                            Boolean skip = false;
-                            for (Class<?> aClass : logAopConfig.getSkinClazz()) {
-                                if (arg == null || aClass.isAssignableFrom(arg.getClass())) {
-                                    skip = true;
-                                    break;
-                                }
-                            }
-                            if (skip) {
-                                continue;
-                            }
-                            body.add(jsonUtils.toJson(arg));
-                        }
-                        response = jsonUtils.toJson(result);
-                    } catch (Exception e) {
-                        response = e.getMessage();
-                        throw e;
-                    } finally {
-                        long endTime = System.currentTimeMillis();
-                        log.info("请求IP: {} 请求URL :{} - {} ,请求头 :{}, 请求参数 :{} , 返回结果 :{}, 响应时间 :{}",
-                            exchange.getRequest().getRemoteAddress().getAddress().getHostAddress(),
-                            exchange.getRequest().getMethod(),
-                            requestURI,
-                            headerString,
-                            body,
-                            response,
-                            endTime - startTime);
-                    }
-                }
-            } catch (Exception e) {
-                log.error("日志记录失败", e);
+    private Mono<Boolean> logRequest(ProceedingJoinPoint point, long startTime, Object result) {
+        return getCurrentExchange().flatMap(exchange -> {
+            String requestURI = exchange.getRequest().getURI().getPath();
+            if (logAopConfig.getSkipUrl().contains(requestURI)) {
+                return Mono.empty();
             }
+            StringJoiner headerString = new StringJoiner(",");
+            exchange.getRequest().getHeaders()
+                .forEach((key, value) -> headerString.add(String.join(":", key, String.join(",", value))));
+
+            String response = "";
+            StringJoiner body = new StringJoiner(",");
+            Exception error = null;
+            try {
+                Object[] args = point.getArgs();
+                for (Object arg : args) {
+                    Boolean skip = false;
+                    for (Class<?> aClass : logAopConfig.getSkinClazz()) {
+                        if (arg == null || aClass.isAssignableFrom(arg.getClass())) {
+                            skip = true;
+                            break;
+                        }
+                    }
+                    if (skip) {
+                        continue;
+                    }
+                    body.add(jsonUtils.toJson(arg));
+                }
+                response = jsonUtils.toJson(result);
+            } catch (Exception e) {
+                response = e.getMessage();
+                error = e;
+            } finally {
+                long endTime = System.currentTimeMillis();
+                log.info("请求IP: {} 请求URL :{} - {} ,请求头 :{}, 请求参数 :{} , 返回结果 :{}, 响应时间 :{}",
+                    exchange.getRequest().getRemoteAddress().getAddress().getHostAddress(),
+                    exchange.getRequest().getMethod(), requestURI, headerString, body, response,
+                    endTime - startTime);
+            }
+            if (error != null) {
+                return Mono.error(error);
+            }
+            return Mono.just(true);
         });
     }
 
-    private ServerWebExchange getCurrentExchange() {
+    private Mono<ServerWebExchange> getCurrentExchange() {
         return ReactiveRequestContextHolder.getContext()
-            .map(context -> (ServerWebExchange) context.get(ServerWebExchange.class.getName()))
-            .block();
+            .filter(map -> map.containsKey(ServerWebExchange.class.getName()))
+            .map(context -> (ServerWebExchange) context.get(ServerWebExchange.class.getName()));
     }
 
 

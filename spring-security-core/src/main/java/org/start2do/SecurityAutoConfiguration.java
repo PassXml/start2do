@@ -28,7 +28,6 @@ import org.springframework.security.web.context.DelegatingSecurityContextReposit
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
-import org.springframework.stereotype.Service;
 import org.start2do.config.KaptchaConfig;
 import org.start2do.dto.CustomContextInfo;
 import org.start2do.dto.req.login.IPasswordText;
@@ -38,10 +37,7 @@ import org.start2do.service.ILoginLogOwnerImpl;
 import org.start2do.service.IRestPwService;
 import org.start2do.service.ISysLoginUserCustomInfoService;
 import org.start2do.service.imp.CustomContextInfoSMImpl;
-import org.start2do.service.imp.SysLoginUserCustomInfoEmptyReactiveService;
-import org.start2do.service.reactive.ISysLoginUserCustomInfoReactiveService;
 import org.start2do.util.JwtTokenUtil;
-import org.start2do.util.SM2Util;
 import org.start2do.util.StringUtils;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
@@ -117,13 +113,6 @@ public class SecurityAutoConfiguration {
         JwtTokenUtil.IsWebFlux = WebApplicationType.REACTIVE == start2doSecurityConfig.getWebApplicationType();
     }
 
-    @Bean
-    @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
-    @ConditionalOnWebApplication(type = Type.REACTIVE)
-    @ConditionalOnMissingBean(ISysLoginUserCustomInfoReactiveService.class)
-    public SysLoginUserCustomInfoEmptyReactiveService sysLoginUserCustomInfoEmptyReactiveService() {
-        return new SysLoginUserCustomInfoEmptyReactiveService();
-    }
 
     @Bean
     @ConditionalOnMissingBean(IRestPwService.class)
@@ -152,11 +141,12 @@ public class SecurityAutoConfiguration {
     public CustomContextInfo customContextInfoSM2(Start2doSecurityConfig start2doSecurityConfig) {
         return new CustomContextInfoSMImpl(start2doSecurityConfig.getPasswordEncryptConfig());
     }
+
     @Bean
     @ConditionalOnMissingBean(CustomContextInfo.class)
     @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
     public CustomContextInfo customContextInfo() {
-        return new CustomContextInfo(){
+        return new CustomContextInfo() {
 
             @Override
             public void loadReqBefore(JwtRequest request) {
@@ -186,13 +176,20 @@ public class SecurityAutoConfiguration {
 
     @Bean
     @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
-    @ConditionalOnWebApplication(type = Type.SERVLET)
     @ConditionalOnMissingBean(ISysLoginUserCustomInfoService.class)
     public ISysLoginUserCustomInfoService iSysLoginUserCustomInfoReactiveService() {
-        return userId -> {
-            HashMap<String, Object> map = new HashMap<>();
-            map.put("pwExpired", false);
-            return map;
+        return new ISysLoginUserCustomInfoService() {
+            @Override
+            public Map<String, Object> getCustomInfo(Integer userId) {
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("pwExpired", false);
+                return map;
+            }
+
+            @Override
+            public Mono<Map<String, Object>> getCustomInfoReactive(Integer userId) {
+                return Mono.just(getCustomInfo(userId)).defaultIfEmpty(new HashMap<>());
+            }
         };
     }
 }

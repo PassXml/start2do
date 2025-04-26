@@ -22,6 +22,7 @@ import org.start2do.dto.req.mock.MockDataImageReq;
 import org.start2do.util.FontUtil;
 import org.start2do.util.MockDataUtil;
 import org.start2do.util.spring.SpringInitListenerUtil.WaitInitCompleteRunner;
+import org.start2do.util.spring.dto.LogSetting;
 
 /**
  * Mock 数据
@@ -53,6 +54,7 @@ public class MockDataController implements WaitInitCompleteRunner {
     }
 
     @Override
+    @LogSetting(ignore = true)
     public void init() {
         File file = FontUtil.getBaseFile(null, "/SourceHanSansSC_Bold_Min.ttf");
         if (file != null) {

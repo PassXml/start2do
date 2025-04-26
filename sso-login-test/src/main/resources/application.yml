@@ -1,0 +1,42 @@
+spring:
+  main:
+    web-application-type: servlet
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${MYSQL_URL}
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+server:
+  port: 9090
+management:
+  metrics:
+    web:
+      server:
+        request:
+          autotime:
+            enabled: false
+
+#jwt:
+#  enable: false
+
+cas:
+  enable: true
+  casUrl: http://10.11.82.82:8083/cas
+  baseUrl: http://127.0.0.1:9090
+  key: 123123
+  success-url: http://127.0.0.1:9090
+logging:
+  level:
+    org:
+      springframework:
+        security: trace
+start2do:
+  script:
+    enable: true
+    default-runner: nashorn
+    nashorn:
+      enable-json-operate: true
+      enable: true
+      enable-d-b: true
+      enable-h-t-t-p: false
+      expire-after-access: 15m
