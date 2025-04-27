@@ -19,4 +19,8 @@ public class EbeanConfig {
     private boolean multipleDataSources = false;
     private boolean enable = false;
     private boolean enableSettingService = false;
+    /**
+     * 是否启用hook
+     */
+    private boolean enableHooks = false;
 }

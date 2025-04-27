@@ -8,6 +8,7 @@ import io.ebean.config.DatabaseConfig;
 import io.ebean.migration.MigrationConfig;
 import io.ebean.migration.MigrationRunner;
 import io.ebean.spring.txn.SpringJdbcTransactionManager;
+import java.util.List;
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -18,6 +19,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScans;
 import org.springframework.context.annotation.Import;
+import org.start2do.ebean.config.EBeanProcessConfiguration;
+import org.start2do.ebean.config.EbeanBeanPersistController;
 import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 import org.start2do.ebean.id_generators.UUIDStrIdGenerator;
 import org.start2do.ebean.service.SysSettingService;
@@ -92,6 +95,32 @@ public class EbeanBeanAutoConfiguration {
 
     }
 
+    @ConditionalOnMissingBean({DatabaseConfig.class, ObjectMapper.class, EBeanProcessConfiguration.class})
+    public static class Config5 {
+
+        @Bean
+        public DatabaseConfig databaseConfig(DataSource dataSource, CurrentUserProvider currentUserProvider,
+            EbeanConfig ebeanConfig, List<EBeanProcessConfiguration> configuration) {
+            DatabaseConfig config = new DatabaseConfig();
+            config.loadFromProperties();
+            config.add(new UUIDStrIdGenerator());
+            config.setCurrentUserProvider(currentUserProvider);
+            config.setRunMigration(ebeanConfig.isMigration());
+            config.setDataSource(dataSource);
+            config.setDdlRun(false);
+            config.setExternalTransactionManager(new SpringJdbcTransactionManager());
+            config.setDdlCreateOnly(false);
+            for (EBeanProcessConfiguration processConfiguration : configuration) {
+                processConfiguration.after(config);
+            }
+            if (ebeanConfig.isMigration()) {
+                EbeanBeanAutoConfiguration.migration(dataSource, ebeanConfig);
+            }
+            return config;
+        }
+
+    }
+
     @Bean
     @ConditionalOnMissingBean(CurrentUserProvider.class)
     public CurrentUserProvider currentUserProvider() {
@@ -132,10 +161,51 @@ public class EbeanBeanAutoConfiguration {
         }
     }
 
+    @ConditionalOnBean(value = {ObjectMapper.class, Snowflake.class, EBeanProcessConfiguration.class})
+    @ConditionalOnMissingBean(DatabaseConfig.class)
+    public static class Config4 {
+
+
+        @Bean
+        public DatabaseConfig databaseConfig(DataSource dataSource, CurrentUserProvider currentUserProvider,
+            ObjectMapper objectMapper, EbeanConfig ebeanConfig, Snowflake snowflake,
+            List<EBeanProcessConfiguration> eBeanProcessConfiguration) {
+            DatabaseConfig config = new DatabaseConfig();
+            config.loadFromProperties();
+            config.add(new UUIDStrIdGenerator());
+            config.add(new SnowflakeStrGenerator(snowflake));
+            config.setCurrentUserProvider(currentUserProvider);
+            config.setRunMigration(ebeanConfig.isMigration());
+            config.setDataSource(dataSource);
+            config.setDdlRun(false);
+            config.setExternalTransactionManager(new SpringJdbcTransactionManager());
+            config.setDdlCreateOnly(false);
+            for (EBeanProcessConfiguration configuration : eBeanProcessConfiguration) {
+                configuration.after(config);
+            }
+            if (ebeanConfig.isMigration()) {
+                EbeanBeanAutoConfiguration.migration(dataSource, ebeanConfig);
+            }
+            config.setObjectMapper(objectMapper);
+            return config;
+        }
+    }
+
     @Bean
     @ConditionalOnBean(DataSource.class)
     public SysSettingUtil sysSettingUtil(DataSource dataSource, SysSettingService sysSettingService) {
         SysSettingUtil util = new SysSettingUtil(sysSettingService);
         return util;
+    }
+
+
+    @Bean
+    public EBeanProcessConfiguration eBeanProcessConfiguration(EbeanConfig ebeanConfig) {
+        return t -> {
+            if (ebeanConfig.isEnableHooks()) {
+                t.add(new EbeanBeanPersistController());
+            }
+
+        };
     }
 }

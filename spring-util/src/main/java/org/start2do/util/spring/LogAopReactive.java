@@ -55,9 +55,9 @@ public class LogAopReactive {
         Object proceed = point.proceed();
 
         if (proceed instanceof Mono) {
-            return ((Mono<?>) proceed).doOnNext(result -> logRequest(point, startTime, result));
+            return ((Mono<?>) proceed).doOnNext(result -> logRequest(point, startTime, result).subscribe());
         } else if (proceed instanceof Flux) {
-            return ((Flux<?>) proceed).doOnNext(result -> logRequest(point, startTime, result));
+            return ((Flux<?>) proceed).doOnNext(result -> logRequest(point, startTime, result).subscribe());
         } else {
             logRequest(point, startTime, proceed).subscribe();
             return proceed;

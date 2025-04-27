@@ -13,7 +13,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.server.reactive.ServerHttpResponse;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -144,7 +143,6 @@ public class SysLogController {
      * 批量删除;只能清理90天之前的数据
      */
     @GetMapping("delete")
-    @DeleteMapping("delete")
     public Mono<R<Boolean>> delete(IdsReq req) {
         BeanValidatorUtil.validate(req);
         return sysLogService.deleteReactive(new QSysLog().createTime.le(

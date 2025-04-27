@@ -6,11 +6,13 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ValidatorFactory;
 import java.util.Set;
 import java.util.StringJoiner;
+import lombok.Getter;
 
 public final class BeanValidatorUtil {
 
     protected static ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     protected static Validator validator = factory.getValidator();
+    @Getter
     private static Boolean echoPath = false;
 
     public static void setEchoPath() {

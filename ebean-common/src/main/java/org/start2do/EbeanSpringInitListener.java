@@ -15,6 +15,7 @@ public class EbeanSpringInitListener implements ApplicationListener<Availability
         if (ReadinessState.ACCEPTING_TRAFFIC == event.getState()) {
             if (SysSettingUtil.getSysSettingUtil() != null) {
                 try {
+
                     SysSettingUtil.getSysSettingUtil().sync();
                 } catch (PersistenceException e) {
                     log.error(e.getMessage());
