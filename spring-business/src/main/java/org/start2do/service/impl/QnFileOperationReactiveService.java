@@ -3,6 +3,7 @@ package org.start2do.service.impl;
 import java.nio.ByteBuffer;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
@@ -10,6 +11,7 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.start2do.BusinessConfig;
 import org.start2do.dto.BusinessException;
 import org.start2do.entity.business.SysFile;
@@ -20,8 +22,10 @@ import org.start2do.service.IFileOperationService;
 import org.start2do.service.webflux.SysFileReactiveService;
 import org.start2do.util.DateUtil;
 import org.start2do.util.Md5Util;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "start2do.business.file-setting", name = "type", havingValue = "qn")
@@ -33,6 +37,7 @@ public class QnFileOperationReactiveService implements IFileOperationService {
     private final SysFileReactiveService fileReactiveService;
     private final IFileMd5 fileMd5;
     private final IFileOperationHookService hookService;
+    private final WebClient webClient = WebClient.create();
 
     @Override
     public Mono<Boolean> removeReactive(String fileId) {
@@ -92,11 +97,22 @@ public class QnFileOperationReactiveService implements IFileOperationService {
     @Override
     public Mono<Boolean> downloadReactive(ServerHttpResponse response, String fileId) {
         return fileReactiveService.getByIdReactive(fileId).flatMap(sysFile -> {
+            // 设置响应头
             response.getHeaders().add("Content-Disposition", "attachment;filename=" + sysFile.getFileName());
             response.getHeaders().add("Content-Type", "application/octet-stream");
-            response.getHeaders().add("Location", sysFile.getUrl());
             response.getHeaders().add("Connection", "close");
-            return Mono.just(true);
+            // 使用 WebClient 从文件的 URL 获取数据流
+            Flux<DataBuffer> dataBufferFlux = webClient.get()
+                .uri(sysFile.getUrl())
+                .retrieve()
+                .bodyToFlux(DataBuffer.class);
+            // 将数据流写入响应
+            return response.writeWith(dataBufferFlux)
+                .then(Mono.just(true))
+                .onErrorResume(throwable -> {
+                    // 如果发生错误，返回 false 或处理错误
+                    return Mono.just(false);
+                });
         });
     }
 }

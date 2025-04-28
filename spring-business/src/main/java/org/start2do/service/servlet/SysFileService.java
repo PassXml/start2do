@@ -1,6 +1,7 @@
 package org.start2do.service.servlet;
 
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -85,7 +86,11 @@ public class SysFileService extends AbsService<SysFile> {
         return string.replaceAll("\\\\", "/");
     }
 
-    public SysFile updateFile(MultipartFile file,boolean replace) throws IOException {
+    public SysFile updateFile(MultipartFile file, boolean replace) throws IOException {
         return operationService.upload(file.getBytes(), file.getOriginalFilename(), replace);
+    }
+
+    public void download(HttpServletResponse response, String fileId) {
+        operationService.download(response, fileId);
     }
 }

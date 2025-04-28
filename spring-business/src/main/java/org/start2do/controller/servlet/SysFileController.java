@@ -60,17 +60,7 @@ public class SysFileController {
      */
     @GetMapping("download")
     public void download(HttpServletResponse response, @RequestParam String fileId) throws IOException {
-        SysFile file = sysFileService.getById(fileId);
-        response.addHeader("Content-Disposition", "attachment;filename=" + file.getFileName());
-        response.setContentType("application/octet-stream");
-        switch (config.getFileSetting().getType()) {
-            case local -> {
-                try (FileInputStream inputStream = new FileInputStream(
-                    Paths.get(uploadDir + File.separator + file.getFilePath()).toFile())) {
-                    inputStream.transferTo(response.getOutputStream());
-                }
-            }
-        }
+        sysFileService.download(response, fileId);
     }
 
     /**
