@@ -25,11 +25,7 @@ public class RedisOMConfig {
     @ConditionalOnProperty(prefix = "start2do.util.redis", value = "enable", havingValue = "true")
     public static ObjectMapper jacksonOM() {
         // 如果直接使用Jackson2JsonRedisSerializer 获取存储的对象则会变为LinkedHashMap,添加ObjectMapper可解决
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.activateDefaultTyping(objectMapper.getPolymorphicTypeValidator(),
-            ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ObjectMapper objectMapper = jacksonOMFilter();
         try {
             Class<?> aClass = Class.forName("javax.persistence.ManyToOne");
             objectMapper.setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
