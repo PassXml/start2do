@@ -18,11 +18,11 @@ import lombok.experimental.Accessors;
 public class SysPermissionRoleRefId implements Serializable {
 
     @Column(name = "permission_id")
-    private Integer permissionId;
+    private String permissionId;
     @Column(name = "role_id")
     private Integer roleId;
 
-    public SysPermissionRoleRefId(Integer permissionId, Integer roleId) {
+    public SysPermissionRoleRefId(String permissionId, Integer roleId) {
         this.permissionId = permissionId;
         this.roleId = roleId;
     }

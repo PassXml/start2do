@@ -1,5 +1,6 @@
 package org.start2do.entity.security;
 
+import io.ebean.Model;
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbComment;
 import io.ebean.annotation.StorageEngine;
@@ -21,12 +22,12 @@ import lombok.experimental.Accessors;
 @Table(name = "sys_permission_role_ref")
 @StorageEngine("ENGINE = MergeTree() order by id;")
 @Cache(enableQueryCache = true)
-public class SysPermissionRoleRef {
+public class SysPermissionRoleRef extends Model {
 
     @EmbeddedId
     private SysPermissionRoleRefId id;
     @Column(name = "permission_id")
-    private Integer permissionId;
+    private String permissionId;
     @Column(name = "role_id")
     private Integer roleId;
 

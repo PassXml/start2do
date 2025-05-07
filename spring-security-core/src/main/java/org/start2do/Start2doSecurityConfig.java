@@ -1,5 +1,6 @@
 package org.start2do;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,9 +30,9 @@ public class Start2doSecurityConfig {
     @Value("${spring.main.web-application-type:SERVLET}")
     private WebApplicationType webApplicationType;
 
-
+    private PermissionSetting permission;
     /**
-      *  记录登录尝试登录日志
+     * 记录登录尝试登录日志
      */
     private Boolean recordLoginLog = false;
 
@@ -39,6 +40,7 @@ public class Start2doSecurityConfig {
      * 登录密码加密选型
      */
     private LoginPasswordEncryptConfig passwordEncryptConfig;
+
     @Setter
     @Getter
     @Accessors(chain = true)
@@ -55,4 +57,16 @@ public class Start2doSecurityConfig {
         SM2, ASE
     }
 
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class PermissionSetting {
+
+        /**
+         * 默认url鉴权校验,是否放行
+         */
+        private boolean ignoreDefaultUrlAuth = true;
+    }
 }

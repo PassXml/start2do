@@ -98,6 +98,7 @@ public class SysUser extends BaseModel2 implements Serializable {
         this.deptId = deptId;
         this.roles = roles;
         this.menus = menus;
+        this.pwExpirationTime = pwExpirationTime;
     }
 
     public enum Status implements IDictItem {

@@ -3,13 +3,10 @@ package org.start2do.entity.security;
 import io.ebean.Model;
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbComment;
-import io.ebean.annotation.Identity;
 import io.ebean.annotation.StorageEngine;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -20,6 +17,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.start2do.util.Md5Util;
 
 @Setter
 @Getter
@@ -33,23 +31,22 @@ import lombok.experimental.Accessors;
 public class SysPermission extends Model {
 
     @Id
-    @Identity
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private String id;
     @Column(length = 4096)
     private String url;
-    @JoinTable(
-        name = "sys_permission_role_ref",
-        joinColumns = {@JoinColumn(name = "permission_id", referencedColumnName = "id")},
-        inverseJoinColumns = {@JoinColumn(name = "role_id", referencedColumnName = "id")}
-    )
+    @JoinTable(name = "sys_permission_role_ref", joinColumns = {
+        @JoinColumn(name = "permission_id", referencedColumnName = "id")}, inverseJoinColumns = {
+        @JoinColumn(name = "role_id", referencedColumnName = "id")})
     @ManyToMany(fetch = FetchType.LAZY)
     public List<SysRole> roles;
-    @JoinTable(
-        name = "sys_permission_user_ref",
-        joinColumns = {@JoinColumn(name = "permission_id", referencedColumnName = "id")},
-        inverseJoinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "id")}
-    )
+    @JoinTable(name = "sys_permission_user_ref", joinColumns = {
+        @JoinColumn(name = "permission_id", referencedColumnName = "id")}, inverseJoinColumns = {
+        @JoinColumn(name = "user_id", referencedColumnName = "id")})
     @ManyToMany(fetch = FetchType.LAZY)
     private List<SysUser> users;
+
+    public SysPermission(String url) {
+        this.id = Md5Util.md5(url);
+        this.url = url;
+    }
 }

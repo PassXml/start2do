@@ -2,7 +2,6 @@ package org.start2do.entity.security;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import jakarta.persistence.Id;
 import java.io.Serializable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -19,11 +18,11 @@ import lombok.experimental.Accessors;
 public class SysPermissionUserRefId implements Serializable {
 
     @Column(name = "permission_id")
-    private Integer permissionId;
+    private String permissionId;
     @Column(name = "user_id")
     private Integer userId;
 
-    public SysPermissionUserRefId(Integer permissionId, Integer userId) {
+    public SysPermissionUserRefId(String permissionId, Integer userId) {
         this.permissionId = permissionId;
         this.userId = userId;
     }

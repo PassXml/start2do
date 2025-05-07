@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.start2do.dto.BusinessException;
 import org.start2do.dto.IdStrReq;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
@@ -33,7 +34,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @RequestMapping("/dict")
 @ConditionalOnWebApplication(type = Type.REACTIVE)
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "dict", havingValue = "true",matchIfMissing = true)
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "dict", havingValue = "true", matchIfMissing = true)
 public class SysDictController {
 
     private final SysDictReactiveService sysDictService;
@@ -57,6 +58,10 @@ public class SysDictController {
     @GetMapping("delete")
     public Mono<R<Boolean>> delete(IdStrReq req) {
         BeanValidatorUtil.validate(req);
+        SysDict dict = sysDictService.findOneById(req.getId());
+        if (dict.getDictType() == SysDict.Type.SYSTEM) {
+            throw new BusinessException("系统内置无法修改");
+        }
         return sysDictService.remove(req.getId()).map(R::ok);
     }
 
@@ -67,6 +72,9 @@ public class SysDictController {
     @PostMapping("add")
     public Mono<R<Boolean>> add(@RequestBody DictAddReq req) {
         BeanValidatorUtil.validate(req);
+        if (sysDictService.exists(new QSysDict().dictName.eq(req.getDictName()))) {
+            throw new BusinessException("已被使用");
+        }
         SysDict sysDict = DictDtoMapper.INSTANCE.toSysDict(req);
         return sysDictService.saveReactive(sysDict).map(dict -> true).map(R::ok);
     }
@@ -79,6 +87,11 @@ public class SysDictController {
     public Mono<R<Boolean>> update(@RequestBody DictUpdateReq req) {
         BeanValidatorUtil.validate(req);
         return sysDictService.getByIdReactive(req.getId()).map(dict -> {
+            if (!dict.getDictName().equals(req.getDictName())) {
+                if (sysDictService.exists(new QSysDict().dictName.eq(req.getDictName()))) {
+                    throw new BusinessException("已被使用");
+                }
+            }
             DictDtoMapper.INSTANCE.updateSysDict(dict, req);
             return dict;
         }).flatMap(sysDictService::updateReactive).map(dict -> true).map(R::ok);
