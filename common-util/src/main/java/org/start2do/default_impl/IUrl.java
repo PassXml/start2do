@@ -46,4 +46,24 @@ public interface IUrl {
         }
         return joiner.toString();
     }
+
+    static String url(String host, CharSequence delimiter, String... uri) {
+        String delimiterStr = delimiter.toString();
+        StringJoiner joiner = new StringJoiner("");
+        for (String s : uri) {
+            if (!s.startsWith(delimiterStr)) {
+                joiner.add(delimiterStr);
+            }
+            if (s.endsWith(delimiterStr)) {
+                joiner.add(s.substring(0, s.length() - 1));
+            } else {
+                joiner.add(s);
+            }
+        }
+        if (host.endsWith(delimiterStr)) {
+            return host + joiner.toString().substring(1);
+        }
+        return host + joiner.toString();
+    }
+
 }

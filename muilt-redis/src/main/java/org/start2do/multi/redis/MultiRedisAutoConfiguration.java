@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -48,37 +46,25 @@ public class MultiRedisAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnBean(name = "JacksonOM")
-    public RedisTemplateResolver redisTemplateResolver(RedisProperties properties,
-        @Qualifier("JacksonOM") ObjectMapper objectMapper) {
-        Map<String, RedisTemplate<String, Object>> templates = new HashMap<>();
-        properties.getSources().forEach((name, config) -> {
-            RedisTemplate<String, Object> template = createRedisTemplate(config);
-            templates.put(name, template);
-        });
-
-        return new RedisTemplateResolver(templates);
-    }
-
-    @Bean
     @ConditionalOnMissingBean(name = "JacksonOM")
     public RedisTemplateResolver redisTemplateResolver(RedisProperties properties) {
         Map<String, RedisTemplate<String, Object>> templates = new HashMap<>();
         properties.getSources().forEach((name, config) -> {
-            RedisTemplate<String, Object> template = createRedisTemplate(config);
+            RedisTemplate<String, Object> template = createRedisTemplate(config, null);
             templates.put(name, template);
         });
 
         return new RedisTemplateResolver(templates);
     }
 
-    private RedisTemplate<String, Object> createRedisTemplate(RedisProperties.RedisConnectionConfig config) {
+    private RedisTemplate<String, Object> createRedisTemplate(RedisProperties.RedisConnectionConfig config,
+        ObjectMapper objectMapper) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(createConnectionFactory(config));
         template.setKeySerializer(new PrefixedKeySerializer(config.getKeyPrefix()));
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
         template.setHashKeySerializer(new PrefixedKeySerializer(config.getKeyPrefix()));
-        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
         template.afterPropertiesSet();
         return template;
     }

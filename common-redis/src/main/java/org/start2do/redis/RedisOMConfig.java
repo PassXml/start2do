@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.lang.annotation.Annotation;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -26,11 +25,7 @@ public class RedisOMConfig {
     @ConditionalOnProperty(prefix = "start2do.util.redis", value = "enable", havingValue = "true")
     public static ObjectMapper jacksonOM() {
         // 如果直接使用Jackson2JsonRedisSerializer 获取存储的对象则会变为LinkedHashMap,添加ObjectMapper可解决
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.activateDefaultTyping(objectMapper.getPolymorphicTypeValidator(),
-            ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ObjectMapper objectMapper = jacksonOMFilter();
         try {
             Class<?> aClass = Class.forName("javax.persistence.ManyToOne");
             objectMapper.setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
@@ -51,19 +46,32 @@ public class RedisOMConfig {
         return objectMapper;
     }
 
+    @Bean("JacksonOM")
+    @ConditionalOnMissingClass("ManyToOne")
+    @ConditionalOnProperty(prefix = "start2do.util.redis", value = "enable", havingValue = "true")
+    public static ObjectMapper jacksonOMFilter() {
+        // 如果直接使用Jackson2JsonRedisSerializer 获取存储的对象则会变为LinkedHashMap,添加ObjectMapper可解决
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.activateDefaultTyping(objectMapper.getPolymorphicTypeValidator(),
+            ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return objectMapper;
+    }
 
     @Bean
     @ConditionalOnProperty(prefix = "start2do.util.redis", value = "enable", havingValue = "true")
     public RedisTemplate<String, Object> objectRedisTemplate(RedisConnectionFactory factory,
-        @Qualifier("JacksonOM") ObjectMapper objectMapper, RedisConfiguration redisConfiguration) {
+        @Qualifier("JacksonOM") ObjectMapper objectMapper, RedisConfiguration configuration) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-        if (redisConfiguration.getKeyPrefix() != null && !redisConfiguration.getKeyPrefix().isEmpty()) {
-            redisTemplate.setKeySerializer(new PrefixedKeySerializer(redisConfiguration.getKeyPrefix()));
+        if (configuration.getKeyPrefix() != null && !configuration.getKeyPrefix().isEmpty()) {
+            redisTemplate.setKeySerializer(new PrefixedKeySerializer(configuration.getKeyPrefix()));
         } else {
             redisTemplate.setKeySerializer(new StringRedisSerializer());
         }
         Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(
-            objectMapper, Object.class);
+            Object.class);
+        jackson2JsonRedisSerializer.setObjectMapper(objectMapper);
         redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
         redisTemplate.setConnectionFactory(factory);
         return redisTemplate;
