@@ -27,6 +27,7 @@ import org.start2do.Start2doSecurityConfig;
 import org.start2do.config.KaptchaConfig;
 import org.start2do.dto.BusinessException;
 import org.start2do.dto.CustomContextInfo;
+import org.start2do.dto.Permission;
 import org.start2do.dto.R;
 import org.start2do.dto.UserCredentials;
 import org.start2do.dto.req.login.JwtRequest;
@@ -75,6 +76,7 @@ public class WebFluxLoginController {
      * 登录
      */
     @PostMapping(value = "/auth/login")
+    @Permission(defaultPass = true)
     public Mono<R<JwtResponse>> createAuthenticationToken(@RequestBody JwtRequest req, ServerHttpRequest request) {
         BeanValidatorUtil.validate(req);
         String username = req.getUsername();
@@ -125,6 +127,7 @@ public class WebFluxLoginController {
      * 登出
      */
     @GetMapping("/auth/logout")
+    @Permission(defaultPass = true)
     public Mono<R<String>> logout() {
         return Mono.just(R.ok());
     }
@@ -133,6 +136,7 @@ public class WebFluxLoginController {
      * 检查token
      */
     @GetMapping("/auth/check_token")
+    @Permission(defaultPass = true)
     public Mono<R<String>> checkToken() {
         return Mono.just(R.ok());
     }
@@ -141,10 +145,11 @@ public class WebFluxLoginController {
      * 用户菜单
      */
     @GetMapping("/auth/menu")
+    @Permission(defaultPass = true)
     public Mono<R<List<AuthRoleMenuResp>>> menu() {
         return Mono.deferContextual(contextView -> Mono.just(contextView.<String>get(JwtTokenUtil.AUTHORIZATIONStr)))
             .flatMap(jwtStr -> {
-                Integer userId = JwtTokenUtil.getUserId(jwtStr);
+                String userId = JwtTokenUtil.getUserId(jwtStr);
                 return sysLoginMenuService.findAll(
                         new QSysMenu().status.eq(EnableType.Enable).roles.users.id.eq(userId))
                     .flatMapMany(Flux::fromIterable).map(AuthRoleMenuResp::new).collectList();
@@ -162,6 +167,7 @@ public class WebFluxLoginController {
      * 用户信息
      */
     @GetMapping("/user/info")
+    @Permission(defaultPass = true)
     public Mono<R<JwtResponse>> userInfo() {
         return JwtTokenUtil.getUserNameReactive().flatMap(sysUserService::findByUsername)
             .cast(UserCredentials.class)

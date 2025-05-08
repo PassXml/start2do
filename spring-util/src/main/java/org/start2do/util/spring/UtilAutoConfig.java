@@ -8,12 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.start2do.util.spring.dto.JSON;
 
 
 @Slf4j
 @Import({UtilConfig.class, LogAopConfig.class})
+@ComponentScan("org.start2do.util.spring")
 @ConditionalOnProperty(prefix = "start2do.util", value = "enable", havingValue = "true")
 public class UtilAutoConfig {
 

@@ -31,20 +31,20 @@ import reactor.core.publisher.Mono;
 @EnableConfigurationProperties({DataSourceProperties.class})
 @ConditionalOnProperty(prefix = "start2do.business.service", name = "role", havingValue = "true",matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.REACTIVE)
-public class SysRoleReactiveService extends AbsMixService<SysRole, Integer> {
+public class SysRoleReactiveService extends AbsMixService<SysRole, String> {
 
     private final SysRoleMenuReactiveService sysRoleMenuService;
     private final SysMenuReactiveService sysMenuService;
     private final SysUserReactiveService sysUserService;
 
-    public Mono<Boolean> remove(Integer id) {
+    public Mono<Boolean> remove(String id) {
         return sysMenuService.countReactive(new QSysMenu().roles.id.eq(id)).filter(integer -> integer <= 0)
             .switchIfEmpty(Mono.error(new BusinessException("请先取消权限")))
             .then(sysUserService.countReactive(new QSysUser().roles.id.eq(id))).filter(integer -> integer <= 0)
             .switchIfEmpty(Mono.error(new BusinessException("用户组用户不为空"))).then(deleteByIdReactive(id));
     }
 
-    public Mono<Boolean> set(Integer roleId, List<Integer> menuIds) {
+    public Mono<Boolean> set(String roleId, List<String> menuIds) {
         return Mono.just(menuIds != null && !menuIds.isEmpty()).flatMap(aBoolean -> {
                 if (Boolean.TRUE.equals(aBoolean)) {
                     return sysMenuService.countReactive(new QSysMenu().id.in(menuIds)).filter(integer -> integer == menuIds.size())
@@ -57,12 +57,12 @@ public class SysRoleReactiveService extends AbsMixService<SysRole, Integer> {
                 List<Mono<Boolean>> result = new ArrayList<>();
                 ListUtil.diff(menuIds, menus, (integer, sysRoleMenu) -> integer.equals(sysRoleMenu.getId().getMenuId()),
                     integers -> {
-                        for (Integer integer : integers) {
+                        for (String integer : integers) {
                             result.add(sysRoleMenuService.saveReactive(new SysRoleMenu(new SysRoleMenuId(roleId, integer)))
                                 .map(sysRoleMenu -> true));
                         }
                     }, null, integers -> {
-                        Set<Integer> collect = integers.stream().map(SysRoleMenu::getId).map(SysRoleMenuId::getMenuId)
+                        Set<String> collect = integers.stream().map(SysRoleMenu::getId).map(SysRoleMenuId::getMenuId)
                             .collect(Collectors.toSet());
                         result.add(
                             sysRoleMenuService.deleteReactive(new QSysRoleMenu().id.roleId.eq(roleId).id.menuId.in(collect)));

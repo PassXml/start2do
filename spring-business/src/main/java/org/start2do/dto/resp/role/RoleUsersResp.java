@@ -11,11 +11,11 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 public class RoleUsersResp {
 
-    private Integer id;
+    private String id;
     private String name;
     private String realName;
 
-    public RoleUsersResp(Integer id, String name, String realName) {
+    public RoleUsersResp(String id, String name, String realName) {
         this.id = id;
         this.name = name;
         this.realName = realName;

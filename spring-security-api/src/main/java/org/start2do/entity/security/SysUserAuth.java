@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.start2do.constant.DBConstant;
 import org.start2do.ebean.dto.EnableType;
 import org.start2do.ebean.entity.BaseModel2;
 import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
@@ -30,8 +31,8 @@ public class SysUserAuth extends BaseModel2 {
     @GeneratedValue(generator = SnowflakeStrGenerator.KEY)
     private String id;
 
-    @Column(name = "user_id", nullable = false)
-    private Integer userId;
+    @Column(name = "user_id", nullable = false, length = DBConstant.ID_STR_LENGTH)
+    private String userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)

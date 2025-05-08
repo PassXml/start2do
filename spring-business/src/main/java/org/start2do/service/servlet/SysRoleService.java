@@ -33,7 +33,7 @@ public class SysRoleService extends AbsService<SysRole> {
     private final SysMenuService sysMenuService;
     private final SysUserService sysUserService;
 
-    public void remove(Integer id) {
+    public void remove(String id) {
         if (sysMenuService.count(new QSysMenu().roles.id.eq(id)) > 0) {
             throw new BusinessException("请先取消权限");
         }
@@ -43,7 +43,7 @@ public class SysRoleService extends AbsService<SysRole> {
         deleteById(id);
     }
 
-    public void set(Integer roleId, List<Integer> menuIds) {
+    public void set(String roleId, List<String> menuIds) {
         if (menuIds != null && !menuIds.isEmpty()) {
             if (sysMenuService.count(new QSysMenu().id.in(menuIds)) != menuIds.size()) {
                 throw new BusinessException("数据有误,请刷新页面");
@@ -55,13 +55,13 @@ public class SysRoleService extends AbsService<SysRole> {
         List<SysRoleMenu> menus = sysRoleMenuService.findAll(new QSysRoleMenu().id.roleId.eq(roleId));
         ListUtil.diff(
             menuIds, menus, (integer, sysRoleMenu) -> integer.equals(sysRoleMenu.getId().getMenuId()), integers -> {
-                for (Integer integer : integers) {
+                for (String integer : integers) {
                     sysRoleMenuService.save(new SysRoleMenu(new SysRoleMenuId(
                         roleId, integer
                     )));
                 }
             }, null, integers -> {
-                Set<Integer> collect = integers.stream().map(SysRoleMenu::getId).map(SysRoleMenuId::getMenuId)
+                Set<String> collect = integers.stream().map(SysRoleMenu::getId).map(SysRoleMenuId::getMenuId)
                     .collect(Collectors.toSet());
                 sysRoleMenuService.delete(new QSysRoleMenu().id.roleId.eq(roleId).id.menuId.in(collect));
             }

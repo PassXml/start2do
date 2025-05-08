@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 public class PermissionRoleAddReq {
     @NotNull
-    private Integer roleId;
+    private String roleId;
     @NotEmpty
     private String permissionId;
 }

@@ -79,7 +79,7 @@ public class LocalFileOperationService implements IFileOperationService {
         response.setHeader("Content-Disposition", "attachment;filename=" + sysFile.getFileName());
         response.setContentType("application/octet-stream");
         try (FileInputStream inputStream = new FileInputStream(
-            Paths.get(fileSetting.getUploadDir() + File.separator + sysFile.getFilePath())
+            Paths.get(fileSetting.getUploadDir() + File.separator + sysFile.getRelativeFilePath())
                 .toFile()); OutputStream outputStream = response.getOutputStream()) {
             byte[] buffer = new byte[1024];
             int bytesRead;

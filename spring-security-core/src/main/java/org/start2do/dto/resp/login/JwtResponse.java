@@ -20,7 +20,7 @@ public class JwtResponse {
     /** H
      * 用户Id
      */
-    private Integer id;
+    private String id;
     /**
      * 用户组
      */
@@ -30,7 +30,7 @@ public class JwtResponse {
      */
     private String username;
     private String realName;
-    private Integer deptId;
+    private String deptId;
     private String deptName;
     /**
      * jwt Token
@@ -45,8 +45,10 @@ public class JwtResponse {
         this.jwt = jwt;
         this.extInfo = userCredentials.getUserExtInfo();
         this.roles = userCredentials.getRoles();
-        Optional<SysDept> optional = Optional.ofNullable(userCredentials.getDept());
+        Optional<SysDept> optional = Optional.ofNullable(userCredentials.getMainDept());
         this.deptId = optional.map(SysDept::getId).orElse(null);
         this.deptName = optional.map(SysDept::getName).orElse(null);
     }
+
+
 }

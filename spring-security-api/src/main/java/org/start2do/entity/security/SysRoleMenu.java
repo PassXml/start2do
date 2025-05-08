@@ -31,12 +31,12 @@ public class SysRoleMenu extends Model {
 
 
     @Column(name = "role_id")
-    private Integer roleId;
+    private String roleId;
     @JoinColumn(name = "role_id", insertable = false, updatable = false)
     @ManyToOne
     private SysRole role;
     @Column(name = "menu_id")
-    private Integer menuId;
+    private String menuId;
     @JoinColumn(name = "menu_id", insertable = false, updatable = false)
     @ManyToOne
     private SysMenu menu;

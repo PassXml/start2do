@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'org.start2do'
-version '3.0.6.1-SNAPSHOT'
+version '3.0.6.2-SNAPSHOT'
 
 
 dependencies {
@@ -12,8 +12,7 @@ dependencies {
     compileOnly("org.slf4j:slf4j-api:2.0.17")
     compileOnly group: 'io.ebean', name: 'ebean-annotation', version: '8.4'
     compileOnly 'jakarta.validation:jakarta.validation-api'
-    compileOnly 'com.fasterxml.jackson.core:jackson-annotations:2.14.3'
-    compileOnly 'com.fasterxml.jackson.core:jackson-annotations:2.14.3'
+    compileOnly 'com.fasterxml.jackson.core:jackson-annotations'
     testImplementation("org.slf4j:slf4j-simple:2.0.5")
     testImplementation("org.slf4j:slf4j-api:2.0.17")
     compileOnly group: 'net.java.dev.jna', name: 'jna', version: '5.14.0'

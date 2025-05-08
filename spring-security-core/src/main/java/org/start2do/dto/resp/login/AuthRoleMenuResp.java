@@ -12,13 +12,13 @@ import org.start2do.entity.security.SysMenu;
 @NoArgsConstructor
 public class AuthRoleMenuResp {
 
-    private Integer id;
+    private String id;
     private String name;
     private String path;
     private String permission;
     private String icon;
     private String sort;
-    private Integer parentId;
+    private String parentId;
     private String type;
     private String typeStr;
     private String isShow;

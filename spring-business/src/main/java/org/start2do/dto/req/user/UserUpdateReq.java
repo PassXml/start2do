@@ -13,5 +13,5 @@ import lombok.experimental.Accessors;
 public class UserUpdateReq extends UserAddReq {
 
     @NotNull
-    private Integer id;
+    private String id;
 }

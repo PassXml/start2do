@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.start2do.constant.DBConstant;
 
 @Setter
 @Getter
@@ -15,11 +16,11 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @Embeddable
 @EqualsAndHashCode
-public class SysUserPermissionId implements Serializable {
+public class SysUserMenuId implements Serializable {
 
-    @Column(name = "menu_id")
-    private Integer menuId;
-    @Column(name = "user_id")
-    private Integer userId;
+    @Column(name = "menu_id", length = DBConstant.ID_STR_LENGTH)
+    private String menuId;
+    @Column(name = "user_id", length = DBConstant.ID_STR_LENGTH)
+    private String userId;
 
 }

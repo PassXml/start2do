@@ -15,7 +15,7 @@ import lombok.experimental.Accessors;
 public class RoleMenuReq {
 
     @NotNull
-    private Integer roleId;
+    private String roleId;
     @JsonAlias("menuId")
-    private List<Integer> menuIds;
+    private List<String> menuIds;
 }

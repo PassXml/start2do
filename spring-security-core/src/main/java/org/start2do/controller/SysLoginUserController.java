@@ -7,12 +7,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.start2do.dto.Permission;
 import org.start2do.dto.R;
-import org.start2do.dto.UserCredentials;
 import org.start2do.dto.resp.login.JwtResponse;
 import org.start2do.service.imp.SysLoginUserServiceImpl;
 import org.start2do.util.JwtTokenUtil;
-import reactor.core.publisher.Mono;
 
 /**
  * 登录
@@ -30,6 +29,7 @@ public class SysLoginUserController {
      * 用户信息
      */
     @GetMapping("info")
+    @Permission(defaultPass = true)
     public R<JwtResponse> userInfo() {
         return R.ok(new JwtResponse(sysUserService.loadUserByUsername(JwtTokenUtil.getUserName()), null));
     }

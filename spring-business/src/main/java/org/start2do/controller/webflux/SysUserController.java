@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.BusinessException;
 import org.start2do.dto.IdReq;
+import org.start2do.dto.IdStrReq;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
 import org.start2do.dto.annotation.SysLogSetting;
@@ -101,7 +102,7 @@ public class SysUserController {
      */
     @GetMapping("delete")
     @SysLogSetting("删除")
-    public Mono<R<Boolean>> delete(IdReq req) {
+    public Mono<R<Boolean>> delete(IdStrReq req) {
         BeanValidatorUtil.validate(req);
         return sysUserService.remove(req.getId()).map(R::ok);
     }
@@ -110,7 +111,7 @@ public class SysUserController {
      * 详情
      */
     @GetMapping("detail")
-    public Mono<R<UserDetailResp>> detail(IdReq req) {
+    public Mono<R<UserDetailResp>> detail(IdStrReq req) {
         BeanValidatorUtil.validate(req);
         return sysUserService.getOneReactive(new QSysUser().id.eq(req.getId()).roles.fetch()).map(user -> {
             UserDetailResp resp = UserDtoMapper.INSTANCE.toUserDetailResp(user);
@@ -119,7 +120,7 @@ public class SysUserController {
             resp.setRolesInfo(roles.stream().map(t -> new Item(
                 t.getId(), t.getName()
             )).toList());
-            List<Integer> menuIds = new ArrayList<>();
+            List<String> menuIds = new ArrayList<>();
             for (SysRole role : user.getRoles()) {
                 menuIds.addAll(role.getMenus().stream().map(SysMenu::getId).toList());
             }

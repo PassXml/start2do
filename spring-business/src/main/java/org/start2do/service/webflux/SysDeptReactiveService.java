@@ -24,8 +24,9 @@ public class SysDeptReactiveService extends AbsMixService<SysDept, Integer> {
 
     private final SysUserReactiveService sysUserService;
 
-    public Mono<Boolean> remove(Integer id) {
-        return sysUserService.countReactive(new QSysUser().deptId.eq(id)).filter(integer -> integer <= 0).switchIfEmpty(
+    public Mono<Boolean> remove(String id) {
+        return sysUserService.countReactive(new QSysUser().dept.id.eq(id)).filter(integer -> integer <= 0)
+            .switchIfEmpty(
             Mono.error(new BusinessException("请先删除该节点下的用户"))
         ).then(deleteByIdReactive(id));
     }

@@ -39,7 +39,7 @@ public class JwtTokenUtil implements Serializable {
     public static boolean CheckExpired = true;
     public static boolean MockUser = false;
     public static String MockUserName = "admin";
-    public static Integer MockUserId = 1;
+    public static String MockUserId = "1";
     public static boolean IsWebFlux = true;
 
 
@@ -108,7 +108,7 @@ public class JwtTokenUtil implements Serializable {
         System.out.println(genKey());
     }
 
-    public Integer getUserId() {
+    public String getUserId() {
         if (MockUser) {
             return MockUserId;
         }
@@ -120,10 +120,10 @@ public class JwtTokenUtil implements Serializable {
         HttpServletRequest request = sra.getRequest();
         String header = request.getHeader(AUTHORIZATION);
         return Optional.ofNullable(getClaimFromToken(header.substring(BearerLen), Claims::getSubject))
-            .map(Integer::parseInt).orElse(null);
+            .orElse(null);
     }
 
-    public Mono<Integer> getUserIdReactive() {
+    public Mono<String> getUserIdReactive() {
         return Mono.deferContextual(ctx -> Mono.just(ctx.get(JwtTokenUtil.AUTHORIZATION))).cast(UserCredentials.class)
             .map(UserCredentials::getId);
     }
@@ -153,8 +153,8 @@ public class JwtTokenUtil implements Serializable {
     }
 
 
-    public static Integer getUserId(String jwtStr) {
+    public static String getUserId(String jwtStr) {
         return Optional.ofNullable(getClaimFromToken(jwtStr, Claims::getSubject))
-            .map(Integer::parseInt).orElse(null);
+            .orElse(null);
     }
 }

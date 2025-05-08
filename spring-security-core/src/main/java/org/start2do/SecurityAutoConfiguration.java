@@ -180,14 +180,14 @@ public class SecurityAutoConfiguration {
     public ISysLoginUserCustomInfoService iSysLoginUserCustomInfoReactiveService() {
         return new ISysLoginUserCustomInfoService() {
             @Override
-            public Map<String, Object> getCustomInfo(Integer userId) {
+            public Map<String, Object> getCustomInfo(String userId) {
                 HashMap<String, Object> map = new HashMap<>();
                 map.put("pwExpired", false);
                 return map;
             }
 
             @Override
-            public Mono<Map<String, Object>> getCustomInfoReactive(Integer userId) {
+            public Mono<Map<String, Object>> getCustomInfoReactive(String userId) {
                 return Mono.just(getCustomInfo(userId)).defaultIfEmpty(new HashMap<>());
             }
         };

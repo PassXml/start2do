@@ -5,6 +5,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.start2do.constant.Constant;
+import org.start2do.ebean.util.SysSettingUtil;
 import org.start2do.util.StringUtils;
 
 @Setter
@@ -150,6 +152,10 @@ public class BusinessConfig {
         private FileSettingType type = FileSettingType.local;
         private String uploadDir;
         private String host;
+
+        public String getHost() {
+            return SysSettingUtil.getLabel(Constant.TYPE_SYSTEM_SETTING, Constant.KEY_FILE_DOWNLOAD_HOST, host);
+        }
 
         public String getUploadDir() {
             if (StringUtils.isEmpty(uploadDir)) {

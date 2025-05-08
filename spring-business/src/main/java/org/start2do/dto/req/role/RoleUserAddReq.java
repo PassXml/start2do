@@ -13,7 +13,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 public class RoleUserAddReq {
 
-    private List<Integer> userId;
+    private List<String> userId;
     @NotNull
-    private Integer roleId;
+    private String roleId;
 }

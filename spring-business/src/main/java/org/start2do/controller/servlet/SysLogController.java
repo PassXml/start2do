@@ -14,7 +14,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.BusinessException;
+import org.start2do.dto.IdReq;
+import org.start2do.dto.IdStrReq;
 import org.start2do.dto.IdsReq;
+import org.start2do.dto.IdsStrReq;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
 import org.start2do.dto.mapper.SysLogDtoMapper;
@@ -119,7 +122,7 @@ public class SysLogController {
      * 批量删除
      */
     @GetMapping("delete")
-    public R delete(IdsReq req) {
+    public R delete(IdsStrReq req) {
         BeanValidatorUtil.validate(req);
         sysLogService.delete(new QSysLog().id.in(req.getId()));
         return R.ok();

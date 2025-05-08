@@ -11,12 +11,11 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 public class UserRole {
 
-    private Integer roleId;
+    private String roleId;
     private String roleName;
     private String roleCode;
 
-    public UserRole(Integer roleId, String roleName, String roleCode) {
-
+    public UserRole(String roleId, String roleName, String roleCode) {
         this.roleId = roleId;
         this.roleName = roleName;
         this.roleCode = roleCode;

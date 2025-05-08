@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.IdReq;
+import org.start2do.dto.IdStrReq;
 import org.start2do.dto.MenuResp;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
@@ -38,7 +39,7 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("dept")
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "dept", havingValue = "true",matchIfMissing = true)
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "dept", havingValue = "true", matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.REACTIVE)
 public class SysDeptController {
 
@@ -50,10 +51,11 @@ public class SysDeptController {
     @GetMapping("page")
     public Mono<R<Page<DeptPageResp>>> page(Page page, DeptPageReq req) {
         return Mono.fromSupplier(() -> {
-            QSysDept qClass = new QSysDept().sort.desc();
-            Where.ready().like(req.getName(), qClass.name);
-            return qClass;
-        }).flatMap(qClass -> sysDeptService.pageReactive(qClass, page, DeptDtoMapper.INSTANCE::toDeptPageResp)).map(R::ok);
+                QSysDept qClass = new QSysDept().sort.desc();
+                Where.ready().like(req.getName(), qClass.name);
+                return qClass;
+            }).flatMap(qClass -> sysDeptService.pageReactive(qClass, page, DeptDtoMapper.INSTANCE::toDeptPageResp))
+            .map(R::ok);
     }
 
     /**
@@ -61,9 +63,10 @@ public class SysDeptController {
      */
     @SysLogSetting("添加部门")
     @PostMapping("add")
-    public Mono<R<Integer>> add(@RequestBody DeptAddReq req) {
+    public Mono<R<String>> add(@RequestBody DeptAddReq req) {
         BeanValidatorUtil.validate(req);
-        return Mono.just(DeptDtoMapper.INSTANCE.toEntity(req)).flatMap(sysDeptService::saveReactive).filter(Objects::nonNull)
+        return Mono.just(DeptDtoMapper.INSTANCE.toEntity(req)).flatMap(sysDeptService::saveReactive)
+            .filter(Objects::nonNull)
             .map(SysDept::getId).map(R::ok);
     }
 
@@ -85,7 +88,7 @@ public class SysDeptController {
      */
     @SysLogSetting("删除部门")
     @GetMapping("delete")
-    public Mono<R<Boolean>> delete(IdReq req) {
+    public Mono<R<Boolean>> delete(IdStrReq req) {
         BeanValidatorUtil.validate(req);
         return Mono.just(req.getId()).flatMap(sysDeptService::remove).map(R::ok);
     }
@@ -114,7 +117,7 @@ public class SysDeptController {
     public Mono<R<List<DeptTreeResp>>> tree() {
         return Mono.from(sysDeptService.findAllReactive()).map(depts -> {
             List<DeptTreeResp> objects = depts.stream().map(DeptDtoMapper.INSTANCE::toDeptTreeResp).toList();
-            Map<Integer, List<DeptTreeResp>> map = objects.stream().filter(t -> t.getParentId() != null)
+            Map<String, List<DeptTreeResp>> map = objects.stream().filter(t -> t.getParentId() != null)
                 .collect(Collectors.groupingBy(DeptTreeResp::getParentId));
             for (DeptTreeResp object : objects) {
                 object.setChildren(map.get(object.getId()));

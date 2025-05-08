@@ -17,24 +17,25 @@ import org.start2do.entity.security.SysMenu;
 @Accessors(chain = true)
 public class UserCredentials extends User {
 
-    private Integer id;
+    private String id;
     private List<UserRole> roles;
     private List<SysMenu> menus;
-    private SysDept dept;
+    private SysDept mainDept;
+    private List<SysDept> depts;
     private String realName;
     /**
      * 用户额外信息
      */
     private Map<String, Object> userExtInfo;
 
-    public UserCredentials(Integer id, String username, String password, String realName,
+    public UserCredentials(String id, String username, String password, String realName,
         Collection<? extends GrantedAuthority> authorities) {
         super(username, password, authorities);
         this.id = id;
         this.realName = realName;
     }
 
-    public UserCredentials(UserDetails userDetails, Integer mockUserId) {
+    public UserCredentials(UserDetails userDetails, String mockUserId) {
         super(
             userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities()
         );

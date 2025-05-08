@@ -18,11 +18,11 @@ import lombok.experimental.Accessors;
 public class SysRoleMenuId implements Serializable {
 
     @Column(name = "role_id")
-    private Integer roleId;
+    private String roleId;
     @Column(name = "menu_id")
-    private Integer menuId;
+    private String menuId;
 
-    public SysRoleMenuId(Integer roleId, Integer menuId) {
+    public SysRoleMenuId(String roleId, String menuId) {
         this.roleId = roleId;
         this.menuId = menuId;
     }

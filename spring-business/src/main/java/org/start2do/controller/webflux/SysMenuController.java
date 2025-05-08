@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.IdReq;
+import org.start2do.dto.IdStrReq;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
 import org.start2do.dto.annotation.SysLogSetting;
@@ -77,7 +78,7 @@ public class SysMenuController {
      */
     @SysLogSetting("删除菜单")
     @GetMapping("delete")
-    public Mono<R<Boolean>> delete(IdReq req) {
+    public Mono<R<Boolean>> delete(IdStrReq req) {
         BeanValidatorUtil.validate(req);
         return sysMenuService.remove(req.getId()).map(R::ok);
     }
@@ -95,7 +96,7 @@ public class SysMenuController {
      * 角色-菜单
      */
     @GetMapping("menu/role")
-    public Mono<R<List<MenuDetailResp>>> menuByRole(IdReq req) {
+    public Mono<R<List<MenuDetailResp>>> menuByRole(IdStrReq req) {
         BeanValidatorUtil.validate(req);
         return sysMenuService.findAllReactive(new QSysMenu().roles.id.eq(req.getId())).map(sysMenus -> {
             return sysMenus.stream().map(MenuDtoMapper.INSTANCE::toMenuDetailResp).toList();

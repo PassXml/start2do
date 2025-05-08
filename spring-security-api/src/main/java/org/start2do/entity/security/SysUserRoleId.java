@@ -17,7 +17,7 @@ import lombok.experimental.Accessors;
 @Embeddable
 public class SysUserRoleId implements Serializable {
 
-    private Integer userId;
-    private Integer roleId;
+    private String userId;
+    private String roleId;
 
 }

@@ -13,6 +13,7 @@ import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
@@ -24,6 +25,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.start2do.dto.BusinessException;
+import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 import org.start2do.util.ExcelUtil.ExcelSetting;
 
 @Setter
@@ -39,10 +41,10 @@ public class SysLog extends Model {
      * 编号
      */
     @Id
-    @Identity(type = IdentityType.IDENTITY, generated = IdentityGenerated.BY_DEFAULT)
+    @GeneratedValue(generator = SnowflakeStrGenerator.KEY)
     @DbComment("日志编号")
     @ExcelSetting("日志编号")
-    private Long id;
+    private String id;
 
     /**
      * 日志类型

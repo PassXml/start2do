@@ -29,6 +29,7 @@ public interface IMixService<T extends Model> {
     boolean delete(T obj, Transaction transaction);
 
     int deleteById(Object id);
+    int deleteByIds(List<Object> id);
 
     int handDeleteById(Object id);
 

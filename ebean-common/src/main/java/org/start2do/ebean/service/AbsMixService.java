@@ -795,5 +795,14 @@ public abstract class AbsMixService<T extends Model, TokenType> implements IMixS
         }
     }
 
+    @Override
+    public int deleteByIds(List id) {
+        int count = 0;
+        for (Object object : id) {
+            count += DB.delete(aclass, object);
+        }
+        return count;
+    }
+
 
 }

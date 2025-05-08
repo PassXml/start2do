@@ -69,12 +69,7 @@ public class SysFileService extends AbsService<SysFile> {
         for (FileUpdateByteDto dto : dtos) {
             result.add(operationService.upload(dto.getBytes(), dto.getFileName(), checkExist));
         }
-        //转化成result为 Mono<list<sysFile>>
-        List<SysFile> sysFiles = new ArrayList<>();
-        for (Object object : dtos) {
-            sysFiles.add((SysFile) object);
-        }
-        return sysFiles;
+        return result;
     }
 
     public SysFile updateFile(String fileName, ByteArrayOutputStream outputStream) {

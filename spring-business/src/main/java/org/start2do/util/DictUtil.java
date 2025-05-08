@@ -16,5 +16,19 @@ public class DictUtil {
         return DictServletUtil.getItems(type);
     }
 
+    public static boolean getItems(String type, String value) {
+        ConcurrentHashMap<String, String> map = DictServletUtil.getItems(type);
+        if (map == null) {
+            return false;
+        }
+        while (map.keys().hasMoreElements()) {
+            String s = map.keys().nextElement();
+            if (value.equals(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
 }

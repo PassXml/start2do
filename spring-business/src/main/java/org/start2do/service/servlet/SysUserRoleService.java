@@ -25,11 +25,11 @@ import org.start2do.util.ListUtil;
 public class SysUserRoleService extends AbsService<SysUserRole> {
 
     @Transactional(rollbackFor = Exception.class)
-    public void save(Integer roleId, List<Integer> userId) {
-        List<Integer> integers = userId.stream().filter(Objects::nonNull).collect(Collectors.toList());
+    public void save(String roleId, List<String> userId) {
+        List<String> integers = userId.stream().filter(Objects::nonNull).collect(Collectors.toList());
         List<SysUserRole> roles = findAll(new QSysUserRole().roleId.eq(roleId));
         ListUtil.diff(integers, roles, (integer, sysUserRole) -> integer.equals(sysUserRole.getUserId()), add -> {
-            for (Integer integer : add) {
+            for (String integer : add) {
                 save(new SysUserRole(integer, roleId));
             }
         }, eqValues -> {

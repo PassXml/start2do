@@ -17,7 +17,7 @@ public class CustomContextInfoSMImpl implements CustomContextInfo {
 
     @Override
     public void loadReqBefore(JwtRequest req) {
-        req.setPassword(SM2Util.decrypt(config.getSecret(), req.getPassword()));
+        req.setPassword(SM2Util.decrypt(config.getSm2privateKey(), req.getPassword()));
     }
 
     @Override
@@ -37,6 +37,6 @@ public class CustomContextInfoSMImpl implements CustomContextInfo {
 
     @Override
     public void loadReqBefore(IPasswordText req) {
-        req.setPassword_(SM2Util.decrypt(config.getSecret(), req.getPassword_()));
+        req.setPassword_(SM2Util.decrypt(config.getSm2privateKey(), req.getPassword_()));
     }
 }

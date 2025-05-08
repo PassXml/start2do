@@ -25,14 +25,14 @@ import reactor.core.publisher.Mono;
 @EnableConfigurationProperties({DataSourceProperties.class})
 @ConditionalOnWebApplication(type = Type.REACTIVE)
 @ConditionalOnProperty(prefix = "start2do.business.service", name = "user", havingValue = "true", matchIfMissing = true)
-public class SysUserRoleReactiveService extends AbsMixService<SysUserRole, Integer> {
+public class SysUserRoleReactiveService extends AbsMixService<SysUserRole, String> {
 
-    public Mono<Boolean> save(Integer roleId, List<Integer> userId) {
-        List<Integer> integers = userId.stream().filter(Objects::nonNull).toList();
+    public Mono<Boolean> save(String roleId, List<String> userId) {
+        List<String> integers = userId.stream().filter(Objects::nonNull).toList();
         return findAllReactive(new QSysUserRole().roleId.eq(roleId)).flatMap(roles -> {
             List<Mono<Boolean>> result = new ArrayList<>();
             ListUtil.diff(integers, roles, (integer, sysUserRole) -> integer.equals(sysUserRole.getUserId()), add -> {
-                for (Integer integer : add) {
+                for (String integer : add) {
                     result.add(saveReactive(new SysUserRole(integer, roleId)).map(sysUserRole -> true));
                 }
             }, eqValues -> {

@@ -59,7 +59,7 @@ public class SysDictCustomController {
             String className = iDictItem.getClass().getName();
             boolean hasAdd = true;
             for (DictAllResp resp : collect) {
-                if (className.equals(resp.getDictName())) {
+                if (className.equals(resp.getDictKey())) {
                     hasAdd = false;
                     boolean hasAdd2 = true;
                     List<DictItemPageResp> addItem = new ArrayList<>();
@@ -76,7 +76,7 @@ public class SysDictCustomController {
             if (hasAdd) {
                 DictAllResp resp = add.get(className);
                 if (resp == null) {
-                    resp = new DictAllResp(className, new ArrayList<>());
+                    resp = new DictAllResp(className, className, new ArrayList<>());
                 }
                 resp.getItems().add(new DictItemPageResp(
                     iDictItem.getLabel(),

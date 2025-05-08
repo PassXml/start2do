@@ -29,7 +29,7 @@ public class SysPermissionUserRef extends Model {
     @Column(name = "permission_id")
     private String permissionId;
     @Column(name = "user_id")
-    private Integer userId;
+    private String userId;
 
     public SysPermissionUserRef(SysPermissionUserRefId id) {
         this.id = id;

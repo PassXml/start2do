@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.IdReq;
+import org.start2do.dto.IdStrReq;
 import org.start2do.dto.MenuResp;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
@@ -95,7 +96,7 @@ public class SysRoleController {
      */
     @SysLogSetting("删除用户组")
     @GetMapping("delete")
-    public R delete(IdReq req) {
+    public R delete(IdStrReq req) {
         BeanValidatorUtil.validate(req);
         sysRoleService.remove(req.getId());
         return R.ok();
@@ -138,7 +139,7 @@ public class SysRoleController {
      * 根据用户组获取该用户组下面的菜单
      */
     @GetMapping("users")
-    public R<List<RoleUsersResp>> users(Integer roleId) {
+    public R<List<RoleUsersResp>> users(String roleId) {
         List<SysUserRole> all = userRoleService.findAll(new QSysUserRole().roleId.eq(roleId));
         if (all.isEmpty()) {
             return R.ok(new ArrayList<>());
@@ -149,7 +150,7 @@ public class SysRoleController {
                 new QSysUser().id.in(spList.stream().map(SysUserRole::getUserId).collect(Collectors.toSet())));
             allUsers.addAll(users);
         });
-        Map<Integer, SysUser> map = allUsers.stream().collect(Collectors.toMap(SysUser::getId, e -> e));
+        Map<String, SysUser> map = allUsers.stream().collect(Collectors.toMap(SysUser::getId, e -> e));
         return R.ok(all.stream().map(t -> {
             SysUser user = map.get(t.getUserId());
             return new RoleUsersResp(t.getUserId(),

@@ -12,7 +12,7 @@ import lombok.experimental.Accessors;
 public class PermissionUserAddReq {
 
     @NotNull
-    private Integer userId;
+    private String userId;
     @NotEmpty
     private String permissionId;
 }

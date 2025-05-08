@@ -12,6 +12,6 @@ import org.start2do.entity.security.SysRoleMenu;
 @Service
 @ConditionalOnWebApplication(type = Type.REACTIVE)
 @ConditionalOnProperty(prefix = "start2do.business.service", name = "role", havingValue = "true",matchIfMissing = true)
-public class SysRoleMenuReactiveService extends AbsMixService<SysRoleMenu, Integer> {
+public class SysRoleMenuReactiveService extends AbsMixService<SysRoleMenu, String> {
 
 }

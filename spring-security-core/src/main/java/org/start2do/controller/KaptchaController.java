@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.config.KaptchaConfig;
 import org.start2do.dto.BusinessException;
+import org.start2do.dto.Permission;
 import org.start2do.dto.R;
 import org.start2do.dto.resp.login.CodeResp;
 import org.start2do.util.StringUtils;
@@ -44,6 +45,7 @@ public class KaptchaController {
     @SneakyThrows
     @GetMapping("/code")
     @LogSetting(ignore = true)
+    @Permission(defaultPass = true)
     public R<CodeResp> code() {
         if (config.getEnable() == null || !config.getEnable()) {
             throw new BusinessException("未启用验证码");

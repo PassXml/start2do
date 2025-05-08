@@ -26,7 +26,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = Type.REACTIVE)
 @ConditionalOnProperty(prefix = "start2do.business.service", name = "file", havingValue = "true", matchIfMissing = true)
-public class SysFileReactiveService extends AbsMixService<SysFile, Integer> implements CommandLineRunner {
+public class SysFileReactiveService extends AbsMixService<SysFile, String> implements CommandLineRunner {
 
     private final BusinessConfig businessConfig;
     @Lazy

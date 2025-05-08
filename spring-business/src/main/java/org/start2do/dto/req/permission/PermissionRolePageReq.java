@@ -12,5 +12,5 @@ import org.start2do.dto.Page;
 public class PermissionRolePageReq extends Page {
 
     @NotNull
-    private Integer roleId;
+    private String roleId;
 }

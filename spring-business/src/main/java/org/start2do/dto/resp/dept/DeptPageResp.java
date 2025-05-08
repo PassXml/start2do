@@ -12,9 +12,10 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 public class DeptPageResp {
 
-    private Integer id;
+    private String id;
     private String name;
     private Integer sort = 0;
-    private Integer parentId;
+    private String parentId;
+    private String deptCode;
     private LocalDateTime createTime;
 }

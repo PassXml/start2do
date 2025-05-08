@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.zte'
-version = '3.0.6.1-SNAPSHOT'
+version = '3.0.6.2-SNAPSHOT'
 
 
 dependencies {
@@ -15,7 +15,7 @@ dependencies {
     api 'io.vertx:vertx-core:4.4.5'
     api 'io.vertx:vertx-zookeeper:4.4.5'
     compileOnly("jakarta.annotation:jakarta.annotation-api:2.1.1")
-    compileOnly 'com.fasterxml.jackson.core:jackson-annotations:2.13.3'
+    compileOnly 'com.fasterxml.jackson.core:jackson-annotations'
     compileOnly group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.15.2'
 //    api group: 'org.apache.pulsar', name: 'pulsar-client', version: '3.0.0'
     testImplementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.15.2'

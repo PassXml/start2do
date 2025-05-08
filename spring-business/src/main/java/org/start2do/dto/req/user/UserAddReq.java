@@ -46,8 +46,11 @@ public class UserAddReq {
 
     private String password;
     private LocalDateTime pwExpirationTime;
+    /**
+     * 主岗位
+     */
     @NotNull
-    private Integer deptId;
+    private String deptId;
     @NotEmpty
-    private List<Integer> roles;
+    private List<String> roles;
 }

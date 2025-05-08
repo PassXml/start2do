@@ -1,56 +1,67 @@
 package org.start2do.filter;
 
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Set;
+import java.io.IOException;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.HandlerInterceptor;
-import org.start2do.Start2doSecurityConfig;
-import org.start2do.entity.security.SysUser;
+import org.start2do.config.PermissionConfig;
+import org.start2do.dto.R;
+import org.start2do.dto.UserCredentials;
 
 @Component
+@ConditionalOnProperty(prefix = "start2do.permission", name = "enable", matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.SERVLET)
-public class PermissionInterceptor extends AbsPermission implements HandlerInterceptor {
+public class PermissionInterceptor extends AbsPermission implements Filter, IPermission {
 
-
-    public PermissionInterceptor(Start2doSecurityConfig config) {
+    public PermissionInterceptor(PermissionConfig config) {
         super(config);
     }
 
-    // Servlet 环境下的拦截逻辑
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
-        throws Exception {
+    public void init(FilterConfig filterConfig) throws ServletException {
+        // 初始化逻辑，如果有需要
+    }
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+        throws IOException, ServletException {
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            return handleUnauthenticated(response);
+            chain.doFilter(request, response);
+            return;
         }
-
-        SysUser user = (SysUser) authentication.getPrincipal();
-        Set<String> permissions = extractPermissions(user);
-        boolean hasPermission = checkPermission(request.getRequestURI(), permissions);
-
+        UserCredentials user = (UserCredentials) authentication.getPrincipal();
+        boolean hasPermission = checkPermission(httpRequest.getRequestURI(), user, extractPermissions(user));
         if (!hasPermission) {
-            return handleUnauthorized(response);
+            handleUnauthorized(httpResponse);
+            return;
         }
-        return true;
+
+        chain.doFilter(request, response);
     }
 
-    // 处理未认证用户 (Servlet)
-    private boolean handleUnauthenticated(HttpServletResponse response) throws Exception {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().write("用户未认证");
-        return false;
+    @Override
+    public void destroy() {
+        // 销毁逻辑，如果有需要
     }
 
-    // 处理无权限用户 (Servlet)
-    private boolean handleUnauthorized(HttpServletResponse response) throws Exception {
+    // 处理无权限用户
+    private void handleUnauthorized(HttpServletResponse response) throws IOException {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        response.getWriter().write("访问被拒绝：权限不足");
-        return false;
+        response.getWriter().write(R.failed(500, "权限不足").toJson());
     }
 }

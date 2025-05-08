@@ -3,6 +3,7 @@ package org.start2do.entity.security;
 import io.ebean.Model;
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbComment;
+import io.ebean.annotation.JsonIgnore;
 import io.ebean.annotation.StorageEngine;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.start2do.constant.DBConstant;
 import org.start2do.util.Md5Util;
 
 @Setter
@@ -31,14 +33,21 @@ import org.start2do.util.Md5Util;
 public class SysPermission extends Model {
 
     @Id
+    @Column(length = DBConstant.TITLE_LENGTH)
     private String id;
     @Column(length = 4096)
     private String url;
+
+    private boolean pass;
+    @JsonIgnore
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @JoinTable(name = "sys_permission_role_ref", joinColumns = {
         @JoinColumn(name = "permission_id", referencedColumnName = "id")}, inverseJoinColumns = {
         @JoinColumn(name = "role_id", referencedColumnName = "id")})
     @ManyToMany(fetch = FetchType.LAZY)
     public List<SysRole> roles;
+    @JsonIgnore
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @JoinTable(name = "sys_permission_user_ref", joinColumns = {
         @JoinColumn(name = "permission_id", referencedColumnName = "id")}, inverseJoinColumns = {
         @JoinColumn(name = "user_id", referencedColumnName = "id")})

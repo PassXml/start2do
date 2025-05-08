@@ -12,7 +12,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 public class UserDetailResp {
 
-    private Integer id;
+    private String id;
     private String username;
     private String realName;
     private String status;
@@ -20,20 +20,26 @@ public class UserDetailResp {
     private String phone;
     private String email;
     private String avatar;
+    /**
+     * 主部门
+     */
     private String deptId;
     private String deptName;
-    private List<Integer> menus;
-    private List<Integer> roles;
+    private List<String> menus;
+    private List<String> roles;
     private List<Item> rolesInfo;
+    private List<Item> depts;
+
     @Setter
     @Getter
     @Accessors(chain = true)
     @NoArgsConstructor
-    public static class Item{
-        private Integer id;
+    public static class Item {
+
+        private String id;
         private String name;
 
-        public Item(Integer id, String name) {
+        public Item(String id, String name) {
             this.id = id;
             this.name = name;
         }

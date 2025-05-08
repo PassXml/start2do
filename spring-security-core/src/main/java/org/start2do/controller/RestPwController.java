@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.BusinessException;
 import org.start2do.dto.CustomContextInfo;
+import org.start2do.dto.Permission;
 import org.start2do.dto.R;
 import org.start2do.dto.req.restpw.RestPwChangeReq;
 import org.start2do.dto.req.restpw.RestPwReq;
@@ -37,6 +38,7 @@ public class RestPwController {
      * 重置密码
      */
     @PostMapping("submit")
+    @Permission(defaultPass = true)
     public R submit(@Valid @RequestBody RestPwChangeReq req) {
         iRestPwService.validateCode(req.getUsername(), req.getVerificationCode());
         customContextInfo.loadReqBefore(req);
@@ -51,6 +53,7 @@ public class RestPwController {
      * 发送验证码
      */
     @PostMapping("sendValidateCode")
+    @Permission(defaultPass = true)
     public R sendValidateCode(@RequestBody @Valid RestPwReq req) {
         QSysUser qClass = new QSysUser().username.eq(req.getUsername());
         if (req.getType() == Type.Email) {

@@ -13,6 +13,6 @@ import org.start2do.dto.Page;
 public class UserPageReq extends Page {
 
     private String username;
-    private Integer role;
+    private String role;
 
 }

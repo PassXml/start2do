@@ -20,6 +20,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "start2do.util.redis")
 public class RedisProperties {
 
+    private boolean enableMultiJacksonOM = false;
     private Map<String, RedisConnectionConfig> sources = new HashMap<>();
 
     @Data

@@ -4,6 +4,7 @@ import io.ebean.annotation.Cache;
 import io.ebean.annotation.Identity;
 import io.ebean.annotation.IdentityType;
 import io.ebean.annotation.StorageEngine;
+import jakarta.persistence.GeneratedValue;
 import java.io.Serializable;
 import java.util.List;
 import jakarta.persistence.Column;
@@ -18,6 +19,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.start2do.ebean.entity.BaseModel2;
+import org.start2do.ebean.id_generators.SnowflakeGenerator;
+import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 
 @Setter
 @Getter
@@ -29,8 +32,8 @@ import org.start2do.ebean.entity.BaseModel2;
 public class SysRole extends BaseModel2 implements Serializable {
 
     @Id
-    @Identity(start = 100, type = IdentityType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(generator = SnowflakeStrGenerator.KEY)
+    private String id;
     @Column(name = "name", length = 128)
     private String name;
     @Column(name = "role_code")

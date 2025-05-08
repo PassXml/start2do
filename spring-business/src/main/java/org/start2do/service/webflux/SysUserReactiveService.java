@@ -28,13 +28,13 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = Type.REACTIVE)
 @ConditionalOnProperty(prefix = "start2do.business.service", name = "user", havingValue = "true",matchIfMissing = true)
-public class SysUserReactiveService extends AbsMixService<SysUser, Integer> {
+public class SysUserReactiveService extends AbsMixService<SysUser, String> {
 
     private final SysLoginRoleReactiveService sysLoginRoleReactiveService;
     private final SysUserRoleReactiveService sysUserRoleService;
     private final PasswordEncoder passwordEncoder;
 
-    public Mono<Boolean> add(SysUser entity, List<Integer> roles) {
+    public Mono<Boolean> add(SysUser entity, List<String> roles) {
         return transactionOf(checkRole(roles).zipWith(Mono.just(entity)).zipWhen(objs -> {
                 SysUser user = objs.getT2();
                 user.setPassword(passwordEncoder.encode(entity.getPassword()));
@@ -42,7 +42,7 @@ public class SysUserReactiveService extends AbsMixService<SysUser, Integer> {
             }).flatMap(objects -> {
                 SysUser user = objects.getT1().getT2();
                 List<Mono<Boolean>> monos = new ArrayList<>();
-                for (Integer roleId : roles) {
+                for (String roleId : roles) {
                     monos.add(sysUserRoleService.saveReactive(new SysUserRole(user.getId(), roleId)).map(sysUserRole -> true));
                 }
                 return Flux.fromIterable(monos).flatMap(Function.identity()).all(Boolean::booleanValue);
@@ -52,18 +52,18 @@ public class SysUserReactiveService extends AbsMixService<SysUser, Integer> {
     }
 
 
-    private Mono<List<SysRole>> checkRole(List<Integer> roles) {
+    private Mono<List<SysRole>> checkRole(List<String> roles) {
         return sysLoginRoleReactiveService.findAll(new QSysRole().id.in(roles))
             .filter(sysRoles -> sysRoles.size() == roles.size())
             .switchIfEmpty(Mono.error(new BusinessException("用户组错误")));
     }
 
-    public Mono<Boolean> remove(Integer id) {
+    public Mono<Boolean> remove(String id) {
         return sysUserRoleService.deleteReactive(new QSysUserRole().userId.eq(id)).filter(aBoolean -> true)
             .switchIfEmpty(Mono.error(new BusinessException("删除失败"))).flatMap(aBoolean -> deleteByIdReactive(id));
     }
 
-    public Mono<Boolean> update(SysUser user, List<Integer> roleIds) {
+    public Mono<Boolean> update(SysUser user, List<String> roleIds) {
         return transactionOf(checkRole(roleIds).zipWhen(sysRoles -> this.updateReactive(user))
                 .zipWhen(aBoolean -> sysUserRoleService.findAllReactive(new QSysUserRole().userId.eq(user.getId())))
                 .flatMap(objects -> {

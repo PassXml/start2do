@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.IdReq;
+import org.start2do.dto.IdStrReq;
 import org.start2do.dto.MenuResp;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
@@ -36,7 +37,7 @@ import org.start2do.util.BeanValidatorUtil;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("dept")
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "dept", havingValue = "true",matchIfMissing = true)
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "dept", havingValue = "true", matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.SERVLET)
 public class SysDeptController {
 
@@ -81,7 +82,7 @@ public class SysDeptController {
      */
     @GetMapping("delete")
     @SysLogSetting("删除部门")
-    public R delete(IdReq req) {
+    public R delete(IdStrReq req) {
         BeanValidatorUtil.validate(req);
         sysDeptService.remove(req.getId());
         return R.ok();
@@ -111,7 +112,7 @@ public class SysDeptController {
         List<SysDept> depts = sysDeptService.findAll();
         List<DeptTreeResp> objects = depts.stream().map(DeptDtoMapper.INSTANCE::toDeptTreeResp)
             .collect(Collectors.toList());
-        Map<Integer, List<DeptTreeResp>> map = objects.stream().filter(t -> t.getParentId() != null)
+        Map<String, List<DeptTreeResp>> map = objects.stream().filter(t -> t.getParentId() != null)
             .collect(Collectors.groupingBy(DeptTreeResp::getParentId));
         for (DeptTreeResp object : objects) {
             object.setChildren(map.get(object.getId()));

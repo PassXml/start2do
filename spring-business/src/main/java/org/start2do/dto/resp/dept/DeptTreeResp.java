@@ -14,9 +14,10 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 public class DeptTreeResp {
 
-    private Integer id;
-    private Integer parentId;
+    private String id;
+    private String parentId;
     private Integer sort;
     private String name;
+    private String deptCode;
     private List<DeptTreeResp> children;
 }

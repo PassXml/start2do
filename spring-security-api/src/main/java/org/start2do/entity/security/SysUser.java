@@ -6,17 +6,15 @@ import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbComment;
 import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.DbForeignKey;
-import io.ebean.annotation.Identity;
-import io.ebean.annotation.IdentityType;
 import io.ebean.annotation.StorageEngine;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -30,6 +28,10 @@ import lombok.experimental.Accessors;
 import org.start2do.dto.BusinessException;
 import org.start2do.ebean.dict.IDictItem;
 import org.start2do.ebean.entity.BaseModel2;
+import org.start2do.ebean.id_generators.SnowflakeGenerator;
+import org.start2do.entity.security.SysUserDept.Type;
+import org.start2do.entity.security.query.QSysDept;
+import org.start2do.entity.security.query.QSysUserDept;
 
 @Setter
 @Getter
@@ -42,8 +44,8 @@ import org.start2do.ebean.entity.BaseModel2;
 public class SysUser extends BaseModel2 implements Serializable {
 
     @Id
-    @Identity(start = 100, type = IdentityType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(generator = SnowflakeGenerator.KEY)
+    private String id;
     @Column(name = "username", length = 128)
     private String username;
     @Column(name = "real_name", length = 32)
@@ -59,43 +61,44 @@ public class SysUser extends BaseModel2 implements Serializable {
     private String avatar;
     @Column(name = "phone", length = 32)
     private String phone;
-    @Column(name = "dept_id")
-    private Integer deptId;
 
     @DbComment("密码过期时间")
     @Column(name = "pw_expiration_time")
     private LocalDateTime pwExpirationTime;
+    @JoinTable(name = "sys_user_dept", joinColumns = {
+        @JoinColumn(name = "user_id", referencedColumnName = "id")}, inverseJoinColumns = {
+        @JoinColumn(name = "dept_id", referencedColumnName = "id")})
     @JsonIgnore
-    @JoinColumn(name = "dept_id", insertable = false, updatable = false)
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY)
     @DbForeignKey(noConstraint = true)
-    private SysDept dept;
-    @JoinTable(
-        name = "sys_user_role",
-        joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "id")},
-        inverseJoinColumns = {@JoinColumn(name = "role_id", referencedColumnName = "id")}
-    )
+    private List<SysDept> dept;
+
+    public SysDept getMainDept() {
+        return new QSysDept().id.eq(
+                new QSysUserDept().select(QSysUserDept.alias().deptId).userId.eq(this.id).type.eq(Type.Main).query())
+            .setUseQueryCache(true).findOne();
+    }
+
+    @JoinTable(name = "sys_user_role", joinColumns = {
+        @JoinColumn(name = "user_id", referencedColumnName = "id")}, inverseJoinColumns = {
+        @JoinColumn(name = "role_id", referencedColumnName = "id")})
     @ManyToMany(fetch = FetchType.LAZY)
     @JsonIgnore
     private List<SysRole> roles;
-    @JoinTable(
-        name = "sys_user_permission",
-        joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "id")},
-        inverseJoinColumns = {@JoinColumn(name = "menu_id", referencedColumnName = "id")}
-    )
+    @JoinTable(name = "sys_user_permission", joinColumns = {
+        @JoinColumn(name = "user_id", referencedColumnName = "id")}, inverseJoinColumns = {
+        @JoinColumn(name = "menu_id", referencedColumnName = "id")})
     @ManyToMany(fetch = FetchType.LAZY)
     @JsonIgnore
     private List<SysMenu> menus;
 
-    public SysUser(String username, String realName, String password, String email, String phone, Integer deptId,
-        LocalDateTime pwExpirationTime,
-        List<SysRole> roles, List<SysMenu> menus) {
+    public SysUser(String username, String realName, String password, String email, String phone,
+        LocalDateTime pwExpirationTime, List<SysRole> roles, List<SysMenu> menus) {
         this.username = username;
         this.realName = realName;
         this.password = password;
         this.email = email;
         this.phone = phone;
-        this.deptId = deptId;
         this.roles = roles;
         this.menus = menus;
         this.pwExpirationTime = pwExpirationTime;

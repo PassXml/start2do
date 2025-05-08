@@ -86,7 +86,7 @@ public class SysDictCustomController {
             if (hasAdd) {
                 DictAllResp resp = add.get(className);
                 if (resp == null) {
-                    resp = new DictAllResp(className, iDictItem.getDesc(), new ArrayList<>());
+                    resp = new DictAllResp(className, className, iDictItem.getDesc(), new ArrayList<>());
                 }
                 resp.getItems().add(new DictItemPageResp(iDictItem.getLabel(), iDictItem.getValue(), 0));
                 add.put(className, resp);

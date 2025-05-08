@@ -22,8 +22,8 @@ public class SysDeptService extends AbsService<SysDept> {
 
     private final SysUserService sysUserService;
 
-    public void remove(Integer id) {
-        if (sysUserService.count(new QSysUser().deptId.eq(id)) > 0) {
+    public void remove(String id) {
+        if (sysUserService.count(new QSysUser().dept.id.eq(id)) > 0) {
             throw new BusinessException("请先删除该节点下的用户");
         }
         deleteById(id);

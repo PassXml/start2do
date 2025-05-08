@@ -21,5 +21,5 @@ public class LogPageReq {
 
     @JsonAlias("logDesc")
     private String keyword;
-    private List<Long> ids;
+    private List<String> ids;
 }

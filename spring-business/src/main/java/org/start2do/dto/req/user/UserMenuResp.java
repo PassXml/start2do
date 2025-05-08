@@ -11,11 +11,11 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 public class UserMenuResp {
 
-    private Integer id;
+    private String id;
     private String username;
     private String realName;
 
-    public UserMenuResp(Integer id, String username, String realName) {
+    public UserMenuResp(String id, String username, String realName) {
         this.id = id;
         this.username = username;
         this.realName = realName;

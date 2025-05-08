@@ -31,18 +31,18 @@ public class SysUserRole extends Model {
     private SysUserRoleId id;
 
     @Column(name = "user_id")
-    private Integer userId;
+    private String userId;
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private SysUser user;
     @Column(name = "role_id")
-    private Integer roleId;
+    private String roleId;
 
     @JoinColumn(name = "role_id", insertable = false, updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private SysRole role;
 
-    public SysUserRole(Integer userId, Integer roleId) {
+    public SysUserRole(String userId, String roleId) {
         this.userId = userId;
         this.roleId = roleId;
     }

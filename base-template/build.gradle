@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'org.start2do'
-version = '3.0.6.1-SNAPSHOT'
+version = '3.0.6.2-SNAPSHOT'
 
 def string = 'org.start2do.RunMain'
 application {

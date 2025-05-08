@@ -15,6 +15,7 @@ public class DeptAddReq {
     @NotEmpty
     private String name;
     private Integer sort;
-    private Integer parentId;
+    private String parentId;
+    private String deptCode;
 
 }

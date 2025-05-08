@@ -16,7 +16,7 @@ import org.start2do.entity.security.SysRole;
 @NoArgsConstructor
 public class UserPageResp {
 
-    private Integer id;
+    private String id;
     private String realName;
     private String username;
     private String status;
@@ -24,7 +24,7 @@ public class UserPageResp {
     private String phone;
     private String email;
     private String avatar;
-    private Integer deptId;
+    private String deptId;
     private String deptName;
     private List<SysRole> roles;
     private LocalDateTime createTime;

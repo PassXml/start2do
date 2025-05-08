@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.lang.annotation.Annotation;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +22,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisOMConfig {
 
     @Bean("JacksonOM")
-    @ConditionalOnMissingClass("JacksonOM")
+    @ConditionalOnMissingBean(name = "JacksonOM")
     @ConditionalOnProperty(prefix = "start2do.util.redis", value = "enable", havingValue = "true")
     public static ObjectMapper jacksonOM() {
         // 如果直接使用Jackson2JsonRedisSerializer 获取存储的对象则会变为LinkedHashMap,添加ObjectMapper可解决
@@ -42,13 +43,9 @@ public class RedisOMConfig {
             });
         } catch (ClassNotFoundException e) {
         }
-
         return objectMapper;
     }
 
-    @Bean("JacksonOM")
-    @ConditionalOnMissingClass("ManyToOne")
-    @ConditionalOnProperty(prefix = "start2do.util.redis", value = "enable", havingValue = "true")
     public static ObjectMapper jacksonOMFilter() {
         // 如果直接使用Jackson2JsonRedisSerializer 获取存储的对象则会变为LinkedHashMap,添加ObjectMapper可解决
         ObjectMapper objectMapper = new ObjectMapper();
@@ -70,8 +67,7 @@ public class RedisOMConfig {
             redisTemplate.setKeySerializer(new StringRedisSerializer());
         }
         Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(
-            Object.class);
-        jackson2JsonRedisSerializer.setObjectMapper(objectMapper);
+            objectMapper, Object.class);
         redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
         redisTemplate.setConnectionFactory(factory);
         return redisTemplate;

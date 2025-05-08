@@ -20,9 +20,9 @@ public class SysPermissionRoleRefId implements Serializable {
     @Column(name = "permission_id")
     private String permissionId;
     @Column(name = "role_id")
-    private Integer roleId;
+    private String roleId;
 
-    public SysPermissionRoleRefId(String permissionId, Integer roleId) {
+    public SysPermissionRoleRefId(String permissionId, String roleId) {
         this.permissionId = permissionId;
         this.roleId = roleId;
     }

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.BusinessException;
 import org.start2do.dto.IdsReq;
+import org.start2do.dto.IdsStrReq;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
 import org.start2do.dto.mapper.SysLogDtoMapper;
@@ -143,7 +144,7 @@ public class SysLogController {
      * 批量删除;只能清理90天之前的数据
      */
     @GetMapping("delete")
-    public Mono<R<Boolean>> delete(IdsReq req) {
+    public Mono<R<Boolean>> delete(IdsStrReq req) {
         BeanValidatorUtil.validate(req);
         return sysLogService.deleteReactive(new QSysLog().createTime.le(
             LocalDateTime.of(LocalDate.now().minusDays(MIN_DAY), LocalTime.of(0, 0, 0))).id.in(req.getId())).map(R::ok);

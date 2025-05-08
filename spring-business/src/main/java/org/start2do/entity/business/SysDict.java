@@ -37,8 +37,11 @@ public class SysDict extends BaseModel2 {
     @Column(length = DBConstant.ID_STR_LENGTH)
     @GeneratedValue(generator = SnowflakeStrGenerator.KEY)
     private String id;
+    @DbComment("字典Key禁止修改")
+    @Column(length = DBConstant.ID_STR_LENGTH)
+    private String dictKey;
     @NotNull
-    @DbComment("字典名称,Type")
+    @DbComment("字典名称")
     private String dictName;
 
     @DbComment("字典描述")
@@ -88,5 +91,11 @@ public class SysDict extends BaseModel2 {
         public String toString() {
             return String.join("", label, "(", value, ")");
         }
+    }
+
+    public SysDict(String dictKey, String dictName, Type dictType) {
+        this.dictKey = dictKey;
+        this.dictName = dictName;
+        this.dictType = dictType;
     }
 }

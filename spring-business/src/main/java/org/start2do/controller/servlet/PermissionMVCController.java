@@ -13,6 +13,8 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.start2do.controller.AbsPermissionController;
+import org.start2do.dto.Permission;
+import org.start2do.dto.permission.PermissionDto;
 
 @RestController
 @RequestMapping("/permission")
@@ -23,12 +25,20 @@ public class PermissionMVCController implements AbsPermissionController {
     private final RequestMappingHandlerMapping requestMappingHandlerMapping;
 
     @GetMapping("/allUrls")
-    public Set<String> getAllUrls() {
-        Set<String> urls = new HashSet<>();
+    public Set<PermissionDto> getAllUrls() {
+        Set<PermissionDto> urls = new HashSet<>();
         Map<RequestMappingInfo, HandlerMethod> map = requestMappingHandlerMapping.getHandlerMethods();
-        for (RequestMappingInfo info : map.keySet()) {
+        for (Map.Entry<RequestMappingInfo, HandlerMethod> entry : map.entrySet()) {
+            RequestMappingInfo info = entry.getKey();
+            HandlerMethod handlerMethod = entry.getValue();
             Set<String> patterns = info.getPatternsCondition().getPatterns();
-            urls.addAll(patterns);
+            // 获取方法上的注解
+            Permission annotations = handlerMethod.getMethodAnnotation(Permission.class);
+            if (annotations == null) {
+                urls.add(new PermissionDto(patterns, false));
+            } else {
+                urls.add(new PermissionDto(patterns, annotations.defaultPass()));
+            }
         }
         return urls;
     }

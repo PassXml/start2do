@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.IdReq;
+import org.start2do.dto.IdStrReq;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
 import org.start2do.dto.mapper.MenuDtoMapper;
@@ -74,7 +75,7 @@ public class SysMenuController {
      * 添加
      */
     @GetMapping("delete")
-    public R delete(IdReq req) {
+    public R delete(IdStrReq req) {
         BeanValidatorUtil.validate(req);
         sysMenuService.remove(req.getId());
         return R.ok();
@@ -94,7 +95,7 @@ public class SysMenuController {
      * 角色-菜单
      */
     @GetMapping("menu/role")
-    public R<List<MenuDetailResp>> menuByRole(IdReq req) {
+    public R<List<MenuDetailResp>> menuByRole(IdStrReq req) {
         BeanValidatorUtil.validate(req);
         return R.ok(sysMenuService.findAll(new QSysMenu().roles.id.eq(req.getId())).stream()
             .map(MenuDtoMapper.INSTANCE::toMenuDetailResp).collect(Collectors.toList()));

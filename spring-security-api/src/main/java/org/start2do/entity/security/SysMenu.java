@@ -3,12 +3,11 @@ package org.start2do.entity.security;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbComment;
-import io.ebean.annotation.Identity;
-import io.ebean.annotation.IdentityType;
 import io.ebean.annotation.StorageEngine;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -27,6 +26,7 @@ import org.start2do.ebean.dict.IDictItem;
 import org.start2do.ebean.dto.EnableType;
 import org.start2do.ebean.entity.BaseModel2;
 import org.start2do.ebean.enums.YesOrNoType;
+import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 
 @Setter
 @Getter
@@ -39,8 +39,8 @@ import org.start2do.ebean.enums.YesOrNoType;
 public class SysMenu extends BaseModel2 implements Serializable {
 
     @Id
-    @Identity(start = 100, type = IdentityType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(generator = SnowflakeStrGenerator.KEY)
+    private String id;
     @Column(name = "name", length = 128)
     private String name;
     @Column(name = "path")
@@ -52,7 +52,7 @@ public class SysMenu extends BaseModel2 implements Serializable {
     @Column(name = "sort")
     private String sort;
     @Column(name = "parent_id")
-    private Integer parentId;
+    private String parentId;
     @JoinColumn(name = "parent_id", insertable = false, updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private SysMenu parent;

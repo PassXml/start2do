@@ -9,7 +9,7 @@ import org.start2do.entity.security.SysPermission;
 @Getter
 public class PermissionUserPageResp {
 
-    private Integer userId;
+    private String userId;
     private String username;
     private List<PermissionPageResp> permissions;
 

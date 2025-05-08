@@ -11,6 +11,7 @@ import io.ebean.spring.txn.SpringJdbcTransactionManager;
 import java.util.List;
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -27,13 +28,12 @@ import org.start2do.ebean.service.SysSettingService;
 import org.start2do.ebean.util.SysSettingUtil;
 import org.start2do.util.Snowflake;
 
+@Slf4j
 @Import(EbeanConfig.class)
 @AutoConfiguration
 @ConditionalOnProperty(name = "spring.datasource.url")
 @RequiredArgsConstructor
-@ComponentScans(value = {
-    @ComponentScan(value = "org.start2do.ebean"),
-})
+@ComponentScans(value = {@ComponentScan(value = "org.start2do.ebean"),})
 public class EbeanBeanAutoConfiguration {
 
 
@@ -46,12 +46,14 @@ public class EbeanBeanAutoConfiguration {
         runner.run(dataSource);
     }
 
-    @ConditionalOnBean(value = {ObjectMapper.class})
-    @ConditionalOnMissingBean(DatabaseConfig.class)
+
     public static class Config1 {
 
 
         @Bean
+        @ConditionalOnBean(value = {ObjectMapper.class})
+        @ConditionalOnMissingBean(DatabaseConfig.class)
+        @ConditionalOnProperty(prefix = "start2do.ebean", name = "enable-hooks", havingValue = "false")
         public DatabaseConfig databaseConfig(DataSource dataSource, CurrentUserProvider currentUserProvider,
             ObjectMapper objectMapper, EbeanConfig ebeanConfig) {
             DatabaseConfig config = new DatabaseConfig();
@@ -72,10 +74,11 @@ public class EbeanBeanAutoConfiguration {
     }
 
 
-    @ConditionalOnMissingBean({DatabaseConfig.class, ObjectMapper.class})
     public static class Config2 {
 
         @Bean
+        @ConditionalOnMissingBean({DatabaseConfig.class, ObjectMapper.class})
+        @ConditionalOnProperty(prefix = "start2do.ebean", name = "enable-hooks", havingValue = "false")
         public DatabaseConfig databaseConfig(DataSource dataSource, CurrentUserProvider currentUserProvider,
             EbeanConfig ebeanConfig) {
             DatabaseConfig config = new DatabaseConfig();
@@ -95,10 +98,12 @@ public class EbeanBeanAutoConfiguration {
 
     }
 
-    @ConditionalOnMissingBean({DatabaseConfig.class, ObjectMapper.class, EBeanProcessConfiguration.class})
+
     public static class Config5 {
 
         @Bean
+        @ConditionalOnProperty(prefix = "start2do.ebean", name = "enable-hooks", havingValue = "true")
+        @ConditionalOnMissingBean({DatabaseConfig.class, ObjectMapper.class, EBeanProcessConfiguration.class})
         public DatabaseConfig databaseConfig(DataSource dataSource, CurrentUserProvider currentUserProvider,
             EbeanConfig ebeanConfig, List<EBeanProcessConfiguration> configuration) {
             DatabaseConfig config = new DatabaseConfig();
@@ -135,12 +140,13 @@ public class EbeanBeanAutoConfiguration {
     }
 
 
-    @ConditionalOnBean(value = {ObjectMapper.class, Snowflake.class})
-    @ConditionalOnMissingBean(DatabaseConfig.class)
     public static class Config3 {
 
 
         @Bean
+        @ConditionalOnProperty(prefix = "start2do.ebean", name = "enable-hooks", havingValue = "false")
+        @ConditionalOnBean(value = {ObjectMapper.class, Snowflake.class})
+        @ConditionalOnMissingBean(DatabaseConfig.class)
         public DatabaseConfig databaseConfig(DataSource dataSource, CurrentUserProvider currentUserProvider,
             ObjectMapper objectMapper, EbeanConfig ebeanConfig, Snowflake snowflake) {
             DatabaseConfig config = new DatabaseConfig();
@@ -161,12 +167,13 @@ public class EbeanBeanAutoConfiguration {
         }
     }
 
-    @ConditionalOnBean(value = {ObjectMapper.class, Snowflake.class, EBeanProcessConfiguration.class})
-    @ConditionalOnMissingBean(DatabaseConfig.class)
     public static class Config4 {
 
 
         @Bean
+        @ConditionalOnProperty(prefix = "start2do.ebean", name = "enable-hooks", havingValue = "true")
+        @ConditionalOnBean(value = {ObjectMapper.class, Snowflake.class})
+        @ConditionalOnMissingBean(DatabaseConfig.class)
         public DatabaseConfig databaseConfig(DataSource dataSource, CurrentUserProvider currentUserProvider,
             ObjectMapper objectMapper, EbeanConfig ebeanConfig, Snowflake snowflake,
             List<EBeanProcessConfiguration> eBeanProcessConfiguration) {
@@ -203,9 +210,9 @@ public class EbeanBeanAutoConfiguration {
     public EBeanProcessConfiguration eBeanProcessConfiguration(EbeanConfig ebeanConfig) {
         return t -> {
             if (ebeanConfig.isEnableHooks()) {
+                log.info("EBeanProcessConfiguration开启Hooks");
                 t.add(new EbeanBeanPersistController());
             }
-
         };
     }
 }

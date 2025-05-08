@@ -10,5 +10,5 @@ import org.start2do.dto.Page;
 @Accessors(chain = true)
 public class PermissionUserPageReq extends Page {
 
-    private Integer userId;
+    private String userId;
 }

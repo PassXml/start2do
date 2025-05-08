@@ -23,7 +23,7 @@ public class SysMenuService extends AbsService<SysMenu> {
 
     private final SysRoleMenuService sysRoleMenuService;
 
-    public void remove(Integer id) {
+    public void remove(String id) {
         if (sysRoleMenuService.count(new QSysRoleMenu().id.menuId.eq(id)) > 0) {
             throw new BusinessException("请先取消对应权限");
         }

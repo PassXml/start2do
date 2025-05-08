@@ -6,6 +6,6 @@ import lombok.Setter;
 @Setter
 @Getter
 public class PermissionPageResp {
-    private Integer id;
+    private String id;
     private String url;
 }

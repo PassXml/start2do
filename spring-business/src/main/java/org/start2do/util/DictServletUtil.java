@@ -1,6 +1,5 @@
 package org.start2do.util;
 
-import jakarta.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,12 +17,13 @@ import org.start2do.entity.business.SysDict;
 import org.start2do.entity.business.SysDictItem;
 import org.start2do.service.servlet.SysDictItemService;
 import org.start2do.service.servlet.SysDictService;
+import org.start2do.util.spring.SpringInitListenerUtil.WaitInitCompleteRunner;
 
 @Component
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = Type.SERVLET)
 @ConditionalOnProperty(prefix = "start2do.business.service", name = "dict", havingValue = "true",matchIfMissing = true)
-public class DictServletUtil {
+public class DictServletUtil implements WaitInitCompleteRunner {
 
     private final SysDictService DICT_SERVICE;
     private final SysDictItemService SYS_DICT_ITEM_SERVICE;
@@ -59,15 +59,15 @@ public class DictServletUtil {
             for (SysDictItem item : itemList) {
                 itemMap.put(item.getItemData(), item.getItemName());
             }
-            concurrentMap.put(dict.getDictName(), itemMap);
+            concurrentMap.put(dict.getDictKey(), itemMap);
         }
     }
 
 
-    @PostConstruct
     public void init() {
         DictServletUtil.dictUtil = this;
         concurrentMap = new ConcurrentHashMap<>();
+        sync();
     }
 
 }

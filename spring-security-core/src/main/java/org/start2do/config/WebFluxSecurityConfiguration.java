@@ -22,9 +22,10 @@ import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
+import org.springframework.web.server.WebFilter;
 import org.start2do.Start2doSecurityConfig;
+import org.start2do.filter.IPermission;
 import org.start2do.filter.JwtRequestWebFluxFilter;
-import org.start2do.handle.AccessDeniedHandler;
 import org.start2do.util.JwtTokenUtil;
 
 
@@ -37,8 +38,6 @@ import org.start2do.util.JwtTokenUtil;
 public class WebFluxSecurityConfiguration {
 
     private final Start2doSecurityConfig config;
-    private final AccessDeniedHandler accessDeniedHandler;
-
 //    @Bean
 //    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
 //    public AuthManagerHandler authManagerHandler(SysPermissionReactiveService permissionReactiveService) {
@@ -63,7 +62,7 @@ public class WebFluxSecurityConfiguration {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http,
         ReactiveAuthenticationManager authenticationManager,
-        JwtRequestWebFluxFilter jwtRequestWebFluxFilter) throws Exception {
+        JwtRequestWebFluxFilter jwtRequestWebFluxFilter, IPermission permissionWebFilter) throws Exception {
         if (config.getEnable() != null && config.getEnable()) {
             if (config.getCheckExpired() != null) {
                 JwtTokenUtil.CheckExpired = config.getCheckExpired();
@@ -78,14 +77,17 @@ public class WebFluxSecurityConfiguration {
                 .httpBasic(HttpBasicSpec::disable)
                 .exceptionHandling(ctx -> {
                     ctx.authenticationEntryPoint(
-                            new HttpStatusServerEntryPoint(org.springframework.http.HttpStatus.UNAUTHORIZED))
-                        .accessDeniedHandler(accessDeniedHandler);
+                        new HttpStatusServerEntryPoint(org.springframework.http.HttpStatus.UNAUTHORIZED));
                 })
                 .authorizeExchange(ctx -> {
                     ctx.pathMatchers(config.getWhiteList().toArray(new String[]{})).permitAll().anyExchange()
                         .authenticated();
                 }).authenticationManager(authenticationManager)
-                .addFilterAt(jwtRequestWebFluxFilter, SecurityWebFiltersOrder.AUTHENTICATION).csrf(CsrfSpec::disable);
+                // 添加 JwtRequestWebFluxFilter 用于 JWT 认证
+                .addFilterAt(jwtRequestWebFluxFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+                // 添加 PermissionWebFilter 用于权限检查，通常放在认证之后
+                .addFilterAfter((WebFilter) permissionWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+                .csrf(CsrfSpec::disable);
             return http.build();
         }
         return http.build();

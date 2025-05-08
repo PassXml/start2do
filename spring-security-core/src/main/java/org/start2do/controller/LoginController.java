@@ -26,6 +26,7 @@ import org.start2do.Start2doSecurityConfig;
 import org.start2do.config.KaptchaConfig;
 import org.start2do.dto.BusinessException;
 import org.start2do.dto.CustomContextInfo;
+import org.start2do.dto.Permission;
 import org.start2do.dto.R;
 import org.start2do.dto.UserCredentials;
 import org.start2do.dto.req.login.JwtRequest;
@@ -71,6 +72,7 @@ public class LoginController {
      * 登录
      */
     @PostMapping(value = "/login")
+    @Permission(defaultPass = true)
     public R<JwtResponse> createAuthenticationToken(@RequestBody JwtRequest req, HttpServletRequest request) {
         BeanValidatorUtil.validate(req);
         String username = req.getUsername();
@@ -100,6 +102,7 @@ public class LoginController {
      * 登出
      */
     @GetMapping("/logout")
+    @Permission(defaultPass = true)
     public R<String> logout() {
         return R.ok();
     }
@@ -108,6 +111,7 @@ public class LoginController {
      * 检查token
      */
     @GetMapping("/check_token")
+    @Permission(defaultPass = true)
     public R<String> checkToken() {
         return R.ok();
     }
@@ -116,6 +120,7 @@ public class LoginController {
      * 用户菜单
      */
     @GetMapping("menu")
+    @Permission(defaultPass = true)
     public R<List<AuthRoleMenuResp>> menu() {
         List<SysMenu> menus = sysLoginMenuService.findAll(
             new QSysMenu().status.eq(EnableType.Enable).roles.users.id.eq(JwtTokenUtil.getUserId()));

@@ -208,6 +208,15 @@ public abstract class AbsService<T extends Model> implements IService<T> {
         return ePage;
     }
 
+    @Override
+    public int deleteByIds(List<Object> id) {
+        int count = 0;
+        for (Object object : id) {
+            count += DB.delete(aclass, object);
+        }
+        return count;
+    }
+
     public void save(T entity, Transaction transaction) {
         entity.save(transaction);
     }

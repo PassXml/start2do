@@ -60,7 +60,7 @@ public class SysLoginUserServiceImpl extends AbsService<SysUser> implements SysL
         credentials.setRoles(
             roles.stream().map(sysRole -> new UserRole(sysRole.getId(), sysRole.getName(), sysRole.getRoleCode()))
                 .collect(Collectors.toList()));
-        credentials.setDept(user.getDept());
+        credentials.setMainDept(user.getMainDept());
         return credentials;
     }
 

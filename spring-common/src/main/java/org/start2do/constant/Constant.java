@@ -13,4 +13,12 @@ public interface Constant {
 
     String ID_GENERATOR_SNOW_FLAKE_STR = "snowflakeStr";
     String ID_GENERATOR_SNOW_FLAKE = "snowflake";
+    /**
+      *  文件下载
+     */
+    /**
+     * 系统设置
+     */
+    String TYPE_SYSTEM_SETTING = "SYSTEM_SETTING";
+    String KEY_FILE_DOWNLOAD_HOST = "FILE_DOWNLOAD_HOST";
 }

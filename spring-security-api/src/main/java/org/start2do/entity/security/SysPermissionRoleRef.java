@@ -29,7 +29,7 @@ public class SysPermissionRoleRef extends Model {
     @Column(name = "permission_id")
     private String permissionId;
     @Column(name = "role_id")
-    private Integer roleId;
+    private String roleId;
 
     public SysPermissionRoleRef(SysPermissionRoleRefId id) {
         this.id = id;

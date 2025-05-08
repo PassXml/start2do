@@ -27,6 +27,8 @@ public interface IService<T extends Model> {
 
     int deleteById(Object id);
 
+    int deleteByIds(List<Object> id);
+
     int handDeleteById(Object id);
 
     <S extends QueryBean<T, S>> boolean handDelete(QueryBean<T, S> bean);

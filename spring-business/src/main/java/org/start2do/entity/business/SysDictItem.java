@@ -68,4 +68,11 @@ public class SysDictItem extends Model {
     @Column(name = "item_desc", length = 1024)
     private String itemDesc;
 
+    public SysDictItem(String dictId, String itemName, String itemData, String itemTag, Integer itemSort) {
+        this.dictId = dictId;
+        this.itemName = itemName;
+        this.itemData = itemData;
+        this.itemTag = itemTag;
+        this.itemSort = itemSort;
+    }
 }

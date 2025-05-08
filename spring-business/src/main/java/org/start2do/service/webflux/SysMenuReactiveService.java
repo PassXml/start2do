@@ -20,11 +20,11 @@ import reactor.core.publisher.Mono;
 @EnableConfigurationProperties({DataSourceProperties.class})
 @ConditionalOnWebApplication(type = Type.REACTIVE)
 @ConditionalOnProperty(prefix = "start2do.business.service", name = "menu", havingValue = "true",matchIfMissing = true)
-public class SysMenuReactiveService extends AbsMixService<SysMenu, Integer> {
+public class SysMenuReactiveService extends AbsMixService<SysMenu, String> {
 
     private final SysRoleMenuReactiveService sysRoleMenuService;
 
-    public Mono<Boolean> remove(Integer id) {
+    public Mono<Boolean> remove(String id) {
         return sysRoleMenuService.countReactive(new QSysRoleMenu().id.menuId.eq(id)).filter(integer -> integer <= 0)
             .switchIfEmpty(Mono.error(new BusinessException("请先取消对应权限"))).then(
                 countReactive(new QSysMenu().parentId.eq(id)).filter(integer -> integer <= 0)

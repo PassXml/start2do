@@ -1,5 +1,6 @@
 package org.start2do.config;
 
+import jakarta.servlet.Filter;
 import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.start2do.Start2doSecurityConfig;
+import org.start2do.filter.IPermission;
 import org.start2do.filter.JwtRequestFilter;
 import org.start2do.util.JwtTokenUtil;
 
@@ -33,6 +35,7 @@ public class SecurityConfiguration {
     private final JwtRequestFilter jwtRequestFilter;
     @Value("${spring.websecurity.debug:false}")
     boolean webSecurityDebug;
+    private final IPermission permissionInterceptor;
 
 
     @Bean
@@ -54,9 +57,13 @@ public class SecurityConfiguration {
             http.authorizeHttpRequests(ctx -> {
                     ctx.requestMatchers(config.getWhiteList().toArray(new String[]{})).permitAll().anyRequest()
                         .authenticated();
-                }).addFilterAfter(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
-                //表示 /doLogin 这个地址可以不用登录直接访问
-                .csrf(AbstractHttpConfigurer::disable).logout(ctx -> SecurityContextHolder.clearContext());
+                })
+                // 添加 JWT 认证过滤器
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+                // 添加权限拦截器/过滤器，放在 JWT 认证之后
+                .addFilterBefore((Filter) permissionInterceptor, UsernamePasswordAuthenticationFilter.class)
+                .csrf(AbstractHttpConfigurer::disable)
+                .logout(ctx -> SecurityContextHolder.clearContext());
 
             return http.build();
         }
