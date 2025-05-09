@@ -51,10 +51,6 @@ public class SysDictItem extends Model {
     private String itemData;
 
 
-    @DbComment("字典项标签")
-    @Column(name = "item_tag", length = 128)
-    private String itemTag;
-
     @DbComment("字典项备注")
     @Column(name = "item_note", length = 64)
     private String itemNote;
@@ -64,15 +60,10 @@ public class SysDictItem extends Model {
     @Column(name = "item_sort", nullable = false)
     private Integer itemSort;
 
-    @DbComment("字典项描述")
-    @Column(name = "item_desc", length = 1024)
-    private String itemDesc;
-
-    public SysDictItem(String dictId, String itemName, String itemData, String itemTag, Integer itemSort) {
+    public SysDictItem(String dictId, String itemName, String itemData, Integer itemSort) {
         this.dictId = dictId;
         this.itemName = itemName;
         this.itemData = itemData;
-        this.itemTag = itemTag;
         this.itemSort = itemSort;
     }
 }

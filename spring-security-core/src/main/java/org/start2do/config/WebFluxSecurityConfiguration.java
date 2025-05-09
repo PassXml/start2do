@@ -1,5 +1,6 @@
 package org.start2do.config;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -8,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -24,9 +26,11 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
 import org.springframework.web.server.WebFilter;
 import org.start2do.Start2doSecurityConfig;
+import org.start2do.dto.R;
 import org.start2do.filter.IPermission;
 import org.start2do.filter.JwtRequestWebFluxFilter;
 import org.start2do.util.JwtTokenUtil;
+import reactor.core.publisher.Mono;
 
 
 @EnableWebFluxSecurity
@@ -87,7 +91,18 @@ public class WebFluxSecurityConfiguration {
                 .addFilterAt(jwtRequestWebFluxFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 // 添加 PermissionWebFilter 用于权限检查，通常放在认证之后
                 .addFilterAfter((WebFilter) permissionWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
-                .csrf(CsrfSpec::disable);
+                .csrf(CsrfSpec::disable).exceptionHandling(ctx -> {
+                    ctx.accessDeniedHandler((exchange, denied) -> {
+                        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                        exchange.getResponse().getHeaders().add("Content-Type", "application/json;charset=UTF-8");
+                        return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory()
+                            .wrap(R.failed(401, "未登录").toJson().getBytes(StandardCharsets.UTF_8))));
+
+                    }).authenticationEntryPoint((exchange, ex) -> {
+                        return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory()
+                            .wrap(R.failed(401, "未登录").toJson().getBytes(StandardCharsets.UTF_8))));
+                    });
+                });
             return http.build();
         }
         return http.build();

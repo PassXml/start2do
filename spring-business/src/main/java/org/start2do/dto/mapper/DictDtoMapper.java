@@ -42,13 +42,14 @@ public interface DictDtoMapper {
     @IgnoreBaseModel2
     @IgnoreId
     @Mapping(target = "items", ignore = true)
-    @Mapping(target = "dictType", expression = "java(Type.find(req.getDictType()))")
+    @Mapping(target = "dictType", expression = "java(Type.BUSINESS)")
     SysDict toSysDict(DictAddReq req);
 
     @IgnoreBaseModel2
     @IgnoreId
     @Mapping(target = "items", ignore = true)
     @Mapping(expression = "java(Type.find(req.getDictType()))", target = "dictType")
+    @Mapping(target = "dictKey", ignore = true)
     void updateSysDict(@MappingTarget SysDict dict, DictUpdateReq req);
 
     @Mapping(target = "items", ignore = true)

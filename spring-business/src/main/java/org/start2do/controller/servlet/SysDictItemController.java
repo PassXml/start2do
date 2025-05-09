@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.start2do.dto.BusinessException;
 import org.start2do.dto.IdStrReq;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
@@ -50,6 +51,9 @@ public class SysDictItemController {
     @PostMapping("add")
     public R add(@RequestBody DictItemAddReq req) {
         BeanValidatorUtil.validate(req);
+        if (new QSysDictItem().dictId.eq(req.getDictId()).itemData.eq(req.getItemData()).exists()) {
+            throw new BusinessException("字典值重复");
+        }
         SysDictItem item = DictDtoMapper.INSTANCE.toDictItem(req);
         sysDictItemService.save(item);
         return R.ok();
@@ -61,7 +65,11 @@ public class SysDictItemController {
     @PostMapping("update")
     public R update(@RequestBody DictItemUpdateReq req) {
         BeanValidatorUtil.validate(req);
+
         SysDictItem item = sysDictItemService.getById(req.getId());
+        if (new QSysDictItem().dictId.eq(req.getDictId()).itemData.eq(req.getItemData()).id.ne(item.getId()).exists()) {
+            throw new BusinessException("字典值重复");
+        }
         DictDtoMapper.INSTANCE.dictItemUpdate(item, req);
         sysDictItemService.update(item);
         return R.ok();

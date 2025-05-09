@@ -20,7 +20,7 @@ dependencies {
     compileOnly("org.apache.poi:poi")
     compileOnly 'org.apache.poi:poi-ooxml'
     compileOnly 'org.apache.poi:poi-ooxml-lite'
-
+    compileOnly group: 'io.projectreactor', name: 'reactor-core'
 
 }
 

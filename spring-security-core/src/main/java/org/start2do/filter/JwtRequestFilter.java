@@ -1,6 +1,5 @@
 package org.start2do.filter;
 
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -39,14 +40,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
         throws ServletException, IOException {
         final String requestTokenHeader = request.getHeader(JwtTokenUtil.AUTHORIZATION);
-        if (StringUtils.isEmpty(requestTokenHeader)) {
-            response.setHeader("Content-Type", "application/json;charset=utf-8");
-            response.getWriter().write(R.failed(401, "请重新登录").setError("无权限").toJson());
-            return;
-        }
+//        if (StringUtils.isEmpty(requestTokenHeader)) {
+//            response.setHeader("Content-Type", "application/json;charset=utf-8");
+//            response.getWriter().write(R.failed(401, "请重新登录").setError("无权限").toJson());
+//            return;
+//        }
         String username = null;
         String jwtToken = null;
-        if (requestTokenHeader.startsWith(JwtTokenUtil.Bearer)) {
+        if (requestTokenHeader != null && requestTokenHeader.startsWith(JwtTokenUtil.Bearer)) {
             jwtToken = requestTokenHeader.substring(JwtTokenUtil.BearerLen);
             if ("undefined".equals(jwtToken) || StringUtils.isEmpty(jwtToken)) {
                 chain.doFilter(request, response);
@@ -54,12 +55,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             }
             try {
                 username = JwtTokenUtil.getUsernameFromToken(jwtToken);
-            } catch (IllegalArgumentException e) {
-                log.warn("Unable to get JWT Token");
-            } catch (ExpiredJwtException e) {
+            } catch (Exception e) {
                 if (config.getMockUser() != null && !config.getMockUser()) {
                     log.warn("JWT Token has expired");
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    response.setHeader(HttpHeaders.CONTENT_TYPE, "application/json;charset=utf-8");
+                    response.getWriter().write(R.failed(401, "认证失败或者凭证过期").toJson());
                     return;
                 }
             }

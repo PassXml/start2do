@@ -72,7 +72,7 @@ public class SysDictController {
     public R add(@RequestBody DictAddReq req) {
         BeanValidatorUtil.validate(req);
         SysDict sysDict = DictDtoMapper.INSTANCE.toSysDict(req);
-        if (sysDictService.exists(new QSysDict().dictName.eq(sysDict.getDictName()))) {
+        if (sysDictService.exists(new QSysDict().dictKey.eq(sysDict.getDictName()))) {
             throw new BusinessException("已被使用");
         }
         sysDictService.save(sysDict);
@@ -88,7 +88,7 @@ public class SysDictController {
         BeanValidatorUtil.validate(req);
         SysDict dict = sysDictService.getById(req.getId());
         if (!dict.getDictName().equals(req.getDictName())) {
-            if (sysDictService.exists(new QSysDict().dictName.eq(req.getDictName()))) {
+            if (sysDictService.exists(new QSysDict().dictKey.eq(req.getDictName()))) {
                 throw new BusinessException("已被使用");
             }
         }

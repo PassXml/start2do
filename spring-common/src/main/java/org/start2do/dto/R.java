@@ -38,16 +38,10 @@ public class R<T> implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 1L;
 
-    @Getter
-    @Setter
     private int code;
 
-    @Getter
-    @Setter
     private String msg;
 
-    @Getter
-    @Setter
     private T data;
     private String error;
 
@@ -103,6 +97,7 @@ public class R<T> implements Serializable, Cloneable {
     }
 
     public String toJson() {
-        return "{" + "\"code\":" + code + ", \"msg\":\"" + msg + "\"" + ",\"data\":\"" + data + "\"" + '}';
+        return "{" + "\"code\":" + code + ", \"msg\":\"" + msg + "\"" + ",\"data\":\"" + data + "\"," + "\"error\":\""
+               + error + '"' + '}';
     }
 }

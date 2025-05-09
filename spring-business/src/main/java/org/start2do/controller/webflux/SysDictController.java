@@ -72,7 +72,7 @@ public class SysDictController {
     @PostMapping("add")
     public Mono<R<Boolean>> add(@RequestBody DictAddReq req) {
         BeanValidatorUtil.validate(req);
-        if (sysDictService.exists(new QSysDict().dictName.eq(req.getDictName()))) {
+        if (sysDictService.exists(new QSysDict().dictKey.eq(req.getDictName()))) {
             throw new BusinessException("已被使用");
         }
         SysDict sysDict = DictDtoMapper.INSTANCE.toSysDict(req);
@@ -88,7 +88,7 @@ public class SysDictController {
         BeanValidatorUtil.validate(req);
         return sysDictService.getByIdReactive(req.getId()).map(dict -> {
             if (!dict.getDictName().equals(req.getDictName())) {
-                if (sysDictService.exists(new QSysDict().dictName.eq(req.getDictName()))) {
+                if (sysDictService.exists(new QSysDict().dictKey.eq(req.getDictName()))) {
                     throw new BusinessException("已被使用");
                 }
             }

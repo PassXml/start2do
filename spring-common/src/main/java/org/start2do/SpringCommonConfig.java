@@ -15,6 +15,8 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "start2do")
 public class SpringCommonConfig {
 
+
+    private boolean enableException = true;
     private ReplaceFilter replaceFilter;
     private ErrorTrace errorTrace;
 

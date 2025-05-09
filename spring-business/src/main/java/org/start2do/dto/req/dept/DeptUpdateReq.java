@@ -13,6 +13,6 @@ import lombok.experimental.Accessors;
 public class DeptUpdateReq extends DeptAddReq {
 
     @NotNull
-    private Integer id;
+    private String id;
 
 }

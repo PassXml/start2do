@@ -1,6 +1,5 @@
 package org.start2do.dto.req.dict.item;
 
-import java.util.UUID;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -22,11 +21,8 @@ public class DictItemAddReq {
     private String itemData;
 
 
-    private String itemTag;
-
     private String itemNote;
 
     private Integer itemSort = 0;
 
-    private String itemDesc;
 }

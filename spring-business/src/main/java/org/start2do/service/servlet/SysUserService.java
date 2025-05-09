@@ -17,7 +17,6 @@ import org.start2do.entity.security.SysUser;
 import org.start2do.entity.security.SysUserDept;
 import org.start2do.entity.security.SysUserDeptId;
 import org.start2do.entity.security.SysUserRole;
-import org.start2do.entity.security.query.QSysDept;
 import org.start2do.entity.security.query.QSysRole;
 import org.start2do.entity.security.query.QSysUser;
 import org.start2do.entity.security.query.QSysUserDept;
@@ -68,8 +67,8 @@ public class SysUserService extends AbsService<SysUser> {
     @Transactional(rollbackFor = Exception.class)
     public void update(SysUser user, String mainDeptId, List<String> roles) {
         checkRole(roles);
-        this.update(user);
         SysDept dept = user.getMainDept();
+        this.update(user);
         if (dept == null) {
             new SysUserDept(new SysUserDeptId(user.getId(), mainDeptId), SysUserDept.Type.Main).save();
         } else {

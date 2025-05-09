@@ -1,6 +1,7 @@
 package org.start2do.util;
 
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -9,6 +10,9 @@ import org.springframework.stereotype.Component;
 public class DictUtil {
 
     public static String getLabel(String type, String key) {
+        if (StringUtils.isEmpty(key)) {
+            return null;
+        }
         return DictServletUtil.getLabel(type, key);
     }
 

@@ -13,9 +13,11 @@ import lombok.experimental.Accessors;
 public class DictAddReq {
 
     @NotEmpty
+    private String dictKey;
+    @NotEmpty
     private String dictName;
+    @NotEmpty
     private String dictType;
-    private String dictId;
     private String dictDesc;
     private String dictNote;
 }

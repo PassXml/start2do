@@ -48,4 +48,5 @@ public class DictPageResp {
      * dictNote
      */
     private String dictNote;
+    private String dictKey;
 }
