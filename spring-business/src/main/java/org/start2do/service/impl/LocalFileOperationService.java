@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Paths;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
@@ -54,6 +55,9 @@ public class LocalFileOperationService implements IFileOperationService {
 
     @Override
     public SysFile upload(byte[] bytes, String fileName, Boolean checkExist) {
+        if (ArrayUtils.isEmpty(bytes)) {
+            throw new RuntimeException("不能上传空文件");
+        }
         byte[] before = hookService.uploadBefore(bytes);
         String md5 = fileMd5.md5(before);
         if (checkExist) {
