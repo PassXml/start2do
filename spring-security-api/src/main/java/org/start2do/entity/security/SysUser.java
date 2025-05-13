@@ -82,6 +82,13 @@ public class SysUser extends BaseModel2 implements Serializable {
   @DbForeignKey(noConstraint = true)
   private List<SysDept> dept;
 
+  @JoinTable(
+      name = "sys_position_user",
+      joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "id")},
+      inverseJoinColumns = {@JoinColumn(name = "post_id", referencedColumnName = "id")})
+  @ManyToMany(fetch = FetchType.LAZY)
+  private List<SysPositionEntity> positions;
+
   public SysDept getMainDept() {
     return new QSysDept()
         .id

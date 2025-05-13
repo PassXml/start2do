@@ -12,7 +12,7 @@ import org.start2do.dto.Page;
 @NoArgsConstructor
 public class UserPageReq extends Page {
 
-    private String username;
-    private String role;
-
+  private String username;
+  private String role;
+  private String realName;
 }

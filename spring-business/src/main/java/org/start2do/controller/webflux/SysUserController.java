@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.BusinessException;
-import org.start2do.dto.IdReq;
 import org.start2do.dto.IdStrReq;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
@@ -40,117 +39,128 @@ import org.start2do.util.BeanValidatorUtil;
 import org.start2do.util.StringUtils;
 import reactor.core.publisher.Mono;
 
-/**
- * 用户管理
- */
+/** 用户管理 */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/user")
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "user", havingValue = "true",matchIfMissing = true)
+@ConditionalOnProperty(
+    prefix = "start2do.business.controller",
+    name = "user",
+    havingValue = "true",
+    matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.REACTIVE)
 public class SysUserController {
 
-    private final SysUserReactiveService sysUserService;
-    private final PasswordEncoder passwordEncoder;
-    private final SysRoleReactiveService sysRoleService;
+  private final SysUserReactiveService sysUserService;
+  private final PasswordEncoder passwordEncoder;
+  private final SysRoleReactiveService sysRoleService;
 
+  /** 分页 */
+  @GetMapping("page")
+  public Mono<R<Page<UserPageResp>>> page(UserPageReq req) {
+    QSysUser qClass = new QSysUser().roles.fetch();
+    Where.ready()
+        .like(req.getUsername(), qClass.username::like)
+        .like(req.getRealName(), qClass.realName::like)
+        .notNull(req.getRole(), qClass.roles.id::eq);
+    return sysUserService
+        .pageReactive(qClass, req, UserDtoMapper.INSTANCE::toUserPageResp)
+        .map(R::ok);
+  }
 
-    /**
-     * 分页
-     */
-    @GetMapping("page")
-    public Mono<R<Page<UserPageResp>>> page(UserPageReq req) {
-        QSysUser qClass = new QSysUser().roles.fetch();
-        Where.ready().like(req.getUsername(), qClass.username::like).notNull(req.getRole(), qClass.roles.id::eq);
-        return sysUserService.pageReactive(qClass, req, UserDtoMapper.INSTANCE::toUserPageResp).map(R::ok);
+  /** 添加 */
+  @PostMapping("add")
+  @SysLogSetting("添加用户")
+  public Mono<R<Boolean>> add(@RequestBody UserAddReq req) {
+    BeanValidatorUtil.validate(req);
+    if (StringUtils.isEmpty(req.getPassword())) {
+      throw new BusinessException("密码不能为空");
     }
+    return sysUserService
+        .checkUserName(req.getUsername())
+        .then(sysUserService.add(UserDtoMapper.INSTANCE.toEntity(req), req.getRoles()))
+        .map(R::ok);
+  }
 
-    /**
-     * 添加
-     */
-    @PostMapping("add")
-    @SysLogSetting("添加用户")
-    public Mono<R<Boolean>> add(@RequestBody UserAddReq req) {
-        BeanValidatorUtil.validate(req);
-        if (StringUtils.isEmpty(req.getPassword())) {
-            throw new BusinessException("密码不能为空");
-        }
-        return sysUserService.checkUserName(req.getUsername())
-            .then(sysUserService.add(UserDtoMapper.INSTANCE.toEntity(req), req.getRoles())).map(R::ok);
-    }
-
-    /**
-     * 更新
-     */
-    @PostMapping("update")
-    @SysLogSetting("更新用户")
-    public Mono<R<Boolean>> update(@RequestBody UserUpdateReq req) {
-        BeanValidatorUtil.validate(req);
-        return sysUserService.getByIdReactive(req.getId()).flatMap(user -> {
-            UserDtoMapper.INSTANCE.update(user, req);
-            if (StringUtils.isEmpty(req.getPassword())) {
+  /** 更新 */
+  @PostMapping("update")
+  @SysLogSetting("更新用户")
+  public Mono<R<Boolean>> update(@RequestBody UserUpdateReq req) {
+    BeanValidatorUtil.validate(req);
+    return sysUserService
+        .getByIdReactive(req.getId())
+        .flatMap(
+            user -> {
+              UserDtoMapper.INSTANCE.update(user, req);
+              if (StringUtils.isEmpty(req.getPassword())) {
                 user.setPassword(user.getPassword());
-            } else {
+              } else {
                 user.setPassword(passwordEncoder.encode(req.getPassword()));
-            }
-            return sysUserService.update(user, req.getRoles());
-        }).map(R::ok);
-    }
+              }
+              return sysUserService.update(user, req.getRoles());
+            })
+        .map(R::ok);
+  }
 
-    /**
-     * 删除
-     */
-    @GetMapping("delete")
-    @SysLogSetting("删除")
-    public Mono<R<Boolean>> delete(IdStrReq req) {
-        BeanValidatorUtil.validate(req);
-        return sysUserService.remove(req.getId()).map(R::ok);
-    }
+  /** 删除 */
+  @GetMapping("delete")
+  @SysLogSetting("删除")
+  public Mono<R<Boolean>> delete(IdStrReq req) {
+    BeanValidatorUtil.validate(req);
+    return sysUserService.remove(req.getId()).map(R::ok);
+  }
 
-    /**
-     * 详情
-     */
-    @GetMapping("detail")
-    public Mono<R<UserDetailResp>> detail(IdStrReq req) {
-        BeanValidatorUtil.validate(req);
-        return sysUserService.getOneReactive(new QSysUser().id.eq(req.getId()).roles.fetch()).map(user -> {
-            UserDetailResp resp = UserDtoMapper.INSTANCE.toUserDetailResp(user);
-            List<SysRole> roles = sysRoleService.findAll(new QSysRole().menus.fetch().users.id.eq(user.getId()));
-            resp.setRoles(roles.stream().map(SysRole::getId).toList());
-            resp.setRolesInfo(roles.stream().map(t -> new Item(
-                t.getId(), t.getName()
-            )).toList());
-            List<String> menuIds = new ArrayList<>();
-            for (SysRole role : user.getRoles()) {
+  /** 详情 */
+  @GetMapping("detail")
+  public Mono<R<UserDetailResp>> detail(IdStrReq req) {
+    BeanValidatorUtil.validate(req);
+    return sysUserService
+        .getOneReactive(new QSysUser().id.eq(req.getId()).roles.fetch())
+        .map(
+            user -> {
+              UserDetailResp resp = UserDtoMapper.INSTANCE.toUserDetailResp(user);
+              List<SysRole> roles =
+                  sysRoleService.findAll(new QSysRole().menus.fetch().users.id.eq(user.getId()));
+              resp.setRoles(roles.stream().map(SysRole::getId).toList());
+              resp.setRolesInfo(roles.stream().map(t -> new Item(t.getId(), t.getName())).toList());
+              List<String> menuIds = new ArrayList<>();
+              for (SysRole role : user.getRoles()) {
                 menuIds.addAll(role.getMenus().stream().map(SysMenu::getId).toList());
-            }
-            resp.setMenus(menuIds);
-            return resp;
-        }).map(R::ok);
-    }
+              }
+              resp.setMenus(menuIds);
+              return resp;
+            })
+        .map(R::ok);
+  }
 
-    /**
-     * 修改状态
-     */
-    @SysLogSetting("修改状态")
-    @PostMapping("status")
-    public Mono<R<Boolean>> status(UserStatusReq req) {
-        BeanValidatorUtil.validate(req);
-        return sysUserService.getByIdReactive(req.getId()).map(sysUser -> {
-            sysUser.setStatus(req.getType());
-            return sysUser;
-        }).flatMap(sysUserService::updateReactive).map(sysUser -> true).map(R::ok);
-    }
+  /** 修改状态 */
+  @SysLogSetting("修改状态")
+  @PostMapping("status")
+  public Mono<R<Boolean>> status(UserStatusReq req) {
+    BeanValidatorUtil.validate(req);
+    return sysUserService
+        .getByIdReactive(req.getId())
+        .map(
+            sysUser -> {
+              sysUser.setStatus(req.getType());
+              return sysUser;
+            })
+        .flatMap(sysUserService::updateReactive)
+        .map(sysUser -> true)
+        .map(R::ok);
+  }
 
-    /**
-     * 用户菜单
-     */
-    @GetMapping("menu")
-    public Mono<R<Stream<UserMenuResp>>> menu(UserMenuReq req) {
-        QSysUser qClass = new QSysUser();
-        Where.ready().like(req.getRealName(), qClass.realName).like(req.getUsername(), qClass.username);
-        return sysUserService.findAllReactive(qClass).map(sysUsers -> sysUsers.stream().map(t -> new UserMenuResp(
-            t.getId(), t.getUsername(), t.getRealName()
-        ))).map(R::ok);
-    }
+  /** 用户菜单 */
+  @GetMapping("menu")
+  public Mono<R<Stream<UserMenuResp>>> menu(UserMenuReq req) {
+    QSysUser qClass = new QSysUser();
+    Where.ready().like(req.getRealName(), qClass.realName).like(req.getUsername(), qClass.username);
+    return sysUserService
+        .findAllReactive(qClass)
+        .map(
+            sysUsers ->
+                sysUsers.stream()
+                    .map(t -> new UserMenuResp(t.getId(), t.getUsername(), t.getRealName())))
+        .map(R::ok);
+  }
 }
