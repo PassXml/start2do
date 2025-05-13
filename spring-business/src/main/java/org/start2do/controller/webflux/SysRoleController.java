@@ -166,4 +166,14 @@ public class SysRoleController {
         return userRoleService.save(req.getRoleId(), req.getUserId()).map(R::ok);
     }
 
+  @GetMapping("menu")
+  public R<List<MenuResp>> menu() {
+    return R.ok(
+        sysRoleService.findAll().stream()
+            .map(
+                t -> {
+                  return new MenuResp(t.getName(), t.getId());
+                })
+            .toList());
+  }
 }

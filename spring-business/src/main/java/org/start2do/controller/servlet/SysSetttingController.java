@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.BusinessException;
+import org.start2do.dto.IdReq;
 import org.start2do.dto.IdStrReq;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
@@ -71,7 +72,7 @@ public class SysSetttingController {
 
   /** 删除 */
   @GetMapping("delete")
-  public R delete(IdStrReq req) {
+  public R delete(IdReq req) {
     BeanValidatorUtil.validate(req);
     SysSetting setting = new QSysSetting().id.eq(req.getId()).findOne();
     if (setting != null && setting.getIsBuiltIn() == YesOrNoType.Yes) {

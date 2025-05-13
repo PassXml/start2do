@@ -24,8 +24,6 @@ import org.start2do.ebean.config.EBeanProcessConfiguration;
 import org.start2do.ebean.config.EbeanBeanPersistController;
 import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 import org.start2do.ebean.id_generators.UUIDStrIdGenerator;
-import org.start2do.ebean.service.SysSettingService;
-import org.start2do.ebean.util.SysSettingUtil;
 import org.start2do.util.Snowflake;
 
 @Slf4j
@@ -198,12 +196,6 @@ public class EbeanBeanAutoConfiguration {
         }
     }
 
-    @Bean
-    @ConditionalOnBean(DataSource.class)
-    public SysSettingUtil sysSettingUtil(DataSource dataSource, SysSettingService sysSettingService) {
-        SysSettingUtil util = new SysSettingUtil(sysSettingService);
-        return util;
-    }
 
 
     @Bean

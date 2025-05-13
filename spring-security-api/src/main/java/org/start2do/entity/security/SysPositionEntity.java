@@ -56,4 +56,5 @@ public class SysPositionEntity extends BaseModel2 implements Serializable {
     @DbComment("第三方岗位唯一标识")
     @Column(length = 64)
     private String sourceId;
+
 }

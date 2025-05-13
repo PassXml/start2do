@@ -12,12 +12,12 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 public class RolePageResp {
 
-    private Integer id;
-    private String name;
-    private String roleCode;
-    private String descs;
-    private String createPerson;
-    private String updatePerson;
-    private LocalDateTime updateTime;
-    private LocalDateTime createTime;
+  private String id;
+  private String name;
+  private String roleCode;
+  private String descs;
+  private String createPerson;
+  private String updatePerson;
+  private LocalDateTime updateTime;
+  private LocalDateTime createTime;
 }

@@ -1,7 +1,8 @@
-package org.start2do.ebean.service;
+package org.start2do.service.servlet;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import org.start2do.ebean.service.AbsService;
 import org.start2do.entity.security.SysUserAuth;
 
 @Service

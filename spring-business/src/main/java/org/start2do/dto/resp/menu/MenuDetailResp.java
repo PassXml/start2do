@@ -12,7 +12,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 public class MenuDetailResp {
 
-    private Integer id;
+    private String id;
 
     private String name;
     private String type;
@@ -20,7 +20,7 @@ public class MenuDetailResp {
     private String icon;
     private Integer sort;
     private String permission;
-    private Integer parentId;
+    private String parentId;
     private String path;
 
 

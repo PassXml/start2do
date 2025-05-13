@@ -17,10 +17,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.start2do.ebean.dto.EnableType;
+import org.start2do.ebean.enums.YesOrNoType;
 
-/**
- * 设置表
- */
+/** 设置表 */
 @Setter
 @Getter
 @Accessors(chain = true)
@@ -32,35 +31,57 @@ import org.start2do.ebean.dto.EnableType;
 @StorageEngine("ENGINE = MergeTree() order by id;")
 public class SysSetting extends BaseModel2 implements Serializable {
 
-    @Id
-    @Identity(type = IdentityType.IDENTITY, generated = IdentityGenerated.BY_DEFAULT)
-    private Long id;
+  @Id
+  @Identity(type = IdentityType.IDENTITY, generated = IdentityGenerated.BY_DEFAULT)
+  private Long id;
 
-    @Column(name = "enable", length = 2)
-    @Index
-    private EnableType enable;
+  @Column(name = "enable", length = 2)
+  @Index
+  private EnableType enable;
 
-    @Column(name = "remark", length = 512)
-    private String remark;
-    @Index
-    @Column(name = "type", length = 128)
-    private String type;
-    @Column(name = "kkey", length = 128)
-    @Index
-    private String key;
-    @Column(name = "vvalue", length = 2048)
-    private String value;
-    @Column(name = "sort")
-    private Integer sort;
+  @Column(name = "remark", length = 512)
+  private String remark;
 
-    private static final long serialVersionUID = 1L;
+  @Index
+  @Column(name = "type", length = 128)
+  private String type;
 
-    public SysSetting(EnableType enable, String remark, String type, String key, String value) {
-        this.enable = enable;
-        this.remark = remark;
-        this.type = type;
-        this.key = key;
-        this.value = value;
-        this.sort = 0;
+  @Column(name = "kkey", length = 128)
+  @Index
+  private String key;
+
+  @Column(name = "vvalue", length = 2048)
+  private String value;
+
+  @Column(name = "sort")
+  private Integer sort = 0;
+
+  /** 是否内置 */
+  private YesOrNoType isBuiltIn = YesOrNoType.No;
+
+  private static final long serialVersionUID = 1L;
+
+  public SysSetting(EnableType enable, String remark, String type, String key, String value) {
+    this.enable = enable;
+    this.remark = remark;
+    this.type = type;
+    this.key = key;
+    this.value = value;
+    this.sort = 0;
+  }
+
+  public SysSetting(EnableType enable, String type, String key, String value) {
+    this.enable = enable;
+    this.type = type;
+    this.key = key;
+    this.value = value;
+    this.sort = 0;
+  }
+
+  public SysSetting(String type, String key, EnableType enable) {
+    this.type = type;
+    this.key = key;
+    this.enable = enable;
+    this.sort = 0;
     }
 }

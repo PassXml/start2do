@@ -171,4 +171,14 @@ public class SysRoleController {
         return R.ok();
     }
 
+  @GetMapping("menu")
+  public R<List<MenuResp>> menu() {
+    return R.ok(
+        sysRoleService.findAll().stream()
+            .map(
+                t -> {
+                  return new MenuResp(t.getName(), t.getId());
+                })
+            .toList());
+  }
 }

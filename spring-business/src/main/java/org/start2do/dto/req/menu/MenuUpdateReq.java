@@ -13,5 +13,5 @@ import lombok.experimental.Accessors;
 public class MenuUpdateReq extends MenuAddReq {
 
     @NotNull
-    private Integer id;
+    private String id;
 }
