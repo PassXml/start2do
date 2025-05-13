@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.BusinessException;
-import org.start2do.dto.IdReq;
+import org.start2do.dto.IdStrReq;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
 import org.start2do.dto.mapper.SettingDtoMapper;
@@ -71,7 +71,7 @@ public class SysSetttingController {
 
   /** 删除 */
   @GetMapping("delete")
-  public R delete(IdReq req) {
+  public R delete(IdStrReq req) {
     BeanValidatorUtil.validate(req);
     SysSetting setting = new QSysSetting().id.eq(req.getId()).findOne();
     if (setting != null && setting.getIsBuiltIn() == YesOrNoType.Yes) {
@@ -83,7 +83,7 @@ public class SysSetttingController {
 
   /** 详情 */
   @GetMapping("detail")
-  public R<SettingDetailResp> detail(IdReq req) {
+  public R<SettingDetailResp> detail(IdStrReq req) {
     BeanValidatorUtil.validate(req);
     return R.ok(SettingDtoMapper.INSTANCE.toDetail(settingService.getById(req.getId())));
   }
