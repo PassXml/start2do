@@ -57,7 +57,20 @@ public class JwtTokenUtil implements Serializable {
 
   /** 返回所有附加信息 */
   private Claims getAllClaimsFromToken(String token) {
-    return Jwts.parserBuilder().setSigningKey(SECRET).build().parseClaimsJws(token).getBody();
+    try {
+      com.nimbusds.jose.JWEObject jweObject = com.nimbusds.jose.JWEObject.parse(token);
+      jweObject.decrypt(new com.nimbusds.jose.crypto.DirectDecrypter(SECRET.getBytes()));
+      com.nimbusds.jwt.SignedJWT signedJWT = jweObject.getPayload().toSignedJWT();
+      signedJWT.verify(new com.nimbusds.jose.crypto.MACVerifier(SECRET.getBytes()));
+      com.nimbusds.jwt.JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
+      
+      // 将 nimbus 的 claims 转换为 JJWT 的 Claims 对象以保持兼容性
+      io.jsonwebtoken.Claims claims = Jwts.claims();
+      claims.putAll(claimsSet.getClaims());
+      return claims;
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to parse JWE token", e);
+    }
   }
 
   // 是否过期
@@ -72,23 +85,43 @@ public class JwtTokenUtil implements Serializable {
   }
 
   private String doGenerateToken(UserCredentials userCredentials) {
-    HashMap<String, Object> map = new HashMap<>();
-    map.put(USERNAME, userCredentials.getUsername());
-    map.put(MENUS, userCredentials.getMenus());
-    map.put(ROLES, userCredentials.getRoles());
-    Map<String, Object> customInfo = userCredentials.getUserExtInfo();
-    if (customInfo != null) {
-      for (Entry<String, Object> entry : customInfo.entrySet()) {
-        map.put(entry.getKey(), entry.getValue());
+    try {
+      HashMap<String, Object> map = new HashMap<>();
+      map.put(USERNAME, userCredentials.getUsername());
+      map.put(MENUS, userCredentials.getMenus());
+      map.put(ROLES, userCredentials.getRoles());
+      Map<String, Object> customInfo = userCredentials.getUserExtInfo();
+      if (customInfo != null) {
+        for (Entry<String, Object> entry : customInfo.entrySet()) {
+          map.put(entry.getKey(), entry.getValue());
+        }
       }
+      // 使用 nimbus-jose-jwt 进行 JWE 加密
+      com.nimbusds.jwt.JWTClaimsSet claimsSet = new com.nimbusds.jwt.JWTClaimsSet.Builder()
+          .subject(String.valueOf(userCredentials.getId()))
+          .issueTime(new Date(System.currentTimeMillis()))
+          .expirationTime(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
+          .claim(USERNAME, userCredentials.getUsername())
+          .claim(MENUS, userCredentials.getMenus())
+          .claim(ROLES, userCredentials.getRoles())
+          .build();
+      
+      com.nimbusds.jwt.SignedJWT signedJWT = new com.nimbusds.jwt.SignedJWT(
+          new com.nimbusds.jose.JWSHeader(com.nimbusds.jose.JWSAlgorithm.HS512),
+          claimsSet);
+      signedJWT.sign(new com.nimbusds.jose.crypto.MACSigner(SECRET.getBytes()));
+      
+      com.nimbusds.jose.JWEObject jweObject = new com.nimbusds.jose.JWEObject(
+          new com.nimbusds.jose.JWEHeader.Builder(com.nimbusds.jose.JWEAlgorithm.DIR, com.nimbusds.jose.EncryptionMethod.A256GCM)
+              .contentType("JWT")
+              .build(),
+          new com.nimbusds.jose.Payload(signedJWT));
+      jweObject.encrypt(new com.nimbusds.jose.crypto.DirectEncrypter(SECRET.getBytes()));
+      
+      return jweObject.serialize();
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to generate JWE token", e);
     }
-    return Jwts.builder()
-        .setClaims(map)
-        .setIssuedAt(new Date(System.currentTimeMillis()))
-        .setSubject(String.valueOf(userCredentials.getId()))
-        .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
-        .signWith(SignatureAlgorithm.HS512, SECRET)
-        .compact();
   }
 
   // validate token
