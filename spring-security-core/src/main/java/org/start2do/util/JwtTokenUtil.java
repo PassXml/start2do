@@ -1,5 +1,6 @@
 package org.start2do.util;
 
+import com.nimbusds.jose.JWSAlgorithm;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,28 +28,10 @@ public class JwtTokenUtil implements Serializable {
   public static String SECRET = null;
   public static final String USERNAME = "username";
 
-  // 在静态初始化块中设置或调整 SECRET
-  static {
-    if (SECRET == null) {
-      // 生成一个 32 字节（256 位）的密钥
-      byte[] keyBytes = new byte[32];
-      new java.security.SecureRandom().nextBytes(keyBytes);
-      SECRET = Base64.getEncoder().encodeToString(keyBytes);
-    } else {
-      // 确保 SECRET 的字节长度是 16, 24, 32, 48 或 64
-      byte[] secretBytes = Base64.getDecoder().decode(SECRET);
-      if (secretBytes.length != 16 && secretBytes.length != 24 && secretBytes.length != 32 &&
-          secretBytes.length != 48 && secretBytes.length != 64) {
-        // 如果不符合要求，生成一个新的 32 字节密钥
-        byte[] newSecret = new byte[32];
-        new java.security.SecureRandom().nextBytes(newSecret);
-        SECRET = Base64.getEncoder().encodeToString(newSecret);
-      }
-    }
-  }
 
   public static final String ROLES = "roles";
   public static final String MENUS = "menus";
+  public static final String REALNAME = "realName";
   public static final String AUTHORIZATION = "Authorization";
   public static final String AUTHORIZATIONStr = "AuthorizationStr";
   public static String Bearer = "Bearer ";
@@ -56,6 +39,7 @@ public class JwtTokenUtil implements Serializable {
   public static boolean CheckExpired = true;
   public static boolean MockUser = false;
   public static String MockUserName = "admin";
+  public static String MockUserNameRealName = "admin";
   public static String MockUserId = "1";
   public static boolean IsWebFlux = true;
 
@@ -72,13 +56,17 @@ public class JwtTokenUtil implements Serializable {
     return claimsResolver.apply(claims);
   }
 
+  public static byte[] getSecret() {
+    return Base64.getDecoder().decode(SECRET);
+  }
+
   /** 返回所有附加信息 */
   private Claims getAllClaimsFromToken(String token) {
     try {
       com.nimbusds.jose.JWEObject jweObject = com.nimbusds.jose.JWEObject.parse(token);
-      jweObject.decrypt(new com.nimbusds.jose.crypto.DirectDecrypter(SECRET.getBytes()));
+      jweObject.decrypt(new com.nimbusds.jose.crypto.DirectDecrypter(getSecret()));
       com.nimbusds.jwt.SignedJWT signedJWT = jweObject.getPayload().toSignedJWT();
-      signedJWT.verify(new com.nimbusds.jose.crypto.MACVerifier(SECRET.getBytes()));
+      signedJWT.verify(new com.nimbusds.jose.crypto.MACVerifier(getSecret()));
       com.nimbusds.jwt.JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
 
       // 将 nimbus 的 claims 转换为 JJWT 的 Claims 对象以保持兼容性
@@ -107,7 +95,7 @@ public class JwtTokenUtil implements Serializable {
       map.put(USERNAME, userCredentials.getUsername());
       map.put(MENUS, userCredentials.getMenus());
       map.put(ROLES, userCredentials.getRoles());
-      map.put("REALNAME", userCredentials.getRealName());
+      map.put(REALNAME, userCredentials.getRealName());
       Map<String, Object> customInfo = userCredentials.getUserExtInfo();
       if (customInfo != null) {
           map.putAll(customInfo);
@@ -121,20 +109,20 @@ public class JwtTokenUtil implements Serializable {
               .claim(USERNAME, userCredentials.getUsername())
               .claim(MENUS, userCredentials.getMenus())
               .claim(ROLES, userCredentials.getRoles())
-              .claim("REALNAME", userCredentials.getRealName())
+              .claim(REALNAME, userCredentials.getRealName())
               .build();
 
       com.nimbusds.jwt.SignedJWT signedJWT = new com.nimbusds.jwt.SignedJWT(
-          new com.nimbusds.jose.JWSHeader(com.nimbusds.jose.JWSAlgorithm.HS256),
+          new com.nimbusds.jose.JWSHeader(JWSAlgorithm.HS512),
           claimsSet);
-      signedJWT.sign(new com.nimbusds.jose.crypto.MACSigner(SECRET.getBytes()));
+      signedJWT.sign(new com.nimbusds.jose.crypto.MACSigner(getSecret()));
 
       com.nimbusds.jose.JWEObject jweObject = new com.nimbusds.jose.JWEObject(
           new com.nimbusds.jose.JWEHeader.Builder(com.nimbusds.jose.JWEAlgorithm.DIR, com.nimbusds.jose.EncryptionMethod.A256GCM)
               .contentType("JWT")
               .build(),
           new com.nimbusds.jose.Payload(signedJWT));
-      jweObject.encrypt(new com.nimbusds.jose.crypto.DirectEncrypter(SECRET.getBytes()));
+      jweObject.encrypt(new com.nimbusds.jose.crypto.DirectEncrypter(getSecret()));
 
       return jweObject.serialize();
     } catch (Exception e) {
@@ -194,7 +182,7 @@ public class JwtTokenUtil implements Serializable {
 
   public String getRealName() {
     if (MockUser) {
-      return MockUserName;
+      return MockUserNameRealName;
     }
     RequestAttributes ra = RequestContextHolder.getRequestAttributes();
     if (ra == null) {
@@ -208,7 +196,7 @@ public class JwtTokenUtil implements Serializable {
     }
     String token = header.substring(BearerLen);
     Claims claims = getAllClaimsFromToken(token);
-    return Optional.ofNullable(claims.get("realName")).map(Object::toString).orElse(null);
+    return Optional.ofNullable(claims.get(REALNAME)).map(Object::toString).orElse(null);
   }
 
 
