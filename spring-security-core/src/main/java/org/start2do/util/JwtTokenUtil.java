@@ -63,7 +63,7 @@ public class JwtTokenUtil implements Serializable {
       com.nimbusds.jwt.SignedJWT signedJWT = jweObject.getPayload().toSignedJWT();
       signedJWT.verify(new com.nimbusds.jose.crypto.MACVerifier(SECRET.getBytes()));
       com.nimbusds.jwt.JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
-      
+
       // 将 nimbus 的 claims 转换为 JJWT 的 Claims 对象以保持兼容性
       io.jsonwebtoken.Claims claims = Jwts.claims();
       claims.putAll(claimsSet.getClaims());
@@ -92,9 +92,7 @@ public class JwtTokenUtil implements Serializable {
       map.put(ROLES, userCredentials.getRoles());
       Map<String, Object> customInfo = userCredentials.getUserExtInfo();
       if (customInfo != null) {
-        for (Entry<String, Object> entry : customInfo.entrySet()) {
-          map.put(entry.getKey(), entry.getValue());
-        }
+          map.putAll(customInfo);
       }
       // 使用 nimbus-jose-jwt 进行 JWE 加密
       com.nimbusds.jwt.JWTClaimsSet claimsSet = new com.nimbusds.jwt.JWTClaimsSet.Builder()
@@ -105,19 +103,19 @@ public class JwtTokenUtil implements Serializable {
           .claim(MENUS, userCredentials.getMenus())
           .claim(ROLES, userCredentials.getRoles())
           .build();
-      
+
       com.nimbusds.jwt.SignedJWT signedJWT = new com.nimbusds.jwt.SignedJWT(
           new com.nimbusds.jose.JWSHeader(com.nimbusds.jose.JWSAlgorithm.HS512),
           claimsSet);
       signedJWT.sign(new com.nimbusds.jose.crypto.MACSigner(SECRET.getBytes()));
-      
+
       com.nimbusds.jose.JWEObject jweObject = new com.nimbusds.jose.JWEObject(
           new com.nimbusds.jose.JWEHeader.Builder(com.nimbusds.jose.JWEAlgorithm.DIR, com.nimbusds.jose.EncryptionMethod.A256GCM)
               .contentType("JWT")
               .build(),
           new com.nimbusds.jose.Payload(signedJWT));
       jweObject.encrypt(new com.nimbusds.jose.crypto.DirectEncrypter(SECRET.getBytes()));
-      
+
       return jweObject.serialize();
     } catch (Exception e) {
       throw new RuntimeException("Failed to generate JWE token", e);
