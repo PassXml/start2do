@@ -87,19 +87,22 @@ public class JwtTokenUtil implements Serializable {
       map.put(USERNAME, userCredentials.getUsername());
       map.put(MENUS, userCredentials.getMenus());
       map.put(ROLES, userCredentials.getRoles());
+      map.put("REALNAME", userCredentials.getRealName());
       Map<String, Object> customInfo = userCredentials.getUserExtInfo();
       if (customInfo != null) {
           map.putAll(customInfo);
       }
       // 使用 nimbus-jose-jwt 进行 JWE 加密
-      com.nimbusds.jwt.JWTClaimsSet claimsSet = new com.nimbusds.jwt.JWTClaimsSet.Builder()
-          .subject(String.valueOf(userCredentials.getId()))
-          .issueTime(new Date(System.currentTimeMillis()))
-          .expirationTime(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
-          .claim(USERNAME, userCredentials.getUsername())
-          .claim(MENUS, userCredentials.getMenus())
-          .claim(ROLES, userCredentials.getRoles())
-          .build();
+      com.nimbusds.jwt.JWTClaimsSet claimsSet =
+          new com.nimbusds.jwt.JWTClaimsSet.Builder()
+              .subject(String.valueOf(userCredentials.getId()))
+              .issueTime(new Date(System.currentTimeMillis()))
+              .expirationTime(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
+              .claim(USERNAME, userCredentials.getUsername())
+              .claim(MENUS, userCredentials.getMenus())
+              .claim(ROLES, userCredentials.getRoles())
+              .claim("REALNAME", userCredentials.getRealName())
+              .build();
 
       com.nimbusds.jwt.SignedJWT signedJWT = new com.nimbusds.jwt.SignedJWT(
           new com.nimbusds.jose.JWSHeader(com.nimbusds.jose.JWSAlgorithm.HS256),
