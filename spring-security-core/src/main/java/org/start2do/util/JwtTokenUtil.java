@@ -27,6 +27,26 @@ public class JwtTokenUtil implements Serializable {
   public static String SECRET = null;
   public static final String USERNAME = "username";
 
+  // 在静态初始化块中设置或调整 SECRET
+  static {
+    if (SECRET == null) {
+      // 生成一个 32 字节（256 位）的密钥
+      byte[] keyBytes = new byte[32];
+      new java.security.SecureRandom().nextBytes(keyBytes);
+      SECRET = Base64.getEncoder().encodeToString(keyBytes);
+    } else {
+      // 确保 SECRET 的字节长度是 16, 24, 32, 48 或 64
+      byte[] secretBytes = Base64.getDecoder().decode(SECRET);
+      if (secretBytes.length != 16 && secretBytes.length != 24 && secretBytes.length != 32 &&
+          secretBytes.length != 48 && secretBytes.length != 64) {
+        // 如果不符合要求，生成一个新的 32 字节密钥
+        byte[] newSecret = new byte[32];
+        new java.security.SecureRandom().nextBytes(newSecret);
+        SECRET = Base64.getEncoder().encodeToString(newSecret);
+      }
+    }
+  }
+
   public static final String ROLES = "roles";
   public static final String MENUS = "menus";
   public static final String AUTHORIZATION = "Authorization";
