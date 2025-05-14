@@ -172,6 +172,25 @@ public class JwtTokenUtil implements Serializable {
         .map(UserCredentials::getRealName);
   }
 
+  public String getRealName() {
+    if (MockUser) {
+      return MockUserName;
+    }
+    RequestAttributes ra = RequestContextHolder.getRequestAttributes();
+    if (ra == null) {
+      return null;
+    }
+    ServletRequestAttributes sra = (ServletRequestAttributes) ra;
+    HttpServletRequest request = sra.getRequest();
+    String header = request.getHeader(AUTHORIZATION);
+    if (header == null || !header.startsWith(Bearer)) {
+      return null;
+    }
+    String token = header.substring(BearerLen);
+    Claims claims = getAllClaimsFromToken(token);
+    return Optional.ofNullable(claims.get("realName")).map(Object::toString).orElse(null);
+  }
+
 
   public String getUserName() {
     if (MockUser) {
