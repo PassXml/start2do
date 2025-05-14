@@ -113,7 +113,7 @@ public class JwtTokenUtil implements Serializable {
               .build();
 
       com.nimbusds.jwt.SignedJWT signedJWT = new com.nimbusds.jwt.SignedJWT(
-          new com.nimbusds.jose.JWSHeader(JWSAlgorithm.HS512),
+          new com.nimbusds.jose.JWSHeader(JWSAlgorithm.HS256),
           claimsSet);
       signedJWT.sign(new com.nimbusds.jose.crypto.MACSigner(getSecret()));
 
