@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
@@ -15,6 +16,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.stereotype.Service;
 import org.start2do.BusinessConfig;
 import org.start2do.BusinessConfig.FileSetting;
+import org.start2do.dto.DataNotFoundException;
+import org.start2do.dto.R;
 import org.start2do.dto.file.FileUpdateResultDto;
 import org.start2do.entity.business.SysFile;
 import org.start2do.entity.business.query.QSysFile;
@@ -26,74 +29,99 @@ import org.start2do.util.LocalFileUtils;
 
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "start2do.business.file-setting", name = "type", havingValue = "local")
+@ConditionalOnProperty(
+    prefix = "start2do.business.file-setting",
+    name = "type",
+    havingValue = "local")
 @ConditionalOnWebApplication(type = Type.SERVLET)
 public class LocalFileOperationService implements IFileOperationService {
 
-    private final BusinessConfig businessConfig;
-    private final SysFileService sysFileService;
-    private final IFileOperationHookService hookService;
-    private final IFileMd5 fileMd5;
+  private final BusinessConfig businessConfig;
+  private final SysFileService sysFileService;
+  private final IFileOperationHookService hookService;
+  private final IFileMd5 fileMd5;
 
-    @Override
-    public boolean remove(String fileId) {
-        SysFile sysFile = sysFileService.findOne(new QSysFile().id.eq(fileId));
-        String relativeFilePath = sysFile.getRelativeFilePath();
-        LocalFileUtils.move(businessConfig.getFileSetting().getUploadDir(), relativeFilePath,
-            "Recycle/".concat(relativeFilePath));
-        sysFileService.delete(sysFile);
-        return true;
+  @Override
+  public boolean remove(String fileId) {
+    SysFile sysFile = sysFileService.findOne(new QSysFile().id.eq(fileId));
+    String relativeFilePath = sysFile.getRelativeFilePath();
+    LocalFileUtils.move(
+        businessConfig.getFileSetting().getUploadDir(),
+        relativeFilePath,
+        "Recycle/".concat(relativeFilePath));
+    sysFileService.delete(sysFile);
+    return true;
+  }
+
+  private SysFile uploadFile(String md5, String fileName, ByteArrayInputStream inputStream) {
+    FileUpdateResultDto dto =
+        LocalFileUtils.upload(
+            businessConfig.getFileSetting().getUploadDir(), md5, fileName, inputStream);
+    return new SysFile(
+        fileName,
+        dto.getFullPath(),
+        dto.getRelativePath(),
+        dto.getMd5(),
+        businessConfig.getFileSetting().getHost(),
+        dto.getSize(),
+        dto.getSuffix());
+  }
+
+  @Override
+  public SysFile upload(byte[] bytes, String fileName, Boolean checkExist) {
+    if (ArrayUtils.isEmpty(bytes)) {
+      throw new RuntimeException("不能上传空文件");
     }
-
-    private SysFile uploadFile(String md5, String fileName, ByteArrayInputStream inputStream) {
-        FileUpdateResultDto dto = LocalFileUtils.upload(businessConfig.getFileSetting().getUploadDir(), md5, fileName,
-            inputStream);
-        return new SysFile(fileName, dto.getFullPath(), dto.getRelativePath(), dto.getMd5(),
-            businessConfig.getFileSetting().getHost(), dto.getSize(), dto.getSuffix());
+    byte[] before = hookService.uploadBefore(bytes);
+    String md5 = fileMd5.md5(before);
+    if (checkExist) {
+      SysFile sysFile = sysFileService.findOne(new QSysFile().fileMd5.eq(md5));
+      if (sysFile == null) {
+        sysFile = uploadFile(md5, fileName, new ByteArrayInputStream(bytes));
+        sysFileService.save(sysFile);
+      }
+      hookService.uploadAfter(bytes, sysFile);
+      return sysFile;
+    } else {
+      SysFile sysFile = uploadFile(md5, fileName, new ByteArrayInputStream(bytes));
+      sysFileService.save(sysFile);
+      hookService.uploadAfter(bytes, sysFile);
+      return sysFile;
     }
+  }
 
-
-    @Override
-    public SysFile upload(byte[] bytes, String fileName, Boolean checkExist) {
-        if (ArrayUtils.isEmpty(bytes)) {
-            throw new RuntimeException("不能上传空文件");
-        }
-        byte[] before = hookService.uploadBefore(bytes);
-        String md5 = fileMd5.md5(before);
-        if (checkExist) {
-            SysFile sysFile = sysFileService.findOne(new QSysFile().fileMd5.eq(md5));
-            if (sysFile == null) {
-                sysFile = uploadFile(md5, fileName, new ByteArrayInputStream(bytes));
-                sysFileService.save(sysFile);
-            }
-            hookService.uploadAfter(bytes, sysFile);
-            return sysFile;
-        } else {
-            SysFile sysFile = uploadFile(md5, fileName, new ByteArrayInputStream(bytes));
-            sysFileService.save(sysFile);
-            hookService.uploadAfter(bytes, sysFile);
-            return sysFile;
-        }
+  @Override
+  public boolean download(HttpServletResponse response, String fileId) {
+    FileSetting fileSetting = businessConfig.getFileSetting();
+    SysFile sysFile = sysFileService.findOneById(fileId);
+    if (sysFile == null) {
+      throw new DataNotFoundException();
     }
-
-    @Override
-    public boolean download(HttpServletResponse response, String fileId) {
-        FileSetting fileSetting = businessConfig.getFileSetting();
-        SysFile sysFile = sysFileService.findOneById(fileId);
-        response.setHeader("Content-Disposition", "attachment;filename=" + sysFile.getFileName());
-        response.setContentType("application/octet-stream");
-        try (FileInputStream inputStream = new FileInputStream(
-            Paths.get(fileSetting.getUploadDir() + File.separator + sysFile.getRelativeFilePath())
-                .toFile()); OutputStream outputStream = response.getOutputStream()) {
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesRead);
-            }
-            outputStream.flush();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return true;
+    File file =
+        Paths.get(fileSetting.getUploadDir() + File.separator + sysFile.getRelativeFilePath())
+            .toFile();
+    if (!file.exists()) {
+      response.setContentType("application/json");
+      try (OutputStream outputStream = response.getOutputStream()) {
+        outputStream.write(R.failed("文件不存在").toJson().getBytes(StandardCharsets.UTF_8));
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      return false;
     }
+    response.setHeader("Content-Disposition", "attachment;filename=" + sysFile.getFileName());
+    response.setContentType("application/octet-stream");
+    try (FileInputStream inputStream = new FileInputStream(file);
+        OutputStream outputStream = response.getOutputStream()) {
+      byte[] buffer = new byte[1024];
+      int bytesRead;
+      while ((bytesRead = inputStream.read(buffer)) != -1) {
+        outputStream.write(buffer, 0, bytesRead);
+      }
+      outputStream.flush();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return true;
+  }
 }

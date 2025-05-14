@@ -159,7 +159,7 @@ public class ExceptionHandler {
                       }
                     }
                   }
-                  return joiner.toString();
+                  return joiner + objectError.getDefaultMessage();
                 })
             .collect(Collectors.joining(";"));
     return R.failed(message).setError(message);

@@ -26,8 +26,8 @@ dependencies {
     api "org.springframework.boot:spring-boot-starter-security:$springBootVersion"
     compileOnly("org.springframework.boot:spring-boot-starter-data-redis:$springBootVersion")
     compileOnly("org.springframework.boot:spring-boot:$springBootVersion")
-    compileOnly group: 'org.springframework', name: 'spring-jdbc', version: springVersion
-
+    api group: 'org.springframework', name: 'spring-jdbc', version: springVersion
+    implementation("com.nimbusds:nimbus-jose-jwt:10.3")
 }
 
 test {
