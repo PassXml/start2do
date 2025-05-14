@@ -2,18 +2,14 @@ package org.start2do.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.Serializable;
-import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
-import javax.crypto.spec.SecretKeySpec;
 import lombok.experimental.UtilityClass;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.context.request.RequestAttributes;
@@ -30,23 +26,7 @@ public class JwtTokenUtil implements Serializable {
   public static long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
   public static String SECRET = null;
   public static final String USERNAME = "username";
-  
-  static {
-    if (SECRET == null || SECRET.getBytes().length < 16) {
-        // 生成一个 32 字节（256 位）的密钥
-        SECRET = StringUtils.randomString(32);
-    } else {
-        // 确保 SECRET 的字节长度是 16, 24, 32, 48 或 64
-        byte[] secretBytes = SECRET.getBytes();
-        if (secretBytes.length != 16 && secretBytes.length != 24 && secretBytes.length != 32 &&
-            secretBytes.length != 48 && secretBytes.length != 64) {
-            // 如果不符合要求，截取或填充到 32 字节
-            byte[] newSecret = new byte[32];
-            System.arraycopy(secretBytes, 0, newSecret, 0, Math.min(secretBytes.length, 32));
-            SECRET = new String(newSecret);
-        }
-    }
-  }
+
   public static final String ROLES = "roles";
   public static final String MENUS = "menus";
   public static final String AUTHORIZATION = "Authorization";
