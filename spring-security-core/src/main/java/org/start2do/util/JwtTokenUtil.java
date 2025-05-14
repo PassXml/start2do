@@ -102,7 +102,7 @@ public class JwtTokenUtil implements Serializable {
           .build();
 
       com.nimbusds.jwt.SignedJWT signedJWT = new com.nimbusds.jwt.SignedJWT(
-          new com.nimbusds.jose.JWSHeader(com.nimbusds.jose.JWSAlgorithm.HS512),
+          new com.nimbusds.jose.JWSHeader(com.nimbusds.jose.JWSAlgorithm.HS256),
           claimsSet);
       signedJWT.sign(new com.nimbusds.jose.crypto.MACSigner(SECRET.getBytes()));
 
@@ -133,7 +133,7 @@ public class JwtTokenUtil implements Serializable {
   }
 
   public static void main(String[] args) {
-    System.out.println(genKey());
+    System.out.println(new JwtTokenUtil().genKey());
   }
 
   public String getUserId() {
