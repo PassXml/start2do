@@ -30,6 +30,23 @@ public class JwtTokenUtil implements Serializable {
   public static long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
   public static String SECRET = null;
   public static final String USERNAME = "username";
+  
+  static {
+    if (SECRET == null || SECRET.getBytes().length < 16) {
+        // 生成一个 32 字节（256 位）的密钥
+        SECRET = StringUtils.randomString(32);
+    } else {
+        // 确保 SECRET 的字节长度是 16, 24, 32, 48 或 64
+        byte[] secretBytes = SECRET.getBytes();
+        if (secretBytes.length != 16 && secretBytes.length != 24 && secretBytes.length != 32 &&
+            secretBytes.length != 48 && secretBytes.length != 64) {
+            // 如果不符合要求，截取或填充到 32 字节
+            byte[] newSecret = new byte[32];
+            System.arraycopy(secretBytes, 0, newSecret, 0, Math.min(secretBytes.length, 32));
+            SECRET = new String(newSecret);
+        }
+    }
+  }
   public static final String ROLES = "roles";
   public static final String MENUS = "menus";
   public static final String AUTHORIZATION = "Authorization";
@@ -129,10 +146,10 @@ public class JwtTokenUtil implements Serializable {
   }
 
   public String genKey() {
-    Key KEY =
-        new SecretKeySpec(
-            StringUtils.randomString(2048).getBytes(), SignatureAlgorithm.HS512.getJcaName());
-    return Base64.getEncoder().encodeToString(KEY.getEncoded());
+    // 生成一个 32 字节（256 位）的密钥
+    byte[] keyBytes = new byte[32];
+    new java.security.SecureRandom().nextBytes(keyBytes);
+    return Base64.getEncoder().encodeToString(keyBytes);
   }
 
   public static void main(String[] args) {
