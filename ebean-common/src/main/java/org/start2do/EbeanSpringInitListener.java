@@ -18,7 +18,6 @@ public class EbeanSpringInitListener implements ApplicationListener<Availability
   @Override
   public void onApplicationEvent(AvailabilityChangeEvent event) {
     if (ReadinessState.ACCEPTING_TRAFFIC == event.getState()) {
-      log.info("EbeanSpringInitListener开始了");
       if (SysSettingUtil.getSysSettingUtil() != null) {
         try {
           SysSettingUtil.getSysSettingUtil().sync();

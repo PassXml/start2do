@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -19,6 +20,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.start2do.dto.UserCredentials;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @UtilityClass
 public class JwtTokenUtil implements Serializable {
 
@@ -74,6 +76,7 @@ public class JwtTokenUtil implements Serializable {
       claims.putAll(claimsSet.getClaims());
       return claims;
     } catch (Exception e) {
+      log.error("Failed to parse JWE token", e);
       throw new RuntimeException("Failed to parse JWE token", e);
     }
   }
