@@ -27,16 +27,30 @@ public class PermissionServiceImpl implements IPermissionService {
             return false;
         }
         
-        List<SysPermissionUserRef> refs = new ArrayList<>();
-        for (String userId : userIds) {
-            SysPermissionUserRefId id = new SysPermissionUserRefId(permissionId, userId);
-            SysPermissionUserRef ref = new SysPermissionUserRef(id);
-            ref.setPermissionId(permissionId);
-            ref.setUserId(userId);
-            refs.add(ref);
+        if (userIds == null || userIds.isEmpty()) {
+            return true;
         }
         
-        DB.saveAll(refs);
+        // 先删除现有的关联
+        DB.deleteAll(DB.find(SysPermissionUserRef.class)
+            .where()
+            .eq("permissionId", permissionId)
+            .findList());
+            
+        List<SysPermissionUserRef> refs = new ArrayList<>();
+        for (String userId : userIds) {
+            if (StringUtils.hasText(userId)) {
+                SysPermissionUserRefId id = new SysPermissionUserRefId(permissionId, userId);
+                SysPermissionUserRef ref = new SysPermissionUserRef(id);
+                ref.setPermissionId(permissionId);
+                ref.setUserId(userId);
+                refs.add(ref);
+            }
+        }
+        
+        if (!refs.isEmpty()) {
+            DB.saveAll(refs);
+        }
         return true;
     }
 
@@ -49,16 +63,30 @@ public class PermissionServiceImpl implements IPermissionService {
             return false;
         }
         
-        List<SysPermissionRoleRef> refs = new ArrayList<>();
-        for (String roleId : roleIds) {
-            SysPermissionRoleRefId id = new SysPermissionRoleRefId(permissionId, roleId);
-            SysPermissionRoleRef ref = new SysPermissionRoleRef(id);
-            ref.setPermissionId(permissionId);
-            ref.setRoleId(roleId);
-            refs.add(ref);
+        if (roleIds == null || roleIds.isEmpty()) {
+            return true;
         }
         
-        DB.saveAll(refs);
+        // 先删除现有的关联
+        DB.deleteAll(DB.find(SysPermissionRoleRef.class)
+            .where()
+            .eq("permissionId", permissionId)
+            .findList());
+            
+        List<SysPermissionRoleRef> refs = new ArrayList<>();
+        for (String roleId : roleIds) {
+            if (StringUtils.hasText(roleId)) {
+                SysPermissionRoleRefId id = new SysPermissionRoleRefId(permissionId, roleId);
+                SysPermissionRoleRef ref = new SysPermissionRoleRef(id);
+                ref.setPermissionId(permissionId);
+                ref.setRoleId(roleId);
+                refs.add(ref);
+            }
+        }
+        
+        if (!refs.isEmpty()) {
+            DB.saveAll(refs);
+        }
         return true;
     }
 
@@ -82,9 +110,15 @@ public class PermissionServiceImpl implements IPermissionService {
     @Override
     @Transactional
     public boolean removeUserPermission(String permissionId, List<String> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return true;
+        }
+        
         for (String userId : userIds) {
-            SysPermissionUserRefId id = new SysPermissionUserRefId(permissionId, userId);
-            DB.delete(SysPermissionUserRef.class, id);
+            if (StringUtils.hasText(userId)) {
+                SysPermissionUserRefId id = new SysPermissionUserRefId(permissionId, userId);
+                DB.delete(SysPermissionUserRef.class, id);
+            }
         }
         return true;
     }
@@ -92,9 +126,15 @@ public class PermissionServiceImpl implements IPermissionService {
     @Override
     @Transactional
     public boolean removeRolePermission(String permissionId, List<String> roleIds) {
+        if (roleIds == null || roleIds.isEmpty()) {
+            return true;
+        }
+        
         for (String roleId : roleIds) {
-            SysPermissionRoleRefId id = new SysPermissionRoleRefId(permissionId, roleId);
-            DB.delete(SysPermissionRoleRef.class, id);
+            if (StringUtils.hasText(roleId)) {
+                SysPermissionRoleRefId id = new SysPermissionRoleRefId(permissionId, roleId);
+                DB.delete(SysPermissionRoleRef.class, id);
+            }
         }
         return true;
     }
