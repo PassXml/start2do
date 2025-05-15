@@ -1,8 +1,15 @@
 package org.start2do.service;
 
 import java.util.List;
+import org.start2do.dto.Page;
 import org.start2do.dto.permission.PermissionAssignRequest;
+import org.start2do.dto.permission.PermissionDetailDto;
+import org.start2do.dto.permission.PermissionPageRequest;
+import org.start2do.entity.security.SysPermission;
 
+/**
+ * 权限管理服务接口
+ */
 public interface IPermissionService {
 
     /**
@@ -43,4 +50,18 @@ public interface IPermissionService {
      * @return 操作结果
      */
     boolean removeRolePermission(String permissionId, List<String> roleIds);
+    
+    /**
+     * 分页查询权限
+     * @param request 查询请求
+     * @return 分页结果
+     */
+    Page<SysPermission> page(PermissionPageRequest request);
+    
+    /**
+     * 获取权限详情
+     * @param id 权限ID
+     * @return 权限详情
+     */
+    PermissionDetailDto getDetail(String id);
 }

@@ -13,6 +13,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+/**
+ * 权限角色关联表，用于存储权限与角色的关联关系
+ */
 @Setter
 @Getter
 @Accessors(chain = true)
