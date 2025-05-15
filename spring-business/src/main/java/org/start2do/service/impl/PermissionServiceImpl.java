@@ -15,6 +15,7 @@ import org.start2do.dto.Page;
 import org.start2do.dto.permission.PermissionAssignRequest;
 import org.start2do.dto.permission.PermissionDetailDto;
 import org.start2do.dto.permission.PermissionPageRequest;
+import org.start2do.ebean.service.AbsService;
 import org.start2do.entity.security.SysPermission;
 import org.start2do.entity.security.SysPermissionRoleRef;
 import org.start2do.entity.security.SysPermissionRoleRefId;
@@ -24,7 +25,7 @@ import org.start2do.service.IPermissionService;
 
 @Service
 @RequiredArgsConstructor
-public class PermissionServiceImpl implements IPermissionService {
+public class PermissionServiceImpl extends AbsService<SysPermission> implements IPermissionService {
 
     @Override
     @Transactional
