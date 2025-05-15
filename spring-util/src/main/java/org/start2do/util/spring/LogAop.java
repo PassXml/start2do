@@ -95,7 +95,7 @@ public class LogAop {
                     throw e;
                 } finally {
                     long endTime = System.currentTimeMillis();
-                    log.info("请求IP: {} 请求URL :{} - {} ,请求头 :{}, 请求参数 :{} , 返回结果 :{}, 响应时间 :{}",
+                    log.info("请求IP: {} 请求URL :{} - {} ,请求头 :{}, 请求参数 :{} , 返回结果 :{}, 响应时间 :{}ms",
                         request.getRemoteAddr(), request.getMethod(), requestURI, headerString, body, response,
                         endTime - startTime);
                 }

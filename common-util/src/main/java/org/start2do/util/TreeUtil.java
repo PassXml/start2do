@@ -1,6 +1,7 @@
 package org.start2do.util;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,6 +12,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -494,4 +499,60 @@ public class TreeUtil {
         }
     }
 
+  @Setter
+  @Getter
+  @Accessors(chain = true)
+  @NoArgsConstructor
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  public static class TreeBaseDto implements TreeNode<TreeBaseDto> {
+
+    private String id;
+    private String parentId;
+    private List<TreeBaseDto> children;
+
+    @Override
+    public String getTreeNodeId() {
+      return this.id;
+    }
+
+    @Override
+    public String getParentId() {
+      return this.parentId;
+    }
+
+    @Override
+    public void setParentId(String id) {
+      this.parentId = id;
+    }
+
+    @Override
+    public void setTreeNodeId(String id) {
+      this.id = id;
+      ;
+    }
+
+    @Override
+    public void setChildren(List<TreeBaseDto> children) {
+      this.children = children;
+    }
+
+    @Override
+    public List<TreeBaseDto> getChildren() {
+      if (this.children == null) {
+        this.children = new ArrayList<>();
+      }
+      return this.children;
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+      return super.clone();
+    }
+
+      public TreeBaseDto(String id, String parentId, List<TreeBaseDto> children) {
+          this.id = id;
+          this.parentId = parentId;
+          this.children = children;
+      }
+  }
 }

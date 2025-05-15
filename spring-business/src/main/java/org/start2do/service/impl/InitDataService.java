@@ -58,8 +58,9 @@ public class InitDataService implements WaitInitCompleteRunner {
       return;
     }
     initDict(new DefaultDataItem(true, Constant.TYPE_USER_AUTH, List.of(), "用户认证类型"));
-    initDict(new DefaultDataItem(false, Constant.KEY_FILE_DOWNLOAD_HOST, List.of(), "文件下载时host前缀"));
-    initDict(
+    initSetting(
+        new DefaultDataItem(false, Constant.KEY_FILE_DOWNLOAD_HOST, List.of(), "文件下载时host前缀"));
+    initSetting(
         new DefaultDataItem(false, Constant.KEY_FILE_DOWNLOAD_USE_PATH, List.of(), "是否启用路径下载"));
     for (DefaultDataItem item : config.getDefaultData()) {
       if (item.isDict()) {

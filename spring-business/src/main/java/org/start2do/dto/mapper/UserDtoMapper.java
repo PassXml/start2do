@@ -27,16 +27,14 @@ public interface UserDtoMapper {
     @Mapping(target = "status", expression = "java(Status.find(req.getStatus()))")
     @Mapping(target = "roles", ignore = true)
     @Mapping(target = "dept", ignore = true)
-    @Mapping(target = "mainDept", ignore = true)
     @Mapping(target = "menus", ignore = true)
     @Mapping(target = "id", ignore = true)
-    SysUser toEntity(UserAddReq req);
+    SysUser  toEntity(UserAddReq req);
 
     @IgnoreBaseModel2
     @Mapping(target = "status", expression = "java(Status.find(req.getStatus()))")
     @Mapping(target = "roles", ignore = true)
     @Mapping(target = "dept", ignore = true)
-    @Mapping(target = "mainDept", ignore = true)
     @Mapping(target = "menus", ignore = true)
     @Mapping(target = "password", ignore = true)
     void update(@MappingTarget SysUser user, UserUpdateReq req);

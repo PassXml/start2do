@@ -3,7 +3,9 @@ package org.start2do.dto.resp.userauth;
 import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.start2do.constant.Constant;
 import org.start2do.ebean.dto.EnableType;
+import org.start2do.util.DictUtil;
 import org.start2do.util.EnumUtil;
 
 @Data
@@ -22,5 +24,9 @@ public class UserAuthPageResp {
 
   public String getStatusStr() {
     return EnumUtil.toStr(status);
+  }
+
+  public String getAuthType() {
+    return DictUtil.getLabel(Constant.TYPE_USER_AUTH, authType);
   }
 }
