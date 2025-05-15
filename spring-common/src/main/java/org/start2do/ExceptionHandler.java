@@ -1,9 +1,13 @@
 package org.start2do;
 
+import jakarta.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
@@ -142,6 +146,47 @@ public class ExceptionHandler {
     return R.failed(500, "系统错误").setError(e.getMessage());
   }
 
+  // 在 ExceptionHandler 类中添加新方法或修改现有方法
+  private void logRequestBody() {
+    try {
+      RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+      if (attributes instanceof ServletRequestAttributes) {
+        ServletRequestAttributes servletAttributes = (ServletRequestAttributes) attributes;
+        HttpServletRequest request = servletAttributes.getRequest();
+
+        // 记录请求头信息
+        Enumeration<String> headerNames = request.getHeaderNames();
+        StringBuilder headers = new StringBuilder();
+        while (headerNames.hasMoreElements()) {
+          String headerName = headerNames.nextElement();
+          headers
+              .append(headerName)
+              .append(": ")
+              .append(request.getHeader(headerName))
+              .append("\n");
+        }
+
+        // 尝试读取请求体
+        // 注意：这可能需要包装HttpServletRequest以允许多次读取请求体
+        String requestBody = "";
+        try {
+          requestBody = IOUtils.toString(request.getInputStream(), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+          log.warn("无法读取请求体: {}", e.getMessage());
+        }
+
+        log.info(
+            "请求URI: {}, 请求方法: {}, 请求头: \n{}, 请求体: {}",
+            request.getRequestURI(),
+            request.getMethod(),
+            headers.toString(),
+            requestBody);
+      }
+    } catch (Exception e) {
+      log.warn("获取请求信息失败: {}", e.getMessage());
+    }
+  }
+
   @ResponseBody
   @org.springframework.web.bind.annotation.ExceptionHandler(
       value = MethodArgumentNotValidException.class)
@@ -162,6 +207,7 @@ public class ExceptionHandler {
                   return joiner + objectError.getDefaultMessage();
                 })
             .collect(Collectors.joining(";"));
+    logRequestBody();
     return R.failed(message).setError(message);
   }
 
