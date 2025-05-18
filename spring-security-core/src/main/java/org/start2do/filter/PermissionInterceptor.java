@@ -65,6 +65,6 @@ public class PermissionInterceptor extends AbsPermission implements Filter, IPer
   private void handleUnauthorized(HttpServletResponse response) throws IOException {
     response.setHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-    response.getWriter().write(R.failed(500, "权限不足").toJson());
+    response.getWriter().write(R.failed(HttpServletResponse.SC_FORBIDDEN, "权限不足").toJson());
   }
 }
