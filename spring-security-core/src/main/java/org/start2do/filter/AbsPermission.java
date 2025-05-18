@@ -2,6 +2,10 @@ package org.start2do.filter;
 
 import java.util.Collection;
 import lombok.RequiredArgsConstructor;
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.util.AntPathMatcher;
 import org.start2do.config.PermissionConfig;
@@ -55,34 +59,41 @@ public abstract class AbsPermission {
 
   // 检查权限逻辑
   public boolean checkPermission(
-      String requestPath, UserCredentials user, Collection<SysPermission> permissions) {
-    // 如果权限列表为空，根据默认配置决定是否放行
+      String requestPath, UserCredentials user, Collection<SysPermission> userSpecificPermissions) {
+    // 1. 如果权限系统未启用，则直接放行
     if (!config.isEnable()) {
       return true;
     }
-    if (config.getIgnoreDefaultRole().stream()
-        .anyMatch(
-            s ->
-                user.getRoles().stream().map(UserRole::getRoleCode).anyMatch(s1 -> s1.equals(s)))) {
+
+    // 2. 检查用户是否拥有配置中指定的应忽略权限检查的角色 (例如超级管理员角色)
+    //    优化了角色检查的可读性
+    Set<String> userRoleCodes = user.getRoles().stream()
+        .map(UserRole::getRoleCode)
+        .collect(Collectors.toSet());
+    if (config.getIgnoreDefaultRole().stream().anyMatch(userRoleCodes::contains)) {
       return true;
     }
-    // 使用Spring的AntPathMatcher检查请求路径是否匹配用户权限列表中的路径
 
-    boolean result = false;
-    boolean found = false;
-    for (SysPermission permission : permissions) {
-      if (pathMatcher.match(permission.getUrl(), requestPath)) {
-        result = true;
-        found = true;
+    // 3. 检查用户特定的权限 (直接分配或通过角色继承)
+    //    如果找到匹配的特定权限，则该权限的 isPass() 状态决定访问权限，并立即返回结果。
+    for (SysPermission userPermission : userSpecificPermissions) {
+      if (userPermission.getUrl() != null && pathMatcher.match(userPermission.getUrl(), requestPath)) {
+        return userPermission.isPass();
       }
     }
-    if (!found) {
-      for (SysPermission permission : findAll()) {
-        if (pathMatcher.match(permission.getUrl(), requestPath)) {
-          result = permission.isPass();
-        }
+
+    // 4. 如果在用户特定权限中未找到匹配项，则检查所有系统定义的“全局”权限规则。
+    //    这用于确定路径是否通常受保护以及其默认访问状态。
+    Collection<SysPermission> allSystemPermissions = findAll(); // 此方法已使用 @Cacheable 缓存
+    for (SysPermission systemPermission : allSystemPermissions) {
+      if (systemPermission.getUrl() != null && pathMatcher.match(systemPermission.getUrl(), requestPath)) {
+        // 如果路径与系统定义的权限匹配，则其 isPass() 标志决定访问权限，并立即返回结果。
+        return systemPermission.isPass();
       }
     }
-    return result;
+
+    // 5. 如果请求路径与任何用户特定权限或任何系统定义的权限都不匹配：
+    //    默认拒绝访问。这是一种安全的默认设置，意味着只有明确配置允许的路径才可访问。
+    return false;
   }
 }
