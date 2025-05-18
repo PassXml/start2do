@@ -1,6 +1,5 @@
 package org.start2do.entity.security;
 
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import io.ebean.Model;
 import jakarta.persistence.EmbeddedId;
@@ -25,41 +24,40 @@ import org.start2do.util.StringUtils;
 @Table(name = "sys_user_dept")
 public class SysUserDept extends Model {
 
-    @Id
-    @EmbeddedId
-    private SysUserDeptId id;
-    private String userId;
-    private String deptId;
+  @Id @EmbeddedId private SysUserDeptId id;
+  private String userId;
+  private String deptId;
 
-    private Type type;
+  private Type type;
 
-    public enum Type implements IDictItem {
-        Main("1", "主职务"),
-        Sub("2", "挂职");;
+  public enum Type implements IDictItem {
+    Main("1", "主部门"),
+    Sub("2", "挂职");
+    ;
 
-        Type(String value, String label) {
-            putItemBean(value, label);
-        }
-
-        @JsonCreator
-        public static Type get(String value) {
-            if (StringUtils.isEmpty(value)) {
-                return null;
-            }
-            return find(value).orElseThrow(() -> new BusinessException("未知字典值:" + value));
-        }
-
-        public static Optional<Type> find(String value) {
-            Type result = DictItems.getByValue(Type.class, value);
-            if (result == null) {
-                return Optional.empty();
-            }
-            return Optional.of(result);
-        }
+    Type(String value, String label) {
+      putItemBean(value, label);
     }
 
-    public SysUserDept(SysUserDeptId id, Type type) {
-        this.id = id;
-        this.type = type;
+    @JsonCreator
+    public static Type get(String value) {
+      if (StringUtils.isEmpty(value)) {
+        return null;
+      }
+      return find(value).orElseThrow(() -> new BusinessException("未知字典值:" + value));
     }
+
+    public static Optional<Type> find(String value) {
+      Type result = DictItems.getByValue(Type.class, value);
+      if (result == null) {
+        return Optional.empty();
+      }
+      return Optional.of(result);
+    }
+  }
+
+  public SysUserDept(SysUserDeptId id, Type type) {
+    this.id = id;
+    this.type = type;
+  }
 }

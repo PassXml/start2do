@@ -1,5 +1,6 @@
 package org.start2do.dto.permission;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,15 +11,9 @@ import org.start2do.dto.Page;
 @Getter
 @Accessors(chain = true)
 @NoArgsConstructor
-public class PermissionPageRequest extends Page<Object> {
-    
-    /**
-     * URL匹配条件
-     */
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class PermissionPageReq extends Page {
+
     private String url;
-    
-    /**
-     * 是否允许通过
-     */
     private Boolean pass;
 }

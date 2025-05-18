@@ -1,5 +1,6 @@
 package org.start2do.controller.servlet;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -16,11 +17,12 @@ import org.start2do.dto.mapper.UserAuthDtoMapper;
 import org.start2do.dto.req.userauth.UserAuthPageReq;
 import org.start2do.dto.resp.userauth.UserAuthDetailResp;
 import org.start2do.dto.resp.userauth.UserAuthPageResp;
-import org.start2do.entity.security.query.QSysUser;
-import org.start2do.service.servlet.SysUserAuthService;
+import org.start2do.ebean.dto.EnableType;
 import org.start2do.ebean.util.Where;
 import org.start2do.entity.security.SysUserAuth;
+import org.start2do.entity.security.query.QSysUser;
 import org.start2do.entity.security.query.QSysUserAuth;
+import org.start2do.service.servlet.SysUserAuthService;
 import org.start2do.util.BeanValidatorUtil;
 
 @RestController
@@ -41,7 +43,7 @@ public class SysUserAuthController {
     Where.ready()
         .like(req.getUsername(), q.user.username::like)
         .like(req.getRealName(), q.user.realName::like)
-        .notNull(req.getUserId(), q.userId::eq)
+        .notEmpty(req.getUserId(), q.userId::eq)
         .like(req.getAuthType(), q.authType::like)
         .like(req.getAuthUsername(), q.authUsername::like)
         .like(req.getAuthUid(), q.authUid::like)
@@ -78,4 +80,26 @@ public class SysUserAuthController {
         sysUserAuthService.deleteById(req.getId());
         return R.ok();
     }
+
+  @GetMapping("enable")
+  public R<?> enable(@Valid IdStrReq req) {
+    return R.ok(
+        new QSysUserAuth()
+            .asUpdate()
+            .set(QSysUserAuth.alias().status, EnableType.Enable)
+            .where()
+            .idEq(req.getId())
+            .update());
+  }
+
+  @GetMapping("disable")
+  public R<?> disable(@Valid IdStrReq req) {
+    return R.ok(
+        new QSysUserAuth()
+            .asUpdate()
+            .set(QSysUserAuth.alias().status, EnableType.DisEnable)
+            .where()
+            .idEq(req.getId())
+            .update());
+  }
 }

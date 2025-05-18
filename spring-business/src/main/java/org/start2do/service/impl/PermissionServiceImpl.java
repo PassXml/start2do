@@ -13,14 +13,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.start2do.dto.Page;
 import org.start2do.dto.permission.PermissionAssignRequest;
-import org.start2do.dto.permission.PermissionDetailDto;
-import org.start2do.dto.permission.PermissionPageRequest;
+import org.start2do.dto.permission.PermissionDetailResp;
+import org.start2do.dto.permission.PermissionPageReq;
 import org.start2do.ebean.service.AbsService;
 import org.start2do.entity.security.SysPermission;
 import org.start2do.entity.security.SysPermissionRoleRef;
 import org.start2do.entity.security.SysPermissionRoleRefId;
 import org.start2do.entity.security.SysPermissionUserRef;
 import org.start2do.entity.security.SysPermissionUserRefId;
+import org.start2do.entity.security.query.QSysPermission;
 import org.start2do.service.IPermissionService;
 
 @Service
@@ -35,17 +36,17 @@ public class PermissionServiceImpl extends AbsService<SysPermission> implements 
         if (permission == null) {
             return false;
         }
-        
+
         if (userIds == null || userIds.isEmpty()) {
             return true;
         }
-        
+
         // 先删除现有的关联
         DB.deleteAll(DB.find(SysPermissionUserRef.class)
             .where()
             .eq("permissionId", permissionId)
             .findList());
-            
+
         List<SysPermissionUserRef> refs = new ArrayList<>();
         for (String userId : userIds) {
             if (StringUtils.hasText(userId)) {
@@ -56,7 +57,7 @@ public class PermissionServiceImpl extends AbsService<SysPermission> implements 
                 refs.add(ref);
             }
         }
-        
+
         if (!refs.isEmpty()) {
             DB.saveAll(refs);
         }
@@ -71,17 +72,17 @@ public class PermissionServiceImpl extends AbsService<SysPermission> implements 
         if (permission == null) {
             return false;
         }
-        
+
         if (roleIds == null || roleIds.isEmpty()) {
             return true;
         }
-        
+
         // 先删除现有的关联
         DB.deleteAll(DB.find(SysPermissionRoleRef.class)
             .where()
             .eq("permissionId", permissionId)
             .findList());
-            
+
         List<SysPermissionRoleRef> refs = new ArrayList<>();
         for (String roleId : roleIds) {
             if (StringUtils.hasText(roleId)) {
@@ -92,7 +93,7 @@ public class PermissionServiceImpl extends AbsService<SysPermission> implements 
                 refs.add(ref);
             }
         }
-        
+
         if (!refs.isEmpty()) {
             DB.saveAll(refs);
         }
@@ -104,15 +105,15 @@ public class PermissionServiceImpl extends AbsService<SysPermission> implements 
     public boolean assignPermission(PermissionAssignRequest request) {
         boolean userResult = true;
         boolean roleResult = true;
-        
+
         if (request.getUserIds() != null && !request.getUserIds().isEmpty()) {
             userResult = assignToUsers(request.getPermissionId(), request.getUserIds());
         }
-        
+
         if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()) {
             roleResult = assignToRoles(request.getPermissionId(), request.getRoleIds());
         }
-        
+
         return userResult && roleResult;
     }
 
@@ -122,7 +123,7 @@ public class PermissionServiceImpl extends AbsService<SysPermission> implements 
         if (userIds == null || userIds.isEmpty()) {
             return true;
         }
-        
+
         for (String userId : userIds) {
             if (StringUtils.hasText(userId)) {
                 SysPermissionUserRefId id = new SysPermissionUserRefId(permissionId, userId);
@@ -138,7 +139,7 @@ public class PermissionServiceImpl extends AbsService<SysPermission> implements 
         if (roleIds == null || roleIds.isEmpty()) {
             return true;
         }
-        
+
         for (String roleId : roleIds) {
             if (StringUtils.hasText(roleId)) {
                 SysPermissionRoleRefId id = new SysPermissionRoleRefId(permissionId, roleId);
@@ -149,28 +150,28 @@ public class PermissionServiceImpl extends AbsService<SysPermission> implements 
     }
 
     @Override
-    public Page<SysPermission> page(PermissionPageRequest request) {
+    public Page<SysPermission> page(PermissionPageReq request) {
         Query<SysPermission> query = DB.find(SysPermission.class);
         ExpressionList<SysPermission> where = query.where();
-        
+
         // 添加条件过滤
         if (StringUtils.hasText(request.getUrl())) {
             where.ilike("url", "%" + request.getUrl() + "%");
         }
-        
+
         if (request.getPass() != null) {
             where.eq("pass", request.getPass());
         }
-        
+
         // 设置排序
         query.orderBy("id asc");
-        
+
         // 执行查询
         PagedList<SysPermission> pagedList = query
             .setFirstRow(request.getOffset())
             .setMaxRows(request.getSize())
             .findPagedList();
-            
+
         return new Page<>(
             pagedList.getTotalCount(),
             request.getSize(),
@@ -180,44 +181,39 @@ public class PermissionServiceImpl extends AbsService<SysPermission> implements 
     }
 
     @Override
-    public PermissionDetailDto getDetail(String id) {
+    public PermissionDetailResp getDetail(String id) {
         // 查询权限
-        SysPermission permission = DB.find(SysPermission.class)
-                .setId(id)
-                .fetch("users")
-                .fetch("roles")
-                .findOne();
-                
+        SysPermission permission = new QSysPermission().id.eq(id).users.fetch().roles.fetch().findOne();
+
         if (permission == null) {
             return null;
         }
-        
+
         // 构建详情DTO
-        PermissionDetailDto detailDto = new PermissionDetailDto()
-                .setId(permission.getId())
-                .setUrl(permission.getUrl())
-                .setPass(permission.isPass());
-                
+        PermissionDetailResp detailDto = new PermissionDetailResp()
+            .setId(permission.getId())
+            .setUrl(permission.getUrl())
+            .setPass(permission.isPass());
+
         // 转换用户列表
         if (permission.getUsers() != null) {
-            List<PermissionDetailDto.UserDto> userDtos = permission.getUsers().stream()
-                    .map(user -> new PermissionDetailDto.UserDto()
-                            .setId(user.getId())
-                            .setUsername(user.getUsername()))
-                    .collect(Collectors.toList());
+            List<PermissionDetailResp.UserDto> userDtos = permission.getUsers().stream()
+                .map(user -> new PermissionDetailResp.UserDto()
+                    .setId(user.getId())
+                    .setUsername(user.getUsername()))
+                .collect(Collectors.toList());
             detailDto.setUsers(userDtos);
         }
-        
+
         // 转换角色列表
         if (permission.getRoles() != null) {
-            List<PermissionDetailDto.RoleDto> roleDtos = permission.getRoles().stream()
-                    .map(role -> new PermissionDetailDto.RoleDto()
-                            .setId(role.getId())
-                            .setRoleName(role.getRoleName()))
-                    .collect(Collectors.toList());
+            List<PermissionDetailResp.RoleDto> roleDtos = permission.getRoles().stream()
+                .map(role -> new PermissionDetailResp.RoleDto()
+                    .setId(role.getId()).setRoleName(role.getName()))
+                .collect(Collectors.toList());
             detailDto.setRoles(roleDtos);
         }
-        
+
         return detailDto;
     }
 }

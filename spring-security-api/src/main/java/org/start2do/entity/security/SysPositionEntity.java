@@ -1,5 +1,6 @@
 package org.start2do.entity.security;
 
+import io.ebean.annotation.Cache;
 import io.ebean.annotation.DbComment;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,6 +27,7 @@ import org.start2do.ebean.id_generators.SnowflakeStrGenerator;
 @NoArgsConstructor
 @DbComment("岗位表")
 @Accessors(chain = true)
+@Cache(enableQueryCache = true)
 @Table(name = "sys_position")
 public class SysPositionEntity extends BaseModel2 implements Serializable {
 

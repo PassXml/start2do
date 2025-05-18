@@ -3,8 +3,8 @@ package org.start2do.service;
 import java.util.List;
 import org.start2do.dto.Page;
 import org.start2do.dto.permission.PermissionAssignRequest;
-import org.start2do.dto.permission.PermissionDetailDto;
-import org.start2do.dto.permission.PermissionPageRequest;
+import org.start2do.dto.permission.PermissionDetailResp;
+import org.start2do.dto.permission.PermissionPageReq;
 import org.start2do.entity.security.SysPermission;
 
 /**
@@ -19,7 +19,7 @@ public interface IPermissionService {
      * @return 操作结果
      */
     boolean assignToUsers(String permissionId, List<String> userIds);
-    
+
     /**
      * 关联角色与权限
      * @param permissionId 权限ID
@@ -27,14 +27,14 @@ public interface IPermissionService {
      * @return 操作结果
      */
     boolean assignToRoles(String permissionId, List<String> roleIds);
-    
+
     /**
      * 批量关联用户和角色
      * @param request 关联请求
      * @return 操作结果
      */
     boolean assignPermission(PermissionAssignRequest request);
-    
+
     /**
      * 移除用户权限关联
      * @param permissionId 权限ID
@@ -42,7 +42,7 @@ public interface IPermissionService {
      * @return 操作结果
      */
     boolean removeUserPermission(String permissionId, List<String> userIds);
-    
+
     /**
      * 移除角色权限关联
      * @param permissionId 权限ID
@@ -50,18 +50,18 @@ public interface IPermissionService {
      * @return 操作结果
      */
     boolean removeRolePermission(String permissionId, List<String> roleIds);
-    
+
     /**
      * 分页查询权限
      * @param request 查询请求
      * @return 分页结果
      */
-    Page<SysPermission> page(PermissionPageRequest request);
-    
+    Page<SysPermission> page(PermissionPageReq request);
+
     /**
      * 获取权限详情
      * @param id 权限ID
      * @return 权限详情
      */
-    PermissionDetailDto getDetail(String id);
+    PermissionDetailResp getDetail(String id);
 }

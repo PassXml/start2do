@@ -136,7 +136,7 @@ public class SysRoleController {
 
 
     /**
-     * 根据用户组获取该用户组下面的菜单
+     * 根据用户组获取该用户组下面的用户
      */
     @GetMapping("users")
     public R<List<RoleUsersResp>> users(String roleId) {
