@@ -1,7 +1,8 @@
 package org.start2do.dto.req.permission;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import jakarta.validation.constraints.Size;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -10,9 +11,9 @@ import lombok.experimental.Accessors;
 @Getter
 @Accessors(chain = true)
 public class PermissionUserAddReq {
+  @JsonAlias("userIds")
+  @Size(max = 999)
+  private List<String> userId;
 
-    @NotNull
-    private String userId;
-    @NotEmpty
-    private String permissionId;
+  private List<String> permissionId;
 }

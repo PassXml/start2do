@@ -2,7 +2,6 @@ package org.start2do.service;
 
 import java.util.List;
 import org.start2do.dto.Page;
-import org.start2do.dto.permission.PermissionAssignRequest;
 import org.start2do.dto.permission.PermissionDetailResp;
 import org.start2do.dto.permission.PermissionPageReq;
 import org.start2do.entity.security.SysPermission;
@@ -27,13 +26,6 @@ public interface IPermissionService {
      * @return 操作结果
      */
     boolean assignToRoles(String permissionId, List<String> roleIds);
-
-    /**
-     * 批量关联用户和角色
-     * @param request 关联请求
-     * @return 操作结果
-     */
-    boolean assignPermission(PermissionAssignRequest request);
 
     /**
      * 移除用户权限关联
@@ -63,5 +55,5 @@ public interface IPermissionService {
      * @param id 权限ID
      * @return 权限详情
      */
-    PermissionDetailResp getDetail(String id);
+    PermissionDetailResp getDetail(String id, boolean isUser);
 }

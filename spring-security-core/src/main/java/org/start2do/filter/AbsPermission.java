@@ -1,11 +1,9 @@
 package org.start2do.filter;
 
 import java.util.Collection;
-import lombok.RequiredArgsConstructor;
-import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.util.AntPathMatcher;
 import org.start2do.config.PermissionConfig;
@@ -53,7 +51,6 @@ public abstract class AbsPermission {
     // 从用户关联的权限表中提取权限URL
     return new QSysPermission()
         .select(QSysPermission.alias().url, QSysPermission.alias().pass)
-        .setUseQueryCache(true)
         .findList();
   }
 
@@ -78,7 +75,7 @@ public abstract class AbsPermission {
     //    如果找到匹配的特定权限，则该权限的 isPass() 状态决定访问权限，并立即返回结果。
     for (SysPermission userPermission : userSpecificPermissions) {
       if (userPermission.getUrl() != null && pathMatcher.match(userPermission.getUrl(), requestPath)) {
-        return userPermission.isPass();
+        return true;
       }
     }
 

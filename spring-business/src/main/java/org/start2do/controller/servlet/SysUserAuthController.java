@@ -29,16 +29,18 @@ import org.start2do.util.BeanValidatorUtil;
 @RequiredArgsConstructor
 @RequestMapping("sys/user-auth")
 @ConditionalOnWebApplication(type = Type.SERVLET)
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "user-auth", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+    prefix = "start2do.business.controller",
+    name = "user-auth",
+    havingValue = "true",
+    matchIfMissing = true)
 public class SysUserAuthController {
 
-    private final SysUserAuthService sysUserAuthService;
+  private final SysUserAuthService sysUserAuthService;
 
-    /**
-     * 分页查询第三方认证信息
-     */
-    @GetMapping("page")
-    public R<Page<UserAuthPageResp>> page(UserAuthPageReq req) {
+  /** 分页查询第三方认证信息 */
+  @GetMapping("page")
+  public R<Page<UserAuthPageResp>> page(UserAuthPageReq req) {
     QSysUserAuth q = new QSysUserAuth().user.fetch(QSysUser.alias().username);
     Where.ready()
         .like(req.getUsername(), q.user.username::like)
@@ -50,36 +52,32 @@ public class SysUserAuthController {
         .notNull(req.getStatus(), q.status::eq);
 
     return R.ok(sysUserAuthService.page(q, req, UserAuthDtoMapper.INSTANCE::toUserAuthPageResp));
-    }
+  }
 
-    /**
-     * 查看第三方认证详情
-     */
-    @GetMapping("detail")
-    public R<UserAuthDetailResp> detail(IdStrReq req) {
-        BeanValidatorUtil.validate(req);
-        SysUserAuth userAuth = sysUserAuthService.getById(req.getId());
-        if (userAuth == null) {
+  /** 查看第三方认证详情 */
+  @GetMapping("detail")
+  public R<UserAuthDetailResp> detail(IdStrReq req) {
+    BeanValidatorUtil.validate(req);
+    SysUserAuth userAuth = sysUserAuthService.getById(req.getId());
+    if (userAuth == null) {
       throw new BusinessException("第三方认证信息不存在");
-        }
+    }
     return R.ok(UserAuthDtoMapper.INSTANCE.toUserAuthDetailResp(userAuth));
-    }
+  }
 
-    /**
-     * 删除第三方认证信息
-     */
-    @SysLogSetting("删除第三方认证信息")
-    @GetMapping("delete")
-    public R<?> delete(IdStrReq req) {
-        BeanValidatorUtil.validate(req);
+  /** 删除第三方认证信息 */
+  @SysLogSetting("删除第三方认证信息")
+  @GetMapping("delete")
+  public R<?> delete(IdStrReq req) {
+    BeanValidatorUtil.validate(req);
 
-        SysUserAuth userAuth = sysUserAuthService.getById(req.getId());
-        if (userAuth == null) {
+    SysUserAuth userAuth = sysUserAuthService.getById(req.getId());
+    if (userAuth == null) {
       throw new BusinessException("第三方认证信息不存在，无法删除");
-        }
-        sysUserAuthService.deleteById(req.getId());
-        return R.ok();
     }
+    sysUserAuthService.deleteById(req.getId());
+    return R.ok();
+  }
 
   @GetMapping("enable")
   public R<?> enable(@Valid IdStrReq req) {

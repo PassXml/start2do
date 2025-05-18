@@ -16,6 +16,7 @@ public interface Constant {
   String TYPE_SYSTEM_SETTING = "SYSTEM_SETTING";
 
   String KEY_FILE_DOWNLOAD_HOST = "FILE_DOWNLOAD_HOST";
+  String KEY_ADMIN_ROLE = "KEY_ADMIN_ROLE";
 
   /** 使用路径下载 */
   String KEY_FILE_DOWNLOAD_USE_PATH = "KEY_FILE_DOWNLOAD_USE_PATH";

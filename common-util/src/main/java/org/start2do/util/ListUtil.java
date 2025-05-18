@@ -70,7 +70,7 @@ public class ListUtil {
         }
     }
 
-    public <T, R> DiffDTO<T, R> diff(List<T> addSourceList, List<R> sourceList, Compare<T, R> eq) {
+    public <T, R> DiffDTO<T, R> diff(Collection<T> addSourceList, Collection<R> sourceList, Compare<T, R> eq) {
         List<T> addList = new ArrayList<>();
         List<EqValue<T, R>> eqList = new ArrayList<>();
         List<R> removeList = new ArrayList<>();

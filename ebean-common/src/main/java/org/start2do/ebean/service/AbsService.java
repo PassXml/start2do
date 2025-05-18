@@ -221,6 +221,7 @@ public abstract class AbsService<T extends Model> implements IService<T> {
         entity.save(transaction);
     }
 
+
     public interface Runner<T, R> {
 
         void run(Collection<T> list, Collection<R> resps);
