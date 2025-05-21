@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.start2do.dto.resp.user.CurrentUserInfoDto;
+import org.start2do.util.JwtTokenUtil;
 import org.start2do.dto.BusinessException;
 import org.start2do.dto.IdStrReq;
 import org.start2do.dto.Page;
@@ -141,5 +143,34 @@ public class SysUserController {
         sysUserService.findAll(qClass).stream()
             .map(t -> new UserMenuResp(t.getId(), t.getUsername(), t.getRealName()))
             .toList());
+  }
+
+  /** 获取当前登录用户信息 */
+  @GetMapping("profile")
+  public R<CurrentUserInfoDto> profile() {
+    String userId = JwtTokenUtil.getUserId();
+    if (StringUtils.isEmpty(userId)) {
+      throw new BusinessException("无法获取当前用户信息，用户未登录或会话已过期");
+    }
+    SysUser user = sysUserService.getOne(new QSysUser().id.eq(userId).dept.fetch());
+    if (user == null) {
+      throw new BusinessException("用户不存在或已被删除");
+    }
+
+    CurrentUserInfoDto dto = new CurrentUserInfoDto();
+    dto.setId(user.getId());
+    dto.setName(user.getUsername());
+    dto.setRealName(user.getRealName());
+    dto.setUserPhone(user.getPhone());
+    dto.setUserEmail(user.getEmail());
+    dto.setAvatar(user.getAvatar());
+    dto.setEnterpriseWechat(user.getEnterpriseWechat());
+
+    if (user.getDept() != null) {
+      dto.setDeptId(String.valueOf(user.getDept().getId()));
+      dto.setDeptName(user.getDept().getName());
+    }
+    
+    return R.ok(dto);
   }
 }
