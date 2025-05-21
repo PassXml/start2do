@@ -174,4 +174,52 @@ public class SysUserController {
 
     return R.ok(dto);
   }
+
+  /** 更新当前登录用户信息 */
+  @PostMapping("/profile/update")
+  @SysLogSetting("更新当前用户信息")
+  public R<Void> updateProfile(@RequestBody UpdateCurrentUserInfoDto req) {
+    BeanValidatorUtil.validate(req);
+
+    String currentUserId = JwtTokenUtil.getUserId();
+    if (StringUtils.isEmpty(currentUserId)) {
+      throw new BusinessException("无法获取当前用户信息，用户未登录或会话已过期");
+    }
+
+    if (!req.getId().equals(currentUserId)) {
+      throw new BusinessException("无权修改他人信息");
+    }
+
+    SysUser user = sysUserService.getById(currentUserId);
+    if (user == null) {
+      throw new BusinessException("用户不存在或已被删除");
+    }
+
+    boolean changed = false;
+    if (StringUtils.isNotEmpty(req.getRealName()) && !req.getRealName().equals(user.getRealName())) {
+      user.setRealName(req.getRealName());
+      changed = true;
+    }
+    if (StringUtils.isNotEmpty(req.getUserPhone()) && !req.getUserPhone().equals(user.getPhone())) {
+      user.setPhone(req.getUserPhone());
+      changed = true;
+    }
+    if (StringUtils.isNotEmpty(req.getUserEmail()) && !req.getUserEmail().equals(user.getEmail())) {
+      user.setEmail(req.getUserEmail());
+      changed = true;
+    }
+    if (StringUtils.isNotEmpty(req.getAvatar()) && !req.getAvatar().equals(user.getAvatar())) {
+      user.setAvatar(req.getAvatar());
+      changed = true;
+    }
+    if (req.getEnterpriseWechat() != null && !req.getEnterpriseWechat().equals(user.getEnterpriseWechat())) {
+      user.setEnterpriseWechat(req.getEnterpriseWechat());
+      changed = true;
+    }
+    
+    if (changed) {
+      sysUserService.update(user);
+    }
+    return R.ok();
+  }
 }
