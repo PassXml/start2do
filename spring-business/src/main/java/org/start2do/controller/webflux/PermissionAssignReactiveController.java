@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.Permission;
 import org.start2do.dto.R;
@@ -37,13 +38,13 @@ public class PermissionAssignReactiveController {
 
   @Permission(defaultPass = true)
   @GetMapping("users")
-  public R<PermissionDetailResp> getUsers(String permissionId) {
+  public R<PermissionDetailResp> getUsers(@RequestParam("permissionId") String permissionId) {
     return R.ok(permissionService.getDetail(permissionId, true));
   }
 
   @GetMapping("role")
   @Permission(defaultPass = true)
-  public R<PermissionDetailResp> getRoles(String permissionId) {
+  public R<PermissionDetailResp> getRoles(@RequestParam("permissionId") String permissionId) {
     return R.ok(permissionService.getDetail(permissionId, false));
   }
 

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.IdReq;
 import org.start2do.dto.IdStrReq;
@@ -139,7 +140,7 @@ public class SysRoleController {
      * 根据用户组获取该用户组下面的用户
      */
     @GetMapping("users")
-    public R<List<RoleUsersResp>> users(String roleId) {
+    public R<List<RoleUsersResp>> users(@RequestParam(name = "roleId") String roleId) {
         List<SysUserRole> all = userRoleService.findAll(new QSysUserRole().roleId.eq(roleId));
         if (all.isEmpty()) {
             return R.ok(new ArrayList<>());
