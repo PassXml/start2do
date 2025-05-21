@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.start2do.dto.resp.user.CurrentUserInfoDto;
+import org.start2do.entity.security.SysDept;
 import org.start2do.util.JwtTokenUtil;
 import org.start2do.dto.BusinessException;
 import org.start2do.dto.IdStrReq;
@@ -164,13 +165,13 @@ public class SysUserController {
     dto.setUserPhone(user.getPhone());
     dto.setUserEmail(user.getEmail());
     dto.setAvatar(user.getAvatar());
-    dto.setEnterpriseWechat(user.getEnterpriseWechat());
 
-    if (user.getDept() != null) {
-      dto.setDeptId(String.valueOf(user.getDept().getId()));
-      dto.setDeptName(user.getDept().getName());
+    SysDept dept = user.getMainDept();
+    if (dept != null) {
+      dto.setDeptId(dept.getId());
+      dto.setDeptName(dept.getName());
     }
-    
+
     return R.ok(dto);
   }
 }
