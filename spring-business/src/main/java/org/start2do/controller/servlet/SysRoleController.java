@@ -43,6 +43,7 @@ import org.start2do.service.servlet.SysUserRoleService;
 import org.start2do.service.servlet.SysUserService;
 import org.start2do.util.BeanValidatorUtil;
 import org.start2do.util.ListUtil;
+import org.start2do.dto.Permission;
 
 /**
  * 角色管理
@@ -52,6 +53,7 @@ import org.start2do.util.ListUtil;
 @RequestMapping("role")
 @ConditionalOnProperty(prefix = "start2do.business.controller", name = "role", havingValue = "true",matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.SERVLET)
+@Permission(groupName = "角色管理")
 public class SysRoleController {
 
     private final SysRoleService sysRoleService;

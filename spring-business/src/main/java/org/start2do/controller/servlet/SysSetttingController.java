@@ -28,12 +28,14 @@ import org.start2do.ebean.enums.YesOrNoType;
 import org.start2do.ebean.service.SysSettingService;
 import org.start2do.ebean.util.Where;
 import org.start2do.util.BeanValidatorUtil;
+import org.start2do.dto.Permission;
 
 /** 系统设置 */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("sys/setting")
 @ConditionalOnWebApplication(type = Type.SERVLET)
+@Permission(groupName = "系统设置管理")
 public class SysSetttingController {
 
   private final SysSettingService settingService;

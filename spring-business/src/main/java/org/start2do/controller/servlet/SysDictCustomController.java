@@ -23,6 +23,7 @@ import org.start2do.entity.business.SysDictItem;
 import org.start2do.service.servlet.SysDictItemService;
 import org.start2do.service.servlet.SysDictService;
 import org.start2do.util.ListUtil;
+import org.start2do.dto.Permission;
 
 /**
  * 字典管理
@@ -32,6 +33,7 @@ import org.start2do.util.ListUtil;
 @RequestMapping("/dict")
 @ConditionalOnWebApplication(type = Type.SERVLET)
 @ConditionalOnProperty(prefix = "start2do.business.controller", name = "custom-dict", havingValue = "true",matchIfMissing = true)
+@Permission(groupName = "自定义字典管理")
 public class SysDictCustomController {
 
     private final SysDictService sysDictService;

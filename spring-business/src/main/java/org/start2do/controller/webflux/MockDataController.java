@@ -23,6 +23,7 @@ import org.start2do.util.FontUtil;
 import org.start2do.util.MockDataUtil;
 import org.start2do.util.spring.SpringInitListenerUtil.WaitInitCompleteRunner;
 import org.start2do.util.spring.dto.LogSetting;
+import org.start2do.dto.Permission;
 
 /**
  * Mock 数据
@@ -32,6 +33,7 @@ import org.start2do.util.spring.dto.LogSetting;
 @RequestMapping("mock")
 @ConditionalOnProperty(prefix = "start2do.business.controller", name = "mock", havingValue = "true", matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.REACTIVE)
+@Permission(groupName = "Mock数据管理")
 public class MockDataController implements WaitInitCompleteRunner {
 
 

@@ -24,6 +24,7 @@ import org.start2do.service.webflux.SysDictReactiveService;
 import org.start2do.util.ListUtil;
 import org.start2do.util.StringUtils;
 import reactor.core.publisher.Mono;
+import org.start2do.dto.Permission;
 
 /**
  * 字典管理
@@ -33,6 +34,7 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/dict")
 @ConditionalOnWebApplication(type = Type.REACTIVE)
 @ConditionalOnProperty(prefix = "start2do.business.controller", name = "custom-dict", havingValue = "false")
+@Permission(groupName = "自定义字典管理")
 public class SysDictCustomController {
 
     private final SysDictReactiveService sysDictService;

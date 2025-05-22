@@ -22,6 +22,7 @@ import org.start2do.entity.business.SysDictItem;
 import org.start2do.entity.business.query.QSysDictItem;
 import org.start2do.service.servlet.SysDictItemService;
 import org.start2do.util.BeanValidatorUtil;
+import org.start2do.dto.Permission;
 
 /**
  * 字典-子项管理
@@ -31,6 +32,7 @@ import org.start2do.util.BeanValidatorUtil;
 @RequestMapping("/dict/item")
 @ConditionalOnWebApplication(type = Type.SERVLET)
 @ConditionalOnProperty(prefix = "start2do.business.controller", name = "dict", havingValue = "true",matchIfMissing = true)
+@Permission(groupName = "字典子项管理")
 public class SysDictItemController {
 
     private final SysDictItemService sysDictItemService;

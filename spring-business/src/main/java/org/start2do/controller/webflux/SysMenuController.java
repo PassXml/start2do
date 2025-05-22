@@ -26,6 +26,7 @@ import org.start2do.entity.security.query.QSysMenu;
 import org.start2do.service.webflux.SysMenuReactiveService;
 import org.start2do.util.BeanValidatorUtil;
 import reactor.core.publisher.Mono;
+import org.start2do.dto.Permission;
 
 /**
  * 菜单管理
@@ -35,7 +36,7 @@ import reactor.core.publisher.Mono;
 @RequestMapping("menu")
 @ConditionalOnProperty(prefix = "start2do.business.controller", name = "menu", havingValue = "true",matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.REACTIVE)
-
+@Permission(groupName = "菜单管理")
 public class SysMenuController {
 
     private final SysMenuReactiveService sysMenuService;

@@ -23,6 +23,7 @@ import org.start2do.entity.security.query.QSysLoginLog;
 import org.start2do.service.ILoginLogOwner;
 import org.start2do.service.webflux.SysLoginLogReactiveService;
 import reactor.core.publisher.Mono;
+import org.start2do.dto.Permission;
 
 /**
  * 登陆日志
@@ -33,6 +34,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = Type.REACTIVE)
 @ConditionalOnProperty(prefix = "start2do.business.controller", name = "login-log", havingValue = "true",matchIfMissing = true)
+@Permission(groupName = "登录日志管理")
 public class SysLoginLogController {
 
     private final SysLoginLogReactiveService service;

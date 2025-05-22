@@ -15,6 +15,7 @@ import org.start2do.ebean.dto.EnableType;
 import org.start2do.ebean.entity.query.QSysSetting;
 import org.start2do.ebean.service.SysSettingService;
 import reactor.core.publisher.Mono;
+import org.start2do.dto.Permission;
 
 /**
  * 系统设置
@@ -24,6 +25,7 @@ import reactor.core.publisher.Mono;
 @RequestMapping("sys/setting")
 @ConditionalOnWebApplication(type = Type.REACTIVE)
 @ConditionalOnProperty(prefix = "start2do.business.controller", name = "custom-setting", havingValue = "false")
+@Permission(groupName = "自定义系统设置管理")
 public class SysSettingCustomController {
 
     private final SysSettingService settingService;

@@ -38,6 +38,7 @@ import org.start2do.entity.security.query.QSysUser;
 import org.start2do.service.servlet.SysPositionService;
 import org.start2do.util.BeanValidatorUtil;
 import org.start2do.util.TreeUtil;
+import org.start2do.dto.Permission;
 
 /** 岗位管理 */
 @RestController
@@ -49,6 +50,7 @@ import org.start2do.util.TreeUtil;
     havingValue = "true",
     matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.SERVLET)
+@Permission(groupName = "岗位管理")
 public class SysPositionController {
 
   private final SysPositionService sysPositionService;

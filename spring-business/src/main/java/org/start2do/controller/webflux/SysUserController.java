@@ -44,6 +44,7 @@ import org.start2do.util.JwtTokenUtil; // 注意：WebFlux 环境下需要替换
 import org.start2do.util.StringUtils;
 import jakarta.validation.Valid;
 import reactor.core.publisher.Mono;
+import org.start2do.dto.Permission;
 
 /** 用户管理 */
 @RestController
@@ -55,6 +56,7 @@ import reactor.core.publisher.Mono;
     havingValue = "true",
     matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.REACTIVE)
+@Permission(groupName = "用户管理")
 public class SysUserController {
 
   private final SysUserReactiveService sysUserService;

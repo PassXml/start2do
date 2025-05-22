@@ -33,6 +33,7 @@ import org.start2do.util.BeanValidatorUtil;
 import org.start2do.util.ExcelUtil;
 import org.start2do.util.ListUtil;
 import reactor.core.publisher.Mono;
+import org.start2do.dto.Permission;
 
 /**
  * 日志管理
@@ -42,7 +43,7 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/log")
 @ConditionalOnProperty(prefix = "start2do.business.controller", name = "log", havingValue = "true",matchIfMissing = true)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
-
+@Permission(groupName = "日志管理")
 public class SysLogController {
 
     public static Integer MIN_DAY = 90;

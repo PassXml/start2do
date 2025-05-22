@@ -24,6 +24,7 @@ import org.start2do.entity.business.query.QSysDictItem;
 import org.start2do.service.webflux.SysDictItemReactiveService;
 import org.start2do.util.BeanValidatorUtil;
 import reactor.core.publisher.Mono;
+import org.start2do.dto.Permission;
 
 /**
  * 字典-子项管理
@@ -33,6 +34,7 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/dict/item")
 @ConditionalOnWebApplication(type = Type.REACTIVE)
 @ConditionalOnProperty(prefix = "start2do.business.controller", name = "dict", havingValue = "true",matchIfMissing = true)
+@Permission(groupName = "字典子项管理")
 public class SysDictItemController {
 
     private final SysDictItemReactiveService sysDictItemService;

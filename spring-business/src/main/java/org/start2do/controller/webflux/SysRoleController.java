@@ -41,6 +41,7 @@ import org.start2do.service.webflux.SysUserReactiveService;
 import org.start2do.service.webflux.SysUserRoleReactiveService;
 import org.start2do.util.BeanValidatorUtil;
 import reactor.core.publisher.Mono;
+import org.start2do.dto.Permission;
 
 /**
  * 角色管理
@@ -50,6 +51,7 @@ import reactor.core.publisher.Mono;
 @RequestMapping("role")
 @ConditionalOnProperty(prefix = "start2do.business.controller", name = "role", havingValue = "true",matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.REACTIVE)
+@Permission(groupName = "角色管理")
 public class SysRoleController {
 
     private final SysRoleReactiveService sysRoleService;

@@ -41,6 +41,7 @@ import org.start2do.service.servlet.SysUserService;
 import org.start2do.util.BeanValidatorUtil;
 import org.start2do.util.JwtTokenUtil;
 import org.start2do.util.StringUtils;
+import org.start2do.dto.Permission;
 
 /** 用户管理 */
 @RestController
@@ -52,6 +53,7 @@ import org.start2do.util.StringUtils;
     havingValue = "true",
     matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.SERVLET)
+@Permission(groupName = "用户管理")
 public class SysUserController {
 
   private final SysUserService sysUserService;

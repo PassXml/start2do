@@ -20,6 +20,7 @@ import org.start2do.dto.resp.log.SysLogPageResp;
 import org.start2do.ebean.util.Where;
 import org.start2do.entity.security.query.QSysLoginLog;
 import org.start2do.service.servlet.SysLoginLogService;
+import org.start2do.dto.Permission;
 
 /**
  * 登陆日志
@@ -29,6 +30,7 @@ import org.start2do.service.servlet.SysLoginLogService;
 @RequestMapping("sys/login/log")
 @RequiredArgsConstructor
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+@Permission(groupName = "登录日志管理")
 public class SysLoginLogController {
 
     private final SysLoginLogService service;

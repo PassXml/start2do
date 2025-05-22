@@ -35,6 +35,7 @@ import org.start2do.entity.security.query.QSysUser;
 import org.start2do.entity.security.query.QSysUserDept;
 import org.start2do.service.servlet.SysDeptService;
 import org.start2do.util.BeanValidatorUtil;
+import org.start2do.dto.Permission;
 
 /** 部门管理 */
 @RestController
@@ -46,6 +47,7 @@ import org.start2do.util.BeanValidatorUtil;
     havingValue = "true",
     matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.SERVLET)
+@Permission(groupName = "部门管理")
 public class SysDeptController {
 
   private final SysDeptService sysDeptService;

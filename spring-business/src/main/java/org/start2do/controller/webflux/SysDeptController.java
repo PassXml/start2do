@@ -32,6 +32,7 @@ import org.start2do.entity.security.query.QSysDept;
 import org.start2do.service.webflux.SysDeptReactiveService;
 import org.start2do.util.BeanValidatorUtil;
 import reactor.core.publisher.Mono;
+import org.start2do.dto.Permission;
 
 /**
  * 部门管理
@@ -41,6 +42,7 @@ import reactor.core.publisher.Mono;
 @RequestMapping("dept")
 @ConditionalOnProperty(prefix = "start2do.business.controller", name = "dept", havingValue = "true", matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.REACTIVE)
+@Permission(groupName = "部门管理")
 public class SysDeptController {
 
     private final SysDeptReactiveService sysDeptService;

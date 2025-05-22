@@ -24,6 +24,7 @@ import org.start2do.entity.security.query.QSysUser;
 import org.start2do.entity.security.query.QSysUserAuth;
 import org.start2do.service.servlet.SysUserAuthService;
 import org.start2do.util.BeanValidatorUtil;
+import org.start2do.dto.Permission;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,6 +35,7 @@ import org.start2do.util.BeanValidatorUtil;
     name = "user-auth",
     havingValue = "true",
     matchIfMissing = true)
+@Permission(groupName = "用户认证管理")
 public class SysUserAuthController {
 
   private final SysUserAuthService sysUserAuthService;

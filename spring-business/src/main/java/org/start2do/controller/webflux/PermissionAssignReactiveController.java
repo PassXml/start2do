@@ -16,11 +16,13 @@ import org.start2do.dto.R;
 import org.start2do.dto.permission.PermissionDetailResp;
 import org.start2do.service.IPermissionService;
 import reactor.core.publisher.Mono;
+import org.start2do.dto.Permission;
 
 @RestController
 @RequestMapping("/permission")
 @ConditionalOnWebApplication(type = Type.REACTIVE)
 @RequiredArgsConstructor
+@Permission(groupName = "权限分配管理")
 public class PermissionAssignReactiveController {
 
   private final IPermissionService permissionService;

@@ -26,6 +26,7 @@ import org.start2do.ebean.service.SysSettingService;
 import org.start2do.ebean.util.Where;
 import org.start2do.util.BeanValidatorUtil;
 import reactor.core.publisher.Mono;
+import org.start2do.dto.Permission;
 
 /** 系统设置 */
 @RestController
@@ -37,6 +38,7 @@ import reactor.core.publisher.Mono;
     name = "setting",
     havingValue = "true",
     matchIfMissing = true)
+@Permission(groupName = "系统设置管理")
 public class SysSettingController {
 
   private final SysSettingService settingService;

@@ -20,6 +20,7 @@ import org.start2do.dto.permission.PermissionDto;
 @RequestMapping("/permission")
 @ConditionalOnWebApplication(type = Type.REACTIVE)
 @RequiredArgsConstructor
+@Permission(groupName = "权限管理")
 public class PermissionReactiveController implements AbsPermissionController {
 
     private final org.springframework.web.reactive.result.method.RequestMappingInfoHandlerMapping webfluxRequestMappingHandlerMapping;

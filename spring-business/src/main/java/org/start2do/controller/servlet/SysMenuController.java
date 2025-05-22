@@ -26,6 +26,7 @@ import org.start2do.entity.security.SysMenu;
 import org.start2do.entity.security.query.QSysMenu;
 import org.start2do.service.servlet.SysMenuService;
 import org.start2do.util.BeanValidatorUtil;
+import org.start2do.dto.Permission;
 
 /**
  * 菜单管理
@@ -35,6 +36,7 @@ import org.start2do.util.BeanValidatorUtil;
 @RequestMapping("menu")
 @ConditionalOnProperty(prefix = "start2do.business.controller", name = "menu", havingValue = "true",matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.SERVLET)
+@Permission(groupName = "菜单管理")
 public class SysMenuController {
 
     private final SysMenuService sysMenuService;

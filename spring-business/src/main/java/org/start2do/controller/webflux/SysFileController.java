@@ -30,6 +30,7 @@ import org.start2do.service.IFileFilter;
 import org.start2do.service.webflux.SysFileReactiveService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import org.start2do.dto.Permission;
 
 /**
  * 系统文件
@@ -38,7 +39,7 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/file")
 @ConditionalOnProperty(prefix = "start2do.business.controller", name = "file", havingValue = "true",matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.REACTIVE)
-
+@Permission(groupName = "文件管理")
 public class SysFileController {
 
     private final SysFileReactiveService sysFileService;

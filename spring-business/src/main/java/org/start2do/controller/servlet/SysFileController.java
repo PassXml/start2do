@@ -26,6 +26,7 @@ import org.start2do.dto.resp.file.SysFileUploadResp;
 import org.start2do.entity.business.SysFile;
 import org.start2do.service.IFileFilter;
 import org.start2do.service.servlet.SysFileService;
+import org.start2do.dto.Permission;
 
 /**
  * 系统文件
@@ -34,6 +35,7 @@ import org.start2do.service.servlet.SysFileService;
 @RequestMapping("/file")
 @ConditionalOnProperty(prefix = "start2do.business.controller", name = "file", havingValue = "true", matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.SERVLET)
+@Permission(groupName = "文件管理")
 public class SysFileController {
 
     private final SysFileService sysFileService;
