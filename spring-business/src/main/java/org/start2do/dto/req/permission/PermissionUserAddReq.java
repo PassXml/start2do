@@ -14,6 +14,6 @@ public class PermissionUserAddReq {
   @JsonAlias("userIds")
   @Size(max = 999)
   private List<String> userId;
-
+  private String groupName;
   private List<String> permissionId;
 }

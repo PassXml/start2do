@@ -10,6 +10,7 @@ public class PermissionPageResp {
   private String id;
   private String url;
   private boolean defaultPass;
+  private String groupName;
 
   public PermissionPageResp(String id, String url, boolean defaultPass) {
     this.id = id;

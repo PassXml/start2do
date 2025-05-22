@@ -6,7 +6,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -57,7 +56,7 @@ public class SysFile extends BaseModel2 {
   /** 后缀 */
   private String suffix;
 
-  @OneToOne(fetch = FetchType.LAZY,mappedBy = "fileId")
+  @OneToOne(fetch = FetchType.LAZY,mappedBy = "file")
   private SysFileExtInfo extInfo;
 
   public SysFile(

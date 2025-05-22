@@ -98,7 +98,9 @@ public class PermissionMVCController implements AbsPermissionController {
         List<PermissionPageResp> resps = new ArrayList<>();
         for (PermissionDto url : urls) {
             for (String s : url.getUrls()) {
-                resps.add(new PermissionPageResp(s, url.isDefaultPass()));
+                PermissionPageResp resp = new PermissionPageResp(s, url.isDefaultPass());
+                resp.setGroupName(url.getGroupName());
+                resps.add(resp);
             }
         }
         return R.ok(resps.stream().sorted(Comparator.comparing(PermissionPageResp::getId)).toList());
@@ -143,8 +145,11 @@ public class PermissionMVCController implements AbsPermissionController {
             spList -> {
                 List<SysPermissionUserRef> refs =
                     new QSysPermissionUserRef()
+                        .or()
+                        .permission.groupName.eqIfPresent(req.getGroupName())
                         .permissionId
                         .in(spList)
+                        .endOr()
                         .userId
                         .in(req.getUserId())
                         .findList();
@@ -171,9 +176,11 @@ public class PermissionMVCController implements AbsPermissionController {
             req.getPermissionId(),
             spList -> {
                 List<SysPermissionRoleRef> refs =
-                    new QSysPermissionRoleRef()
+                    new QSysPermissionRoleRef().or()
                         .permissionId
                         .in(spList)
+                        .permission.groupName.eqOrNull(req.getGroupName())
+                        .endOr()
                         .roleId
                         .in(req.getRoleId())
                         .findList();

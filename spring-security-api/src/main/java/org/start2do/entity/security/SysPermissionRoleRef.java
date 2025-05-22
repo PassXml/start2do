@@ -7,6 +7,9 @@ import io.ebean.annotation.StorageEngine;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,6 +34,9 @@ public class SysPermissionRoleRef extends Model {
     private SysPermissionRoleRefId id;
     @Column(name = "permission_id")
     private String permissionId;
+    @JoinColumn(name = "permission_id", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    private SysPermission permission;
     @Column(name = "role_id")
     private String roleId;
 

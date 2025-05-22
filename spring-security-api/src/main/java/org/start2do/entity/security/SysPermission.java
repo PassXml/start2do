@@ -51,9 +51,18 @@ public class SysPermission extends Model {
         @JoinColumn(name = "user_id", referencedColumnName = "id")})
     @ManyToMany(fetch = FetchType.LAZY)
     private List<SysUser> users;
+    @Column(length = DBConstant.TITLE_LENGTH)
+    private String groupName;
 
     public SysPermission(String url) {
         this.id = Md5Util.md5(url);
         this.url = url;
+    }
+
+    public SysPermission(String groupName, String url, boolean pass) {
+        this.groupName = groupName;
+        this.id = Md5Util.md5(url);
+        this.url = url;
+        this.pass = pass;
     }
 }

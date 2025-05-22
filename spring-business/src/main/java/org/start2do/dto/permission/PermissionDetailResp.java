@@ -28,6 +28,7 @@ public class PermissionDetailResp {
      * 是否允许通过
      */
     private boolean pass;
+    private String groupName;
 
     /**
      * 关联用户列表
@@ -44,6 +45,7 @@ public class PermissionDetailResp {
     @Accessors(chain = true)
     @NoArgsConstructor
     public static class UserDto {
+
         /**
          * 用户ID
          */
@@ -60,6 +62,7 @@ public class PermissionDetailResp {
     @Accessors(chain = true)
     @NoArgsConstructor
     public static class RoleDto {
+
         /**
          * 角色ID
          */

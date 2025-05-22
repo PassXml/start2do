@@ -17,6 +17,8 @@ public class PermissionDto {
 
     private Set<String> urls;
     private boolean defaultPass;
+    private String groupName;
+    private String[] initRoleCodes;
 
     public PermissionDto(Set<String> urls, boolean defaultPass) {
         this.urls = urls;
@@ -25,8 +27,9 @@ public class PermissionDto {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass())
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
 
         PermissionDto that = (PermissionDto) o;
         return defaultPass == that.defaultPass && Objects.equals(urls, that.urls);
@@ -38,4 +41,5 @@ public class PermissionDto {
         result = 31 * result + Boolean.hashCode(defaultPass);
         return result;
     }
+
 }
