@@ -34,13 +34,31 @@ public class PermissionReactiveController implements AbsPermissionController {
             Set<String> patterns = info.getPatternsCondition().getPatterns().stream()
                 .map(Object::toString)
                 .collect(Collectors.toSet());
+
             // 获取方法上的注解
-            Permission annotations = handlerMethod.getMethodAnnotation(Permission.class);
-            if (annotations == null) {
-                urls.add(new PermissionDto(patterns, false));
+            Permission methodAnnotation = handlerMethod.getMethodAnnotation(Permission.class);
+
+            boolean defaultPass = (methodAnnotation != null) ? methodAnnotation.defaultPass() : false;
+            PermissionDto permissionDto = new PermissionDto(patterns, defaultPass);
+
+            String groupNameValue;
+            // 获取类上的注解
+            Permission classAnnotation = handlerMethod.getBeanType().getAnnotation(Permission.class);
+
+            // 优先获取Class上面Permission的groupName
+            if (classAnnotation != null && classAnnotation.groupName() != null && !classAnnotation.groupName().trim().isEmpty()) {
+                groupNameValue = classAnnotation.groupName();
             } else {
-                urls.add(new PermissionDto(patterns, annotations.defaultPass()));
+                // 如果Class的groupName为空, 则获取方法上面的GroupName
+                if (methodAnnotation != null && methodAnnotation.groupName() != null && !methodAnnotation.groupName().trim().isEmpty()) {
+                    groupNameValue = methodAnnotation.groupName();
+                } else {
+                    // 如果Class和方法的groupName都为空, 那么设置当前Controller的ClassName为groupName
+                    groupNameValue = handlerMethod.getBeanType().getSimpleName();
+                }
             }
+            permissionDto.setGroupName(groupNameValue);
+            urls.add(permissionDto);
         }
         return urls;
     }
