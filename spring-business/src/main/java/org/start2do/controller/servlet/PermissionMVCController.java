@@ -173,11 +173,11 @@ public class PermissionMVCController implements AbsPermissionController {
                 List<SysPermissionRoleRef> refs =
                     new QSysPermissionRoleRef()
                         .permissionId
-                        .in(req.getPermissionId())
-                        .roleId
                         .in(spList)
+                        .roleId
+                        .in(req.getRoleId())
                         .findList();
-                for (String s : req.getPermissionId()) {
+                for (String s : spList) {
                     for (String string : req.getRoleId()) {
                         if (refs.stream()
                             .anyMatch(t -> t.getPermissionId().equals(s) && t.getRoleId().equals(string))) {

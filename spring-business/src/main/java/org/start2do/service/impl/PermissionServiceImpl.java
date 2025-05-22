@@ -183,11 +183,14 @@ public class PermissionServiceImpl extends AbsService<SysPermission> implements 
         }
 
         // 构建详情DTO
-        PermissionDetailResp detailDto = new PermissionDetailResp().setId(permission.getId())
-            .setUrl(permission.getUrl()).setPass(permission.isPass());
+        PermissionDetailResp detailDto = new PermissionDetailResp()
+            .setId(permission.getId())
+            .setUrl(permission.getUrl())
+            .setPass(permission.isPass())
+            .setGroupName(permission.getGroupName());
 
         // 转换用户列表
-        if (isUser) {
+        if (isUser && permission.getUsers() != null) {
             List<PermissionDetailResp.UserDto> userDtos = permission.getUsers().stream()
                 .map(user -> new PermissionDetailResp.UserDto().setId(user.getId()).setUsername(user.getUsername()))
                 .collect(Collectors.toList());
@@ -195,7 +198,7 @@ public class PermissionServiceImpl extends AbsService<SysPermission> implements 
         }
 
         // 转换角色列表
-        if (!isUser) {
+        if (!isUser && permission.getRoles() != null) {
             List<PermissionDetailResp.RoleDto> roleDtos = permission.getRoles().stream()
                 .map(role -> new PermissionDetailResp.RoleDto().setId(role.getId()).setRoleName(role.getName()))
                 .collect(Collectors.toList());
