@@ -43,6 +43,7 @@ import org.start2do.util.ListUtil;
 @RequestMapping("/permission")
 @ConditionalOnWebApplication(type = Type.SERVLET)
 @RequiredArgsConstructor
+@Permission(groupName = "权限管理")
 public class PermissionMVCController implements AbsPermissionController {
 
   private final RequestMappingHandlerMapping requestMappingHandlerMapping;
