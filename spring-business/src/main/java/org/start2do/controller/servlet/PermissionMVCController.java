@@ -46,136 +46,165 @@ import org.start2do.util.ListUtil;
 @Permission(groupName = "权限管理")
 public class PermissionMVCController implements AbsPermissionController {
 
-  private final RequestMappingHandlerMapping requestMappingHandlerMapping;
-  private final IPermissionService permissionService;
+    private final RequestMappingHandlerMapping requestMappingHandlerMapping;
+    private final IPermissionService permissionService;
 
-  public Set<PermissionDto> getAllUrls() {
-    Set<PermissionDto> urls = new HashSet<>();
-    Map<RequestMappingInfo, HandlerMethod> map = requestMappingHandlerMapping.getHandlerMethods();
-    for (Map.Entry<RequestMappingInfo, HandlerMethod> entry : map.entrySet()) {
-      RequestMappingInfo info = entry.getKey();
-      HandlerMethod handlerMethod = entry.getValue();
-      Set<String> patterns = info.getPatternsCondition().getPatterns();
-      // 获取方法上的注解
-      Permission annotations = handlerMethod.getMethodAnnotation(Permission.class);
-      if (annotations == null) {
-        urls.add(new PermissionDto(patterns, false));
-      } else {
-        urls.add(new PermissionDto(patterns, annotations.defaultPass()));
-      }
-    }
-    return urls;
-  }
+    public Set<PermissionDto> getAllUrls() {
+        Set<PermissionDto> urls = new HashSet<>();
+        Map<RequestMappingInfo, HandlerMethod> map = requestMappingHandlerMapping.getHandlerMethods();
+        for (Map.Entry<RequestMappingInfo, HandlerMethod> entry : map.entrySet()) {
+            RequestMappingInfo info = entry.getKey();
+            HandlerMethod handlerMethod = entry.getValue();
+            Set<String> patterns = info.getPatternsCondition().getPatterns();
+            // 获取方法上的注解
+            Permission methodAnnotation = handlerMethod.getMethodAnnotation(Permission.class);
 
-  @GetMapping("/allUrls")
-  public R<List<PermissionPageResp>> getAllUrls_() {
-    Set<PermissionDto> urls = getAllUrls();
-    List<PermissionPageResp> resps = new ArrayList<>();
-    for (PermissionDto url : urls) {
-      for (String s : url.getUrls()) {
-        resps.add(new PermissionPageResp(s, url.isDefaultPass()));
-      }
-    }
-    return R.ok(resps.stream().sorted(Comparator.comparing(PermissionPageResp::getId)).toList());
-  }
+            boolean defaultPass = (methodAnnotation != null) ? methodAnnotation.defaultPass() : false;
+            PermissionDto permissionDto = new PermissionDto(patterns, defaultPass);
 
-  @Permission(defaultPass = true)
-  @GetMapping("users")
-  public R<PermissionDetailResp> getUsers(
-      @RequestParam(name = "permissionId") String permissionId) {
-    return R.ok(permissionService.getDetail(permissionId, true));
-  }
+            String groupNameValue;
+            String[] initRoleCodes;
+            // 获取类上的注解
+            // handlerMethod.getBeanType() 用于获取实际处理请求的Controller类的类型
+            Permission classAnnotation = handlerMethod.getBeanType().getAnnotation(Permission.class);
 
-  @GetMapping("role")
-  @Permission(defaultPass = true)
-  public R<PermissionDetailResp> getRoles(
-      @RequestParam(name = "permissionId") String permissionId) {
-    return R.ok(permissionService.getDetail(permissionId, false));
-  }
-
-  @PostMapping("/assign/users/{permissionId}")
-  public R<Boolean> assignToUsers(
-      @PathVariable String permissionId, @Valid @RequestBody PermissionUserAddReq req) {
-    permissionService.assignToUsers(permissionId, req.getUserId());
-    return R.ok(true);
-  }
-
-  @PostMapping("/assign/roles/{permissionId}")
-  public R<Boolean> assignToRoles(
-      @PathVariable String permissionId, @Valid @RequestBody PermissionRoleAddReq req) {
-    permissionService.assignToRoles(permissionId, req.getRoleId());
-    return R.ok(true);
-  }
-
-  @PostMapping("/add/users")
-  public R<Boolean> addUsers(@Valid @RequestBody PermissionUserAddReq req) {
-    if (CollectionUtils.isEmpty(req.getPermissionId())) {
-      throw new BusinessException("权限列表不能为空");
-    }
-    ListUtil.splitAfterRun(
-        999,
-        req.getPermissionId(),
-        spList -> {
-          List<SysPermissionUserRef> refs =
-              new QSysPermissionUserRef()
-                  .permissionId
-                  .in(spList)
-                  .userId
-                  .in(req.getUserId())
-                  .findList();
-          for (String s : req.getPermissionId()) {
-            for (String string : req.getUserId()) {
-              if (refs.stream()
-                  .anyMatch(t -> t.getPermissionId().equals(s) && t.getUserId().equals(string))) {
-                continue;
-              }
-              new SysPermissionUserRef(new SysPermissionUserRefId(s, string)).save();
+            // 优先获取Class上面Permission的groupName
+            if (classAnnotation != null && classAnnotation.groupName() != null && !classAnnotation.groupName().trim()
+                .isEmpty()) {
+                groupNameValue = classAnnotation.groupName();
+                initRoleCodes = classAnnotation.initRoleCodes();
+            } else {
+                // 如果Class的groupName为空, 则获取方法上面的GroupName
+                if (methodAnnotation != null && methodAnnotation.groupName() != null && !methodAnnotation.groupName()
+                    .trim().isEmpty()) {
+                    groupNameValue = methodAnnotation.groupName();
+                    initRoleCodes = methodAnnotation.initRoleCodes();
+                } else {
+                    // 如果Class和方法的groupName都为空, 那么设置当前Controller的ClassName为groupName
+                    groupNameValue = handlerMethod.getBeanType().getSimpleName();
+                    initRoleCodes = new String[]{};
+                }
             }
-          }
-        });
-    return R.ok(true);
-  }
-
-  @PostMapping("/add/roles")
-  public R<Boolean> addRoles(@Valid @RequestBody PermissionRoleAddReq req) {
-    if (CollectionUtils.isEmpty(req.getPermissionId())) {
-      throw new BusinessException("权限列表不能为空");
+            permissionDto.setInitRoleCodes(initRoleCodes);
+            permissionDto.setGroupName(groupNameValue);
+            urls.add(permissionDto);
+        }
+        return urls;
     }
-    ListUtil.splitAfterRun(
-        999,
-        req.getPermissionId(),
-        spList -> {
-          List<SysPermissionRoleRef> refs =
-              new QSysPermissionRoleRef()
-                  .permissionId
-                  .in(req.getPermissionId())
-                  .roleId
-                  .in(spList)
-                  .findList();
-          for (String s : req.getPermissionId()) {
-            for (String string : req.getRoleId()) {
-              if (refs.stream()
-                  .anyMatch(t -> t.getPermissionId().equals(s) && t.getRoleId().equals(string))) {
-                continue;
-              }
-              new SysPermissionRoleRef(new SysPermissionRoleRefId(s, string)).save();
+
+    @GetMapping("/allUrls")
+    public R<List<PermissionPageResp>> getAllUrls_() {
+        Set<PermissionDto> urls = getAllUrls();
+        List<PermissionPageResp> resps = new ArrayList<>();
+        for (PermissionDto url : urls) {
+            for (String s : url.getUrls()) {
+                resps.add(new PermissionPageResp(s, url.isDefaultPass()));
             }
-          }
-        });
-    return R.ok(true);
-  }
+        }
+        return R.ok(resps.stream().sorted(Comparator.comparing(PermissionPageResp::getId)).toList());
+    }
 
-  /** 移除 */
-  @GetMapping("remove/user")
-  public R removeUser(@RequestParam(name = "userId") String userId) {
-    new QSysPermissionUserRef().userId.eq(userId).delete();
-    return R.ok();
-  }
+    @Permission(defaultPass = true)
+    @GetMapping("users")
+    public R<PermissionDetailResp> getUsers(
+        @RequestParam(name = "permissionId") String permissionId) {
+        return R.ok(permissionService.getDetail(permissionId, true));
+    }
 
-  /** 移除 */
-  @GetMapping("remove/role")
-  public R removeRole(@RequestParam(name = "roleId") String roleId) {
-    new QSysPermissionRoleRef().roleId.in(roleId).delete();
-    return R.ok();
-  }
+    @GetMapping("role")
+    @Permission(defaultPass = true)
+    public R<PermissionDetailResp> getRoles(
+        @RequestParam(name = "permissionId") String permissionId) {
+        return R.ok(permissionService.getDetail(permissionId, false));
+    }
+
+    @PostMapping("/assign/users/{permissionId}")
+    public R<Boolean> assignToUsers(
+        @PathVariable String permissionId, @Valid @RequestBody PermissionUserAddReq req) {
+        permissionService.assignToUsers(permissionId, req.getUserId());
+        return R.ok(true);
+    }
+
+    @PostMapping("/assign/roles/{permissionId}")
+    public R<Boolean> assignToRoles(
+        @PathVariable String permissionId, @Valid @RequestBody PermissionRoleAddReq req) {
+        permissionService.assignToRoles(permissionId, req.getRoleId());
+        return R.ok(true);
+    }
+
+    @PostMapping("/add/users")
+    public R<Boolean> addUsers(@Valid @RequestBody PermissionUserAddReq req) {
+        if (CollectionUtils.isEmpty(req.getPermissionId())) {
+            throw new BusinessException("权限列表不能为空");
+        }
+        ListUtil.splitAfterRun(
+            999,
+            req.getPermissionId(),
+            spList -> {
+                List<SysPermissionUserRef> refs =
+                    new QSysPermissionUserRef()
+                        .permissionId
+                        .in(spList)
+                        .userId
+                        .in(req.getUserId())
+                        .findList();
+                for (String s : req.getPermissionId()) {
+                    for (String string : req.getUserId()) {
+                        if (refs.stream()
+                            .anyMatch(t -> t.getPermissionId().equals(s) && t.getUserId().equals(string))) {
+                            continue;
+                        }
+                        new SysPermissionUserRef(new SysPermissionUserRefId(s, string)).save();
+                    }
+                }
+            });
+        return R.ok(true);
+    }
+
+    @PostMapping("/add/roles")
+    public R<Boolean> addRoles(@Valid @RequestBody PermissionRoleAddReq req) {
+        if (CollectionUtils.isEmpty(req.getPermissionId())) {
+            throw new BusinessException("权限列表不能为空");
+        }
+        ListUtil.splitAfterRun(
+            999,
+            req.getPermissionId(),
+            spList -> {
+                List<SysPermissionRoleRef> refs =
+                    new QSysPermissionRoleRef()
+                        .permissionId
+                        .in(req.getPermissionId())
+                        .roleId
+                        .in(spList)
+                        .findList();
+                for (String s : req.getPermissionId()) {
+                    for (String string : req.getRoleId()) {
+                        if (refs.stream()
+                            .anyMatch(t -> t.getPermissionId().equals(s) && t.getRoleId().equals(string))) {
+                            continue;
+                        }
+                        new SysPermissionRoleRef(new SysPermissionRoleRefId(s, string)).save();
+                    }
+                }
+            });
+        return R.ok(true);
+    }
+
+    /**
+     * 移除
+     */
+    @GetMapping("remove/user")
+    public R removeUser(@RequestParam(name = "userId") String userId) {
+        new QSysPermissionUserRef().userId.eq(userId).delete();
+        return R.ok();
+    }
+
+    /**
+     * 移除
+     */
+    @GetMapping("remove/role")
+    public R removeRole(@RequestParam(name = "roleId") String roleId) {
+        new QSysPermissionRoleRef().roleId.in(roleId).delete();
+        return R.ok();
+    }
 }
