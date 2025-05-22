@@ -12,25 +12,25 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.start2do.dto.resp.user.CurrentUserInfoDto;
-import org.start2do.entity.security.SysDept;
-import org.start2do.util.JwtTokenUtil;
 import org.start2do.dto.BusinessException;
 import org.start2do.dto.IdStrReq;
 import org.start2do.dto.Page;
 import org.start2do.dto.R;
 import org.start2do.dto.annotation.SysLogSetting;
 import org.start2do.dto.mapper.UserDtoMapper;
+import org.start2do.dto.req.user.UpdateCurrentUserInfoDto;
 import org.start2do.dto.req.user.UserAddReq;
 import org.start2do.dto.req.user.UserMenuReq;
 import org.start2do.dto.req.user.UserMenuResp;
 import org.start2do.dto.req.user.UserPageReq;
 import org.start2do.dto.req.user.UserStatusReq;
 import org.start2do.dto.req.user.UserUpdateReq;
+import org.start2do.dto.resp.user.CurrentUserInfoDto;
 import org.start2do.dto.resp.user.UserDetailResp;
 import org.start2do.dto.resp.user.UserDetailResp.Item;
 import org.start2do.dto.resp.user.UserPageResp;
 import org.start2do.ebean.util.Where;
+import org.start2do.entity.security.SysDept;
 import org.start2do.entity.security.SysMenu;
 import org.start2do.entity.security.SysRole;
 import org.start2do.entity.security.SysUser;
@@ -39,6 +39,7 @@ import org.start2do.entity.security.query.QSysUser;
 import org.start2do.service.servlet.SysRoleService;
 import org.start2do.service.servlet.SysUserService;
 import org.start2do.util.BeanValidatorUtil;
+import org.start2do.util.JwtTokenUtil;
 import org.start2do.util.StringUtils;
 
 /** 用户管理 */
@@ -212,10 +213,10 @@ public class SysUserController {
       user.setAvatar(req.getAvatar());
       changed = true;
     }
-    if (req.getEnterpriseWechat() != null && !req.getEnterpriseWechat().equals(user.getEnterpriseWechat())) {
-      user.setEnterpriseWechat(req.getEnterpriseWechat());
-      changed = true;
-    }
+//    if (req.getEnterpriseWechat() != null && !req.getEnterpriseWechat().equals(user.getEnterpriseWechat())) {
+//      user.setEnterpriseWechat(req.getEnterpriseWechat());
+//      changed = true;
+//    }
     
     if (changed) {
       sysUserService.update(user);
