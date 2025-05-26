@@ -39,7 +39,9 @@ public class EbeanBeanPersistController implements BeanPersistController {
     @Override
     public boolean preUpdate(BeanPersistRequest<?> request) {
         Object obj = request.bean();
-        List<EntityHook> hooks = EntityHookUtil.get(obj.getClass());
+        Class<?> aClass = obj.getClass();
+        List<EntityHook> hooks = EntityHookUtil.get(aClass);
+        log.debug("Entity HOOk:{},{}", aClass, hooks.size());
         if (hooks != null) {
             for (EntityHook hook : hooks) {
                 hook.updateBefore(obj, request.transaction());

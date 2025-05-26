@@ -19,6 +19,7 @@ import org.start2do.entity.security.SysUserDeptId;
 import org.start2do.entity.security.SysUserRole;
 import org.start2do.entity.security.query.QSysRole;
 import org.start2do.entity.security.query.QSysUser;
+import org.start2do.entity.security.query.QSysUserAuth;
 import org.start2do.entity.security.query.QSysUserDept;
 import org.start2do.entity.security.query.QSysUserRole;
 import org.start2do.service.SysLoginRoleService;
@@ -61,6 +62,7 @@ public class SysUserService extends AbsService<SysUser> {
     public void remove(String id) {
         new QSysUserDept().userId.eq(id).delete();
         new QSysUserRole().userId.eq(id).delete();
+        new QSysUserAuth().userId.eq(id).delete();
         deleteById(id);
     }
 

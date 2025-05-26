@@ -8,7 +8,6 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.List;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -24,15 +23,15 @@ import org.start2do.util.StringUtils;
 @Aspect
 @Slf4j
 @Component
-@RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "start2do.business.rate-limit", value = "enable", havingValue = "true")
 public class RateLimiterReactiveAop {
 
     @Getter
-    private RateLimitUtil rateLimitUtil;
+    private final RateLimitUtil rateLimitUtil;
 
 
     public RateLimiterReactiveAop(BusinessConfig businessConfig) {
+        log.info("初始化RateLimiterReactiveAop");
         this.rateLimitUtil = new RateLimitUtil(businessConfig);
     }
 
