@@ -28,7 +28,7 @@ public class MenuAddReq {
     @JsonAlias("menuOrder")
     private Integer sort = 0;
     @JsonAlias("parentMenuId")
-    private Integer parentId;
+    private String parentId;
     @JsonAlias("menuPermission")
     private String permission;
     private YesOrNoType isShow;

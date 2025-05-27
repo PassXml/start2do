@@ -1,8 +1,11 @@
 package org.start2do.entity.business;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.ebean.Model;
 import io.ebean.annotation.DbComment;
-import io.ebean.annotation.DbMap;
+import io.ebean.annotation.Index;
+import io.ebean.annotation.WhenCreated;
+import io.ebean.annotation.WhenModified;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -12,13 +15,13 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
-import java.util.Map;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.start2do.constant.DBConstant;
-import org.start2do.ebean.entity.BaseModel;
+import org.start2do.ebean.enums.YesOrNoType;
 
 @Setter
 @Getter
@@ -26,8 +29,9 @@ import org.start2do.ebean.entity.BaseModel;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
-@Table(name = "sys_file_ext")
-public class SysFileExtInfo extends BaseModel {
+@DbComment("文件上传任务(用于同步第三方)")
+@Table(name = "sys_file_task")
+public class SysFileTask extends Model {
 
     @Id
     @MapsId
@@ -36,11 +40,19 @@ public class SysFileExtInfo extends BaseModel {
     @JoinColumn(name = "file_id", insertable = false, updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private SysFile file;
-    private String type;
-    @DbComment("唯一编码")
-    @Column(length = DBConstant.NOTE_LENGTH)
-    private String fileUnionCode;
+    @Index
+    @Column(name = "completed")
+    private YesOrNoType completed = YesOrNoType.No;
+
     @Lob
-    @DbMap
-    private Map<String, String> extInfo;
+    private String errorMsg;
+    @WhenCreated
+    private LocalDateTime creatTime;
+
+    @WhenModified
+    private LocalDateTime updateTime;
+
+    public SysFileTask(String fileId) {
+        this.fileId = fileId;
+    }
 }

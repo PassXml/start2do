@@ -23,4 +23,5 @@ public class DIngPangFileDto implements Serializable {
     private String spaceId;
     private Integer fileSize;
     private String processInstanceId;
+
 }

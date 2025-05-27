@@ -61,7 +61,8 @@ public class SysFileController {
      * 下载
      */
     @GetMapping("download")
-    public void download(HttpServletResponse response, @RequestParam String fileId) throws IOException {
+    public void download(HttpServletResponse response, @RequestParam(name = "fileId") String fileId)
+        throws IOException {
         sysFileService.download(response, fileId);
     }
 

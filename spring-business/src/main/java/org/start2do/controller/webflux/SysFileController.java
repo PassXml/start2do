@@ -37,7 +37,7 @@ import org.start2do.dto.Permission;
  */
 @Controller
 @RequestMapping("/file")
-@ConditionalOnProperty(prefix = "start2do.business.controller", name = "file", havingValue = "true",matchIfMissing = true)
+@ConditionalOnProperty(prefix = "start2do.business.controller", name = "file", havingValue = "true", matchIfMissing = true)
 @ConditionalOnWebApplication(type = Type.REACTIVE)
 @Permission(groupName = "文件管理")
 public class SysFileController {
@@ -63,7 +63,7 @@ public class SysFileController {
      * 下载
      */
     @GetMapping("download")
-    public Mono<Boolean> download(ServerHttpResponse response, @RequestParam String fileId) {
+    public Mono<Boolean> download(ServerHttpResponse response, @RequestParam(name = "fileId") String fileId) {
         return sysFileService.download(response, fileId);
 
     }
@@ -103,7 +103,6 @@ public class SysFileController {
         return fileFilter.filter(file).flatMap(t -> sysFileService.uploadFile(replace, t))
             .flatMapIterable(Function.identity())
             .map(entity -> new SysFileUploadResp(entity.getId(), entity.getRelativeFilePath(), entity.getUrl()))
-            .collectList()
-            .map(reps -> reps.stream().findFirst().get()).map(R::ok);
+            .collectList().map(reps -> reps.stream().findFirst().get()).map(R::ok);
     }
 }

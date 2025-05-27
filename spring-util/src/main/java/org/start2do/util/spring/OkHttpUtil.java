@@ -20,7 +20,8 @@ public class OkHttpUtil {
 
     private static final OkHttpClient client;
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    private static final MediaType FORM_URL_ENCODED = MediaType.parse("application/x-www-form-urlencoded; charset=utf-8");
+    private static final MediaType FORM_URL_ENCODED = MediaType.parse(
+        "application/x-www-form-urlencoded; charset=utf-8");
 
     static {
         client = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS) // 连接超时时间
@@ -53,15 +54,7 @@ public class OkHttpUtil {
             }
         }
 
-        Request request = requestBuilder.build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (response.isSuccessful() && response.body() != null) {
-                return response.body().string();
-            } else {
-                throw new IOException("Unexpected code " + response);
-            }
-        }
+        return executor(requestBuilder.build());
     }
 
     /**
@@ -99,7 +92,8 @@ public class OkHttpUtil {
     /**
      * 同步 POST 请求（带请求头）
      */
-    public static String syncPost(String url, Map<String, String> params, Map<String, String> headers) throws IOException {
+    public static String syncPost(String url, Map<String, String> params, Map<String, String> headers)
+        throws IOException {
         FormBody.Builder builder = new FormBody.Builder();
         if (params != null && !params.isEmpty()) {
             for (Map.Entry<String, String> entry : params.entrySet()) {
@@ -117,15 +111,7 @@ public class OkHttpUtil {
             }
         }
 
-        Request request = requestBuilder.build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (response.isSuccessful() && response.body() != null) {
-                return response.body().string();
-            } else {
-                throw new IOException("Unexpected code " + response);
-            }
-        }
+        return executor(requestBuilder.build());
     }
 
     /**
@@ -138,7 +124,8 @@ public class OkHttpUtil {
     /**
      * 同步 POST 请求（使用 FormBody.Builder 构建表单，带请求头）
      */
-    public static String syncPost(String url, FormBody.Builder formBuilder, Map<String, String> headers) throws IOException {
+    public static String syncPost(String url, FormBody.Builder formBuilder, Map<String, String> headers)
+        throws IOException {
         RequestBody formBody = formBuilder.build();
         Request.Builder requestBuilder = new Request.Builder().url(url).post(formBody);
 
@@ -149,15 +136,7 @@ public class OkHttpUtil {
             }
         }
 
-        Request request = requestBuilder.build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (response.isSuccessful() && response.body() != null) {
-                return response.body().string();
-            } else {
-                throw new IOException("Unexpected code " + response);
-            }
-        }
+        return executor(requestBuilder.build());
     }
 
     /**
@@ -170,7 +149,8 @@ public class OkHttpUtil {
     /**
      * 异步 POST 请求（带请求头）
      */
-    public static void asyncPost(String url, Map<String, String> params, Map<String, String> headers, okhttp3.Callback callback) {
+    public static void asyncPost(String url, Map<String, String> params, Map<String, String> headers,
+        okhttp3.Callback callback) {
         FormBody.Builder builder = new FormBody.Builder();
         if (params != null && !params.isEmpty()) {
             for (Map.Entry<String, String> entry : params.entrySet()) {
@@ -202,7 +182,8 @@ public class OkHttpUtil {
     /**
      * 异步 POST 请求（使用 FormBody.Builder 构建表单，带请求头）
      */
-    public static void asyncPost(String url, FormBody.Builder formBuilder, Map<String, String> headers, okhttp3.Callback callback) {
+    public static void asyncPost(String url, FormBody.Builder formBuilder, Map<String, String> headers,
+        okhttp3.Callback callback) {
         RequestBody formBody = formBuilder.build();
         Request.Builder requestBuilder = new Request.Builder().url(url).post(formBody);
 
@@ -260,7 +241,8 @@ public class OkHttpUtil {
     /**
      * 异步 POST 请求（发送表单数据，x-www-form-urlencoded 格式，带请求头）
      */
-    public static void asyncPostForm(String url, String formData, Map<String, String> headers, okhttp3.Callback callback) {
+    public static void asyncPostForm(String url, String formData, Map<String, String> headers,
+        okhttp3.Callback callback) {
         RequestBody requestBody = RequestBody.create(formData, FORM_URL_ENCODED);
 
         Request.Builder requestBuilder = new Request.Builder().url(url).post(requestBody);
@@ -337,21 +319,28 @@ public class OkHttpUtil {
      * 文件上传（带请求头）
      */
     public static String uploadFile(String url, File file, Map<String, String> headers) throws IOException {
+        return uploadFile("POST", url, file, headers);
+    }
+
+    /**
+     * 文件上传（带请求头）
+     */
+    public static String uploadFile(String method, String url, File file, Map<String, String> headers)
+        throws IOException {
         RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
             .addFormDataPart("file", file.getName(),
                 RequestBody.create(file, MediaType.parse("application/octet-stream"))).build();
-
-        Request.Builder requestBuilder = new Request.Builder().url(url).post(requestBody);
-
+        Request.Builder requestBuilder = new Request.Builder().url(url).method(method, requestBody);
         // 添加请求头
         if (headers != null && !headers.isEmpty()) {
             for (Map.Entry<String, String> entry : headers.entrySet()) {
                 requestBuilder.addHeader(entry.getKey(), entry.getValue());
             }
         }
+        return executor(requestBuilder.build());
+    }
 
-        Request request = requestBuilder.build();
-
+    public static String executor(Request request) throws IOException {
         try (Response response = client.newCall(request).execute()) {
             if (response.isSuccessful() && response.body() != null) {
                 return response.body().string();
@@ -359,6 +348,26 @@ public class OkHttpUtil {
                 throw new IOException("Unexpected code " + response);
             }
         }
+    }
+
+    /**
+     * 文件上传（带请求头）
+     */
+    public static String uploadFile(String method, String url, String fileName, byte[] file,
+        Map<String, String> headers) throws IOException {
+        RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+            .addFormDataPart("file", fileName, RequestBody.create(file, MediaType.parse("application/octet-stream")))
+            .build();
+
+        Request.Builder requestBuilder = new Request.Builder().url(url).method(method, requestBody);
+
+        // 添加请求头
+        if (headers != null && !headers.isEmpty()) {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                requestBuilder.addHeader(entry.getKey(), entry.getValue());
+            }
+        }
+        return executor(requestBuilder.build());
     }
 
     /**
@@ -371,7 +380,8 @@ public class OkHttpUtil {
     /**
      * 文件上传（带表单参数和请求头）
      */
-    public static String uploadFileWithForm(String url, File file, Map<String, String> formParams, Map<String, String> headers) throws IOException {
+    public static String uploadFileWithForm(String url, File file, Map<String, String> formParams,
+        Map<String, String> headers) throws IOException {
         MultipartBody.Builder multipartBuilder = new MultipartBody.Builder().setType(MultipartBody.FORM)
             .addFormDataPart("file", file.getName(),
                 RequestBody.create(file, MediaType.parse("application/octet-stream")));
@@ -393,15 +403,7 @@ public class OkHttpUtil {
             }
         }
 
-        Request request = requestBuilder.build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (response.isSuccessful() && response.body() != null) {
-                return response.body().string();
-            } else {
-                throw new IOException("Unexpected code " + response);
-            }
-        }
+        return executor(requestBuilder.build());
     }
 
     /**
@@ -425,16 +427,7 @@ public class OkHttpUtil {
                 requestBuilder.addHeader(entry.getKey(), entry.getValue());
             }
         }
-
-        Request request = requestBuilder.build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (response.isSuccessful() && response.body() != null) {
-                return response.body().string();
-            } else {
-                throw new IOException("Unexpected code " + response);
-            }
-        }
+        return executor(requestBuilder.build());
     }
 
     /**
@@ -447,7 +440,8 @@ public class OkHttpUtil {
     /**
      * 异步 POST 请求（发送JSON数据，带请求头）
      */
-    public static void asyncPostJson(String url, String jsonBody, Map<String, String> headers, okhttp3.Callback callback) {
+    public static void asyncPostJson(String url, String jsonBody, Map<String, String> headers,
+        okhttp3.Callback callback) {
         RequestBody requestBody = RequestBody.create(jsonBody, JSON);
 
         Request.Builder requestBuilder = new Request.Builder().url(url).post(requestBody);
