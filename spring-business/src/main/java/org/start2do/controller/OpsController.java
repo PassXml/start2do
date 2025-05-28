@@ -4,17 +4,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.start2do.dto.R;
+import org.start2do.util.FileUtil;
+import org.start2do.util.ZipUtil;
 
 @RestController
 @RequestMapping("/ops")
@@ -42,7 +38,7 @@ public class OpsController {
         @RequestParam("rootFileName") String rootFileName,
         @RequestParam(value = "unzip", defaultValue = "true") String unzipStr) {
 
-        if (!FileUtils.isPathAllowed(this.whitePath, destPath)) {
+        if (!FileUtil.isPathAllowed(this.whitePath, destPath)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(R.failed(HttpStatus.FORBIDDEN.value(), String.format("%s 不在白名单内", destPath)));
         }
@@ -58,7 +54,7 @@ public class OpsController {
 
             boolean clear = Boolean.parseBoolean(clearStr);
             if (clear) {
-                FileUtils.cleanTargetFolder(destPath);
+                FileUtil.cleanTargetFolder(destPath);
             }
 
             if (multipartFile.isEmpty()) {
@@ -90,7 +86,7 @@ public class OpsController {
 
             if (isZip && unzip) {
                 try (InputStream inputStream = multipartFile.getInputStream()) {
-                    FileUtils.unzipStream(inputStream, destPath, rootFileName);
+                    ZipUtil.unzipStream(inputStream, destinationPath, rootFileName);
                 }
             } else {
                 String originalFilename = multipartFile.getOriginalFilename();
@@ -132,7 +128,7 @@ public class OpsController {
         }
 
         for (String path : paths) {
-            if (!FileUtils.isPathAllowed(this.whitePath, path)) {
+            if (!FileUtil.isPathAllowed(this.whitePath, path)) {
                 try {
                     response.setStatus(HttpStatus.FORBIDDEN.value());
                     response.getWriter().write(new R<>().setCode(HttpStatus.FORBIDDEN.value())
@@ -160,7 +156,7 @@ public class OpsController {
                     if (paths.size() > 1 || Files.isDirectory(path)) {
                         baseInZip = path.getFileName().toString() + "/";
                     }
-                    FileUtils.addDirectoryToZip(zos, pathStr, baseInZip);
+                    ZipUtil.addDirectoryToZipNIO(zos, pathStr, baseInZip);
 
                 } else {
                     String entryNameInZip = "";
@@ -174,7 +170,7 @@ public class OpsController {
                             entryNameInZip = path.getFileName().toString();
                         }
                     }
-                    FileUtils.addFileToZip(zos, pathStr, entryNameInZip);
+                    ZipUtil.addFileToZipNIO(zos, pathStr, entryNameInZip);
                 }
             }
             zos.finish();
@@ -184,127 +180,5 @@ public class OpsController {
                 response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             }
         }
-    }
-}
-
-class FileUtils {
-
-    public static boolean isPathAllowed(List<String> whitePath, String pathString) {
-        if (whitePath == null || whitePath.isEmpty()) {
-            return false;
-        }
-        Path path = Paths.get(pathString).normalize();
-        for (String allowedPrefix : whitePath) {
-            if (path.startsWith(Paths.get(allowedPrefix).normalize())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static void cleanTargetFolder(String pathString) throws IOException {
-        Path path = Paths.get(pathString);
-        if (Files.exists(path) && Files.isDirectory(path)) {
-            Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    Files.delete(file);
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    if (!dir.equals(path)) {
-                        Files.delete(dir);
-                    }
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } else if (Files.exists(path) && !Files.isDirectory(path)) {
-            Files.delete(path);
-        }
-        Files.createDirectories(path);
-    }
-
-    public static void unzipStream(InputStream inputStream, String destPathString, String rootFileName)
-        throws IOException {
-        Path destPath = Paths.get(destPathString).normalize();
-        if (!Files.exists(destPath)) {
-            Files.createDirectories(destPath);
-        }
-
-        try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(inputStream))) {
-            ZipEntry zipEntry;
-            byte[] buffer = new byte[1024];
-            while ((zipEntry = zis.getNextEntry()) != null) {
-                String entryName = zipEntry.getName();
-                if (rootFileName != null && !rootFileName.isEmpty() && entryName.startsWith(rootFileName + "/")) {
-                    entryName = entryName.substring(rootFileName.length() + 1);
-                }
-                if (entryName.isEmpty()) {
-                    continue;
-                }
-
-                Path newFile = destPath.resolve(entryName).normalize();
-
-                if (!newFile.startsWith(destPath)) {
-                    throw new IOException("Zip entry is outside of the target dir: " + zipEntry.getName());
-                }
-
-                if (zipEntry.isDirectory()) {
-                    Files.createDirectories(newFile);
-                } else {
-                    Files.createDirectories(newFile.getParent());
-                    try (OutputStream fos = Files.newOutputStream(newFile)) {
-                        int len;
-                        while ((len = zis.read(buffer)) > 0) {
-                            fos.write(buffer, 0, len);
-                        }
-                    }
-                }
-                zis.closeEntry();
-            }
-        }
-    }
-
-    public static void addDirectoryToZip(ZipOutputStream zos, String dirPathString, String baseInZip)
-        throws IOException {
-        Path dirPath = Paths.get(dirPathString);
-        Files.walkFileTree(dirPath, new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                String entryName = baseInZip + dirPath.relativize(dir).toString().replace("\\", "/") + "/";
-                if (!entryName.equals("/")) {
-                    zos.putNextEntry(new ZipEntry(entryName));
-                    zos.closeEntry();
-                }
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                String entryName = baseInZip + dirPath.relativize(file).toString().replace("\\", "/");
-                zos.putNextEntry(new ZipEntry(entryName));
-                Files.copy(file, zos);
-                zos.closeEntry();
-                return FileVisitResult.CONTINUE;
-            }
-        });
-    }
-
-    public static void addFileToZip(ZipOutputStream zos, String filePathString, String entryNameInZip)
-        throws IOException {
-        Path filePath = Paths.get(filePathString);
-        if (entryNameInZip == null || entryNameInZip.isEmpty() || entryNameInZip.equals("/")) {
-            entryNameInZip = filePath.getFileName().toString();
-        }
-        if (entryNameInZip.startsWith("/")) {
-            entryNameInZip = entryNameInZip.substring(1);
-        }
-
-        ZipEntry zipEntry = new ZipEntry(entryNameInZip);
-        zos.putNextEntry(zipEntry);
-        Files.copy(filePath, zos);
-        zos.closeEntry();
     }
 }

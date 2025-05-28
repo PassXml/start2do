@@ -180,9 +180,12 @@ public class FileUtil {
     }
 
     public void delete(String path) {
-        try {
-            Files.walkFileTree(Paths.get(path), new FileVisitor<Path>() {
+        delete(Paths.get(path));
+    }
 
+    public void delete(Path destPath) {
+        try {
+            Files.walkFileTree(destPath, new FileVisitor<Path>() {
                 @Override
                 public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
                     return FileVisitResult.CONTINUE;
@@ -190,6 +193,7 @@ public class FileUtil {
 
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    Files.deleteIfExists(file);
                     return FileVisitResult.CONTINUE;
                 }
 
@@ -200,6 +204,9 @@ public class FileUtil {
 
                 @Override
                 public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    if (!dir.equals(destPath)) {
+                        Files.deleteIfExists(dir);
+                    }
                     return FileVisitResult.CONTINUE;
                 }
             });
@@ -248,6 +255,43 @@ public class FileUtil {
             }
         }
         return null;
+    }
+
+    public static boolean isPathAllowed(List<String> whitePath, String pathString) {
+        if (whitePath == null || whitePath.isEmpty()) {
+            return false;
+        }
+        Path path = Paths.get(pathString).normalize();
+        for (String allowedPrefix : whitePath) {
+            if (path.startsWith(Paths.get(allowedPrefix).normalize())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void cleanTargetFolder(String pathString) throws IOException {
+        Path path = Paths.get(pathString);
+        if (Files.exists(path) && Files.isDirectory(path)) {
+            Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    Files.delete(file);
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    if (!dir.equals(path)) {
+                        Files.delete(dir);
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } else if (Files.exists(path) && !Files.isDirectory(path)) {
+            Files.delete(path);
+        }
+        Files.createDirectories(path);
     }
 
     /**

@@ -5,10 +5,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
@@ -159,4 +165,49 @@ public class ZipUtil {
         }
     }
 
+    public static void unzipStream(InputStream inputStream, Path destPath, String rootFileName) throws IOException {
+        if (!Files.exists(destPath)) {
+            Files.createDirectories(destPath);
+        }
+        unzip(inputStream, destPath, rootFileName);
+    }
+
+    public static void addDirectoryToZipNIO(ZipOutputStream zos, String dirPathString, String baseInZip) throws IOException {
+        Path dirPath = Paths.get(dirPathString);
+        Files.walkFileTree(dirPath, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                String entryName = baseInZip + dirPath.relativize(dir).toString().replace("\\", "/") + "/";
+                if (!entryName.equals("/")) {
+                    zos.putNextEntry(new ZipEntry(entryName));
+                    zos.closeEntry();
+                }
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                String entryName = baseInZip + dirPath.relativize(file).toString().replace("\\", "/");
+                zos.putNextEntry(new ZipEntry(entryName));
+                Files.copy(file, zos);
+                zos.closeEntry();
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+
+    public static void addFileToZipNIO(ZipOutputStream zos, String filePathString, String entryNameInZip) throws IOException {
+        Path filePath = Paths.get(filePathString);
+        if (entryNameInZip == null || entryNameInZip.isEmpty() || entryNameInZip.equals("/")) {
+            entryNameInZip = filePath.getFileName().toString();
+        }
+        if (entryNameInZip.startsWith("/")) {
+            entryNameInZip = entryNameInZip.substring(1);
+        }
+
+        ZipEntry zipEntry = new ZipEntry(entryNameInZip);
+        zos.putNextEntry(zipEntry);
+        Files.copy(filePath, zos);
+        zos.closeEntry();
+    }
 }
