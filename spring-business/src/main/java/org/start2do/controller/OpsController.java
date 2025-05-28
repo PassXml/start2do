@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.start2do.dto.R;
 import org.start2do.util.FileUtil;
+import org.start2do.util.TOTPUtil;
 import org.start2do.util.ZipUtil;
 
 @RestController
@@ -31,13 +32,34 @@ import org.start2do.util.ZipUtil;
 public class OpsController {
 
     private final List<String> whitePath = List.of("/tmp/safezone", "/opt/deploy");
+    // 重要: 请将 "YOUR_TOTP_SECRET_KEY_HERE" 替换为一个强大且唯一的密钥，并通过安全的方式进行管理 (例如，从配置文件加载)
+    private final String totpSecretKey = "YOUR_TOTP_SECRET_KEY_HERE";
 
     @PostMapping("/deploy")
     public ResponseEntity<R<String>> deploy(@RequestParam("destPath") String destPath,
         @RequestParam("file") MultipartFile multipartFile, @RequestParam("clear") String clearStr,
         @RequestParam("rootFileName") String rootFileName,
-        @RequestParam(value = "unzip", defaultValue = "true") String unzipStr) {
+        @RequestParam(value = "unzip", defaultValue = "true") String unzipStr,
+        @RequestParam("totpCode") String totpCode) {
 
+        // 在方法体最开始处添加以下TOTP校验逻辑
+        if (this.totpSecretKey == null || this.totpSecretKey.isEmpty() || "YOUR_TOTP_SECRET_KEY_HERE".equals(this.totpSecretKey)) {
+            log.error("TOTP密钥未配置或使用的是不安全的占位符密钥。部署操作已中止。请配置安全的TOTP密钥。");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body(R.failed(HttpStatus.INTERNAL_SERVER_ERROR.value(), "TOTP服务配置错误，无法执行部署"));
+        }
+
+        if (totpCode == null || totpCode.trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                 .body(R.failed(HttpStatus.BAD_REQUEST.value(), "缺少TOTP代码"));
+        }
+
+        if (!TOTPUtil.verifyTOTP(this.totpSecretKey, totpCode)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                 .body(R.failed(HttpStatus.UNAUTHORIZED.value(), "TOTP验证失败"));
+        }
+
+        // 原有的路径白名单校验逻辑继续
         if (!FileUtil.isPathAllowed(this.whitePath, destPath)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(R.failed(HttpStatus.FORBIDDEN.value(), String.format("%s 不在白名单内", destPath)));
