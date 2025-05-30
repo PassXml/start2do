@@ -26,101 +26,116 @@ import org.start2do.util.StringUtils;
     matchIfMissing = true)
 public class SysSettingUtil implements EntityHook<SysSetting> {
 
-  private final SysSettingService sysSettingService;
-  @Getter private static SysSettingUtil sysSettingUtil;
-  private ConcurrentHashMap<String, ConcurrentHashMap<String, String>> hashMap;
+    private final SysSettingService sysSettingService;
+    @Getter
+    private static SysSettingUtil sysSettingUtil;
+    private ConcurrentHashMap<String, ConcurrentHashMap<String, String>> hashMap;
 
-  public SysSettingUtil(SysSettingService sysSettingService) {
-    this.sysSettingService = sysSettingService;
-    hashMap = new ConcurrentHashMap<>();
-    SysSettingUtil.sysSettingUtil = this;
-  }
-
-  public static String getLabel(String type, String key, String defaultValue) {
-    if (StringUtils.isEmpty(type) || StringUtils.isEmpty(key)) {
-      return defaultValue;
+    public SysSettingUtil(SysSettingService sysSettingService) {
+        this.sysSettingService = sysSettingService;
+        hashMap = new ConcurrentHashMap<>();
+        SysSettingUtil.sysSettingUtil = this;
     }
-    return Optional.ofNullable(SysSettingUtil.sysSettingUtil)
-        .map(t -> t.hashMap)
-        .map(map -> map.get(type))
-        .map(t -> t.get(key))
-        .filter(StringUtils::isNotEmpty)
-        .orElseGet(() -> defaultValue);
-  }
 
-  public static String getLabel(String type, String key) {
-    if (StringUtils.isEmpty(type)) {
-      return type;
-    }
-    if (StringUtils.isEmpty(key)) {
-      return key;
-    }
-    return Optional.ofNullable(SysSettingUtil.sysSettingUtil)
-        .map(t -> t.hashMap)
-        .map(map -> map.get(type))
-        .map(t -> t.get(key))
-        .orElseGet(() -> key);
-  }
-
-  public static ConcurrentHashMap<String, String> getItems(String type) {
-    return SysSettingUtil.sysSettingUtil.hashMap.getOrDefault(type, new ConcurrentHashMap<>());
-  }
-
-  @Scheduled(cron = "0 0/10 0 * * ?")
-  public void sync() {
-    if (sysSettingService == null) {
-      log.warn("需要注入SysSettingService");
-      return;
-    }
-    hashMap.clear();
-    try {
-      for (SysSetting dto :
-          sysSettingService.findAll(new QSysSetting().enable.eq(EnableType.Enable))) {
-        if (dto.getType() == null) {
-          continue;
+    public static String getLabel(String type, String key, String defaultValue) {
+        if (StringUtils.isEmpty(type) || StringUtils.isEmpty(key)) {
+            return defaultValue;
         }
-        ConcurrentHashMap<String, String> map =
-            SysSettingUtil.sysSettingUtil.hashMap.get(dto.getType());
-        if (map == null) {
-          map = new ConcurrentHashMap<>();
-        }
-        if (StringUtils.isEmpty(dto.getKey())) {
-          log.warn("Setting Id:{}为空", dto.getId());
-          continue;
-        }
-        if (StringUtils.isEmpty(dto.getValue())) {
-          continue;
-        }
-        map.put(dto.getKey(), dto.getValue());
-        SysSettingUtil.sysSettingUtil.hashMap.put(dto.getType(), map);
-      }
-    } catch (Exception e) {
-      log.error("读取系统设置表失败", e);
+        return Optional.ofNullable(SysSettingUtil.sysSettingUtil)
+            .map(t -> t.hashMap)
+            .map(map -> map.get(type))
+            .map(t -> t.get(key))
+            .filter(StringUtils::isNotEmpty)
+            .orElseGet(() -> defaultValue);
     }
-  }
 
-  @Override
-  public Class<SysSetting> getKey() {
-    return SysSetting.class;
-  }
+    public static String getLabel(String type, String key) {
+        if (StringUtils.isEmpty(type)) {
+            return type;
+        }
+        if (StringUtils.isEmpty(key)) {
+            return key;
+        }
+        return Optional.ofNullable(SysSettingUtil.sysSettingUtil)
+            .map(t -> t.hashMap)
+            .map(map -> map.get(type))
+            .map(t -> t.get(key))
+            .orElseGet(() -> key);
+    }
 
-  @Override
-  public void insertAfter(SysSetting obj, Transaction transaction) {
-    sync();
-  }
+    public static ConcurrentHashMap<String, String> getItems(String type) {
+        return SysSettingUtil.sysSettingUtil.hashMap.getOrDefault(type, new ConcurrentHashMap<>());
+    }
 
-  @Override
-  public void updateAfter(SysSetting obj, Transaction transaction) {
-    sync();
-  }
+    public static void update(String type, String key, String value) {
+        new QSysSetting().asUpdate().set(
+            QSysSetting.alias().value, value
+        ).where().eq(
+            QSysSetting.alias().type.toString(), type
+        ).eq(
+            QSysSetting.alias().key.toString(), key
+        ).update();
+        ConcurrentHashMap<String, String> map = sysSettingUtil.hashMap.get(type);
+        if (map != null) {
+            map.put(key, value);
+        }
+    }
 
-  @Override
-  public void postSoftDelete(SysSetting obj, Transaction transaction) {
-    sync();
-  }
+    @Scheduled(cron = "0 0/10 0 * * ?")
+    public void sync() {
+        if (sysSettingService == null) {
+            log.warn("需要注入SysSettingService");
+            return;
+        }
+        hashMap.clear();
+        try {
+            for (SysSetting dto :
+                sysSettingService.findAll(new QSysSetting().enable.eq(EnableType.Enable))) {
+                if (dto.getType() == null) {
+                    continue;
+                }
+                ConcurrentHashMap<String, String> map =
+                    SysSettingUtil.sysSettingUtil.hashMap.get(dto.getType());
+                if (map == null) {
+                    map = new ConcurrentHashMap<>();
+                }
+                if (StringUtils.isEmpty(dto.getKey())) {
+                    log.warn("Setting Id:{}为空", dto.getId());
+                    continue;
+                }
+                if (StringUtils.isEmpty(dto.getValue())) {
+                    continue;
+                }
+                map.put(dto.getKey(), dto.getValue());
+                SysSettingUtil.sysSettingUtil.hashMap.put(dto.getType(), map);
+            }
+        } catch (Exception e) {
+            log.error("读取系统设置表失败", e);
+        }
+    }
 
-  @Override
-  public void postDelete(SysSetting obj, Transaction transaction) {
-    sync();
-  }
+    @Override
+    public Class<SysSetting> getKey() {
+        return SysSetting.class;
+    }
+
+    @Override
+    public void insertAfter(SysSetting obj, Transaction transaction) {
+        sync();
+    }
+
+    @Override
+    public void updateAfter(SysSetting obj, Transaction transaction) {
+        sync();
+    }
+
+    @Override
+    public void postSoftDelete(SysSetting obj, Transaction transaction) {
+        sync();
+    }
+
+    @Override
+    public void postDelete(SysSetting obj, Transaction transaction) {
+        sync();
+    }
 }

@@ -1,6 +1,7 @@
 package org.start2do.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,53 +15,54 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.start2do.config.OpsConfig;
+import org.start2do.dto.BusinessException;
 import org.start2do.dto.R;
+import org.start2do.dto.req.ops.OpsDeployReq;
 import org.start2do.util.FileUtil;
+import org.start2do.util.StringUtils;
 import org.start2do.util.TOTPUtil;
 import org.start2do.util.ZipUtil;
 
-@RestController
-@RequestMapping("/ops")
 @Slf4j
+@Controller
+@RequestMapping("/ops")
 @RequiredArgsConstructor
 public class OpsController {
 
-    private final List<String> whitePath = List.of("/tmp/safezone", "/opt/deploy");
-    // 重要: 请将 "YOUR_TOTP_SECRET_KEY_HERE" 替换为一个强大且唯一的密钥，并通过安全的方式进行管理 (例如，从配置文件加载)
-    private final String totpSecretKey = "YOUR_TOTP_SECRET_KEY_HERE";
+    private final OpsConfig config;
 
     @PostMapping("/deploy")
-    public ResponseEntity<R<String>> deploy(@RequestParam("destPath") String destPath,
-        @RequestParam("file") MultipartFile multipartFile, @RequestParam("clear") String clearStr,
-        @RequestParam("rootFileName") String rootFileName,
-        @RequestParam(value = "unzip", defaultValue = "true") String unzipStr,
-        @RequestParam("totpCode") String totpCode) {
-
+    public ResponseEntity<R<String>> deploy(@Valid OpsDeployReq req, @RequestHeader("X-TOTP") String totpCode) {
+        if (StringUtils.isEmpty(totpCode) && StringUtils.isEmpty(req.getTotpCode())) {
+            throw new BusinessException("TOTP密码不能为空");
+        }
+        if (StringUtils.isEmpty(req.getTotpCode()) && StringUtils.isNotEmpty(totpCode)) {
+            log.warn("取Header的totpCode");
+            req.setTotpCode(totpCode);
+        }
         // 在方法体最开始处添加以下TOTP校验逻辑
-        if (this.totpSecretKey == null || this.totpSecretKey.isEmpty() || "YOUR_TOTP_SECRET_KEY_HERE".equals(this.totpSecretKey)) {
+        if (StringUtils.isEmpty(config.getTotpSecretKey())) {
             log.error("TOTP密钥未配置或使用的是不安全的占位符密钥。部署操作已中止。请配置安全的TOTP密钥。");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                 .body(R.failed(HttpStatus.INTERNAL_SERVER_ERROR.value(), "TOTP服务配置错误，无法执行部署"));
+                .body(R.failed(HttpStatus.INTERNAL_SERVER_ERROR.value(), "TOTP服务配置错误，无法执行部署"));
         }
 
-        if (totpCode == null || totpCode.trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                                 .body(R.failed(HttpStatus.BAD_REQUEST.value(), "缺少TOTP代码"));
-        }
-
-        if (!TOTPUtil.verifyTOTP(this.totpSecretKey, totpCode)) {
+        if (!TOTPUtil.verifyTOTP(config.getTotpSecretKey(), req.getTotpCode())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                                 .body(R.failed(HttpStatus.UNAUTHORIZED.value(), "TOTP验证失败"));
+                .body(R.failed(HttpStatus.UNAUTHORIZED.value(), "TOTP验证失败"));
         }
 
         // 原有的路径白名单校验逻辑继续
-        if (!FileUtil.isPathAllowed(this.whitePath, destPath)) {
+        String destPath = req.getDestPath();
+        if (!FileUtil.isPathAllowed(config.getWhitePath(), destPath)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(R.failed(HttpStatus.FORBIDDEN.value(), String.format("%s 不在白名单内", destPath)));
         }
@@ -74,11 +76,11 @@ public class OpsController {
                 Files.createDirectories(destinationPath);
             }
 
-            boolean clear = Boolean.parseBoolean(clearStr);
-            if (clear) {
+            if (req.isClear()) {
                 FileUtil.cleanTargetFolder(destPath);
             }
 
+            MultipartFile multipartFile = req.getFile();
             if (multipartFile.isEmpty()) {
                 return ResponseEntity.badRequest().body(R.failed("上传文件不能为空"));
             }
@@ -91,24 +93,20 @@ public class OpsController {
                     isZip = true;
                 } else {
                     byte[] header = new byte[4];
-                    try (InputStream headerIs = multipartFile.getInputStream()) {
-                        BufferedInputStream bis = new BufferedInputStream(headerIs);
-                        bis.mark(4);
-                        int bytesRead = bis.read(header);
-                        bis.reset();
-                        if (bytesRead == 4 && header[0] == 0x50 && header[1] == 0x4B && header[2] == 0x03
-                            && header[3] == 0x04) {
-                            isZip = true;
-                        }
+                    BufferedInputStream bis = new BufferedInputStream(inputStream);
+                    bis.mark(4);
+                    int bytesRead = bis.read(header);
+                    bis.reset();
+                    if (bytesRead == 4 && header[0] == 0x50 && header[1] == 0x4B && header[2] == 0x03
+                        && header[3] == 0x04) {
+                        isZip = true;
                     }
                 }
             }
-
-            boolean unzip = Boolean.parseBoolean(unzipStr);
-
+            boolean unzip = req.isUnzip();
             if (isZip && unzip) {
                 try (InputStream inputStream = multipartFile.getInputStream()) {
-                    ZipUtil.unzipStream(inputStream, destinationPath, rootFileName);
+                    ZipUtil.unzipStream(inputStream, destinationPath, req.getRootFileName());
                 }
             } else {
                 String originalFilename = multipartFile.getOriginalFilename();
@@ -126,7 +124,6 @@ public class OpsController {
                     Files.copy(inputStream, targetFilePath, StandardCopyOption.REPLACE_EXISTING);
                 }
             }
-
             return ResponseEntity.ok(R.ok("部署成功"));
 
         } catch (IOException e) {
@@ -150,7 +147,7 @@ public class OpsController {
         }
 
         for (String path : paths) {
-            if (!FileUtil.isPathAllowed(this.whitePath, path)) {
+            if (!FileUtil.isPathAllowed(config.getWhitePath(), path)) {
                 try {
                     response.setStatus(HttpStatus.FORBIDDEN.value());
                     response.getWriter().write(new R<>().setCode(HttpStatus.FORBIDDEN.value())

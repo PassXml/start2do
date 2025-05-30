@@ -1,5 +1,6 @@
 package org.start2do.controller.servlet;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -77,8 +78,7 @@ public class SysMenuController {
      * 添加
      */
     @GetMapping("delete")
-    public R delete(IdStrReq req) {
-        BeanValidatorUtil.validate(req);
+    public R delete(@Valid IdStrReq req) {
         sysMenuService.remove(req.getId());
         return R.ok();
     }
