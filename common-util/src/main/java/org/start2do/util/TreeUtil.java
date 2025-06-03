@@ -142,7 +142,7 @@ public class TreeUtil {
 //        }
 //        return null;
 //    }
-    public <T extends TreeNode<? extends TreeNode>> T findNode(T node, String nodeId) {
+    public <T extends TreeNode<T>> T findNode(T node, String nodeId) {
         if (node == null || nodeId == null || nodeId.isEmpty()) {
             return null;
         }
@@ -150,7 +150,7 @@ public class TreeUtil {
         return result.isEmpty() ? null : result.get(0);
     }
 
-    public <T extends TreeNode<? extends TreeNode>> T findNode(List<T> nodes, String nodeId) {
+    public <T extends TreeNode<T>> T findNode(List<T> nodes, String nodeId) {
         if (nodes == null || nodes.isEmpty() || nodeId == null || nodeId.isEmpty()) {
             return null;
         }
@@ -166,7 +166,7 @@ public class TreeUtil {
      * @param <T>     节点类型，必须实现 TreeNode接口
      * @return 包含所有匹配节点的列表
      */
-    public <T extends TreeNode<? extends TreeNode>> List<T> findNode(T node, java.util.Collection<String> nodeIds) {
+    public <T extends TreeNode<T>> List<T> findNode(T node, java.util.Collection<String> nodeIds) {
         List<T> foundNodes = new ArrayList<>();
         if (node == null || nodeIds == null || nodeIds.isEmpty()) {
             return foundNodes;
@@ -179,7 +179,7 @@ public class TreeUtil {
 
         // 递归查找子节点
         if (node.getChildren() != null) {
-            for (T child : node.getChildren()) {
+            for (TreeNode child : node.getChildren()) {
                 foundNodes.addAll(findNode(child, nodeIds));
             }
         }
@@ -194,7 +194,7 @@ public class TreeUtil {
      * @param <T>     节点类型，必须实现 TreeNode接口
      * @return 包含所有匹配节点的列表 (结果已去重)
      */
-    public <T extends TreeNode<? extends TreeNode>> List<T> findNode(List<T> nodes, java.util.Collection<String> nodeIds) {
+    public <T extends TreeNode<T>> List<T> findNode(List<T> nodes, java.util.Collection<String> nodeIds) {
         Set<T> resultSet = new HashSet<>();
         if (nodes == null || nodes.isEmpty() || nodeIds == null || nodeIds.isEmpty()) {
             return new ArrayList<>();
@@ -527,7 +527,7 @@ public class TreeUtil {
     /**
      * 递归方法，将单个节点及其子节点展开为列表
      *
-     * @param node 当前节点
+     * @param node     当前节点
      * @param flatList 扁平化后的列表
      */
     private static <T extends TreeNode<T>> void flattenTree(T node, List<T> flatList) {
@@ -540,60 +540,60 @@ public class TreeUtil {
         }
     }
 
-  @Setter
-  @Getter
-  @Accessors(chain = true)
-  @NoArgsConstructor
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  public static class TreeBaseDto implements TreeNode<TreeBaseDto> {
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class TreeBaseDto implements TreeNode<TreeBaseDto> {
 
-    private String id;
-    private String parentId;
-    private List<TreeBaseDto> children;
+        private String id;
+        private String parentId;
+        private List<TreeBaseDto> children;
 
-    @Override
-    public String getTreeNodeId() {
-      return this.id;
+        @Override
+        public String getTreeNodeId() {
+            return this.id;
+        }
+
+        @Override
+        public String getParentId() {
+            return this.parentId;
+        }
+
+        @Override
+        public void setParentId(String id) {
+            this.parentId = id;
+        }
+
+        @Override
+        public void setTreeNodeId(String id) {
+            this.id = id;
+            ;
+        }
+
+        @Override
+        public void setChildren(List<TreeBaseDto> children) {
+            this.children = children;
+        }
+
+        @Override
+        public List<TreeBaseDto> getChildren() {
+            if (this.children == null) {
+                this.children = new ArrayList<>();
+            }
+            return this.children;
+        }
+
+        @Override
+        public Object clone() throws CloneNotSupportedException {
+            return super.clone();
+        }
+
+        public TreeBaseDto(String id, String parentId, List<TreeBaseDto> children) {
+            this.id = id;
+            this.parentId = parentId;
+            this.children = children;
+        }
     }
-
-    @Override
-    public String getParentId() {
-      return this.parentId;
-    }
-
-    @Override
-    public void setParentId(String id) {
-      this.parentId = id;
-    }
-
-    @Override
-    public void setTreeNodeId(String id) {
-      this.id = id;
-      ;
-    }
-
-    @Override
-    public void setChildren(List<TreeBaseDto> children) {
-      this.children = children;
-    }
-
-    @Override
-    public List<TreeBaseDto> getChildren() {
-      if (this.children == null) {
-        this.children = new ArrayList<>();
-      }
-      return this.children;
-    }
-
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-      return super.clone();
-    }
-
-      public TreeBaseDto(String id, String parentId, List<TreeBaseDto> children) {
-          this.id = id;
-          this.parentId = parentId;
-          this.children = children;
-      }
-  }
 }
