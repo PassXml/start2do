@@ -14,7 +14,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.stereotype.Service;
 import org.start2do.BusinessConfig;
 import org.start2do.BusinessConfig.FileSetting;
-import org.start2do.dto.dto.file.FileUpdateResultDto;
+import org.start2do.dto.file.FileUpdateResultDto;
 import org.start2do.entity.business.SysFile;
 import org.start2do.entity.business.query.QSysFile;
 import org.start2do.service.IFileMd5;

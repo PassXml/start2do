@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import lombok.experimental.UtilityClass;
-import org.start2do.dto.dto.file.FileUpdateResultDto;
+import org.start2do.dto.file.FileUpdateResultDto;
 
 @UtilityClass
 public class LocalFileUtils {

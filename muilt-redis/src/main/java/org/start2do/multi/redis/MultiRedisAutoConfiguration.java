@@ -21,6 +21,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.util.StringUtils;
 import org.start2do.redis.PrefixedKeySerializer;
+import org.start2do.redis.RedisOMConfig;
 
 @Configuration
 @EnableConfigurationProperties(RedisProperties.class)
@@ -50,7 +51,8 @@ public class MultiRedisAutoConfiguration {
     public RedisTemplateResolver redisTemplateResolver(RedisProperties properties) {
         Map<String, RedisTemplate<String, Object>> templates = new HashMap<>();
         properties.getSources().forEach((name, config) -> {
-            RedisTemplate<String, Object> template = createRedisTemplate(config, null);
+            ObjectMapper objectMapper = RedisOMConfig.jacksonOM();
+            RedisTemplate<String, Object> template = createRedisTemplate(config, objectMapper);
             templates.put(name, template);
         });
 

@@ -18,5 +18,17 @@ public class DeployReq {
     private String destPath;
     @NotNull
     private MultipartFile file;
-    private String rootFileName;
+    /**
+     * 跟文件名称
+     */
+    private String rootFileName = "index.html";
+    /**
+     * 是否解压缩
+     */
+    private boolean unpack = false;
+    /**
+     * 是否清理目录
+     */
+    private boolean isClearDir;
+
 }
