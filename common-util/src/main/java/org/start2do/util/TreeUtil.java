@@ -143,26 +143,67 @@ public class TreeUtil {
 //        return null;
 //    }
     public <T extends TreeNode<? extends TreeNode>> T findNode(T node, String nodeId) {
-        if (Objects.equals(node.getTreeNodeId(), nodeId)) {
-            return node;
+        if (node == null || nodeId == null || nodeId.isEmpty()) {
+            return null;
         }
-        for (TreeNode child : node.getChildren()) {
-            T foundNode = findNode((T) child, nodeId);
-            if (foundNode != null) {
-                return foundNode;
-            }
-        }
-        return null;
+        List<T> result = findNode(node, java.util.Collections.singletonList(nodeId));
+        return result.isEmpty() ? null : result.get(0);
     }
 
-    public <T extends TreeNode<? extends TreeNode>> T findNode(List<T> node, String nodeId) {
-        for (T t : node) {
-            T foundNode = findNode(t, nodeId);
-            if (foundNode != null) {
-                return foundNode;
+    public <T extends TreeNode<? extends TreeNode>> T findNode(List<T> nodes, String nodeId) {
+        if (nodes == null || nodes.isEmpty() || nodeId == null || nodeId.isEmpty()) {
+            return null;
+        }
+        List<T> result = findNode(nodes, java.util.Collections.singletonList(nodeId));
+        return result.isEmpty() ? null : result.get(0);
+    }
+
+    /**
+     * 在指定节点及其子孙节点中查找所有ID在nodeIds集合中的节点。
+     *
+     * @param node    起始节点
+     * @param nodeIds 要查找的节点ID集合
+     * @param <T>     节点类型，必须实现 TreeNode接口
+     * @return 包含所有匹配节点的列表
+     */
+    public <T extends TreeNode<? extends TreeNode>> List<T> findNode(T node, java.util.Collection<String> nodeIds) {
+        List<T> foundNodes = new ArrayList<>();
+        if (node == null || nodeIds == null || nodeIds.isEmpty()) {
+            return foundNodes;
+        }
+
+        // 检查当前节点是否匹配
+        if (nodeIds.contains(node.getTreeNodeId())) {
+            foundNodes.add(node);
+        }
+
+        // 递归查找子节点
+        if (node.getChildren() != null) {
+            for (T child : node.getChildren()) {
+                foundNodes.addAll(findNode(child, nodeIds));
             }
         }
-        return null;
+        return foundNodes;
+    }
+
+    /**
+     * 在给定的节点列表（通常是多棵树的根节点列表）中查找所有ID在nodeIds集合中的节点。
+     *
+     * @param nodes   节点列表
+     * @param nodeIds 要查找的节点ID集合
+     * @param <T>     节点类型，必须实现 TreeNode接口
+     * @return 包含所有匹配节点的列表 (结果已去重)
+     */
+    public <T extends TreeNode<? extends TreeNode>> List<T> findNode(List<T> nodes, java.util.Collection<String> nodeIds) {
+        Set<T> resultSet = new HashSet<>();
+        if (nodes == null || nodes.isEmpty() || nodeIds == null || nodeIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        for (T t : nodes) {
+            resultSet.addAll(findNode(t, nodeIds));
+        }
+        return new ArrayList<>(resultSet);
     }
 
 
