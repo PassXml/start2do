@@ -30,10 +30,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
-@Order(Ordered.HIGHEST_PRECEDENCE)
-@ConditionalOnProperty(prefix = "start2do.util.redis", value = "enable", havingValue = "true")
 public class RedisCacheUtil implements CommandLineRunner {
 
     public static RedisTemplate<String, Object> getRedisTemplate() {

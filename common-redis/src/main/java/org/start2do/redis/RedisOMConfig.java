@@ -26,23 +26,25 @@ public class RedisOMConfig {
     public static ObjectMapper jacksonOM() {
         // 如果直接使用Jackson2JsonRedisSerializer 获取存储的对象则会变为LinkedHashMap,添加ObjectMapper可解决
         ObjectMapper objectMapper = jacksonOMFilter();
-        try {
-            Class<?> aClass = Class.forName("javax.persistence.ManyToOne");
-            objectMapper.setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
-                @Override
-                protected boolean _isIgnorable(Annotated a) {
-                    for (Class aClass : JacksonConstant.JPAAnnotation) {
-                        Annotation annotation = a.getAnnotation(aClass);
-                        if (annotation != null) {
-                            return true;
+        objectMapper.setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
+            @Override
+            protected boolean _isIgnorable(Annotated a) {
+                for (String str : JacksonConstant.JPAAnnotation) {
+                    try {
+                        Class<?> aClass = Class.forName(str);
+                        if (aClass.isAnnotation()) {
+                            Annotation annotation = a.getAnnotation((Class<? extends Annotation>) aClass);
+                            if (annotation != null) {
+                                return true;
+                            }
                         }
-                    }
-                    return super._isIgnorable(a);
-                }
-            });
-        } catch (ClassNotFoundException e) {
-        }
+                    } catch (ClassNotFoundException e) {
 
+                    }
+                }
+                return super._isIgnorable(a);
+            }
+        });
         return objectMapper;
     }
 
