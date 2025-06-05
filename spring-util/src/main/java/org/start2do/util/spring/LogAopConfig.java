@@ -1,10 +1,6 @@
 package org.start2do.util.spring;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -19,7 +15,6 @@ import lombok.experimental.Accessors;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.web.multipart.MultipartFile;
 
 
 @Setter
@@ -45,8 +40,19 @@ public class LogAopConfig {
         if (skipUrl == null) {
             skipUrl = new HashSet<>();
         }
-        skinClazz.addAll(Arrays.asList(HttpServletRequest.class, HttpServletResponse.class, ServletResponse.class,
-            ServletRequest.class, OutputStream.class, ByteArrayOutputStream.class, MultipartFile.class));
+        skinClazz.addAll(Arrays.asList(OutputStream.class, ByteArrayOutputStream.class));
+        String[] t = {"org.springframework.web.multipart.MultipartFile",
+            "jakarta.servlet.ServletResponse", "jakarta.servlet.http.HttpServletResponse",
+            "jakarta.servlet.http.HttpServletRequest", "jakarta.servlet.ServletRequest"};
+        for (String classStr : t) {
+            try {
+                Class<?> aClass = Class.forName(classStr);
+                skinClazz.add(aClass);
+            } catch (ClassNotFoundException e) {
+
+            }
+        }
+
     }
 
 

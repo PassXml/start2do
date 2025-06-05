@@ -10,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -32,10 +33,7 @@ import org.start2do.util.LocalFileUtils;
 
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(
-    prefix = "start2do.business.file-setting",
-    name = "type",
-    havingValue = "local")
+@ConditionalOnProperty(prefix = "start2do.business.file-setting", name = "type", havingValue = "local")
 @ConditionalOnWebApplication(type = Type.SERVLET)
 public class LocalFileOperationService implements IFileOperationService {
 
@@ -48,26 +46,17 @@ public class LocalFileOperationService implements IFileOperationService {
     public boolean remove(String fileId) {
         SysFile sysFile = sysFileService.findOne(new QSysFile().id.eq(fileId));
         String relativeFilePath = sysFile.getRelativeFilePath();
-        LocalFileUtils.move(
-            businessConfig.getFileSetting().getUploadDir(),
-            relativeFilePath,
+        LocalFileUtils.move(businessConfig.getFileSetting().getUploadDir(), relativeFilePath,
             "Recycle/".concat(relativeFilePath));
         sysFileService.delete(sysFile);
         return true;
     }
 
     private SysFile uploadFile(String md5, String fileName, ByteArrayInputStream inputStream) {
-        FileUpdateResultDto dto =
-            LocalFileUtils.upload(
-                businessConfig.getFileSetting().getUploadDir(), md5, fileName, inputStream);
-        return new SysFile(
-            fileName,
-            dto.getFullPath(),
-            dto.getRelativePath(),
-            dto.getMd5(),
-            businessConfig.getFileSetting().getHost(),
-            dto.getSize(),
-            dto.getSuffix());
+        FileUpdateResultDto dto = LocalFileUtils.upload(businessConfig.getFileSetting().getUploadDir(), md5, fileName,
+            inputStream);
+        return new SysFile(fileName, dto.getFullPath(), dto.getRelativePath(), dto.getMd5(),
+            businessConfig.getFileSetting().getHost(), dto.getSize(), dto.getSuffix());
     }
 
     @Override
@@ -100,9 +89,7 @@ public class LocalFileOperationService implements IFileOperationService {
         if (sysFile == null) {
             throw new DataNotFoundException();
         }
-        File file =
-            Paths.get(fileSetting.getUploadDir() + File.separator + sysFile.getRelativeFilePath())
-                .toFile();
+        File file = Paths.get(fileSetting.getUploadDir() + File.separator + sysFile.getRelativeFilePath()).toFile();
         if (!file.exists()) {
             response.setContentType("application/json");
             try (OutputStream outputStream = response.getOutputStream()) {
@@ -120,8 +107,17 @@ public class LocalFileOperationService implements IFileOperationService {
         }
         response.setHeader("Content-Disposition", "attachment;filename*=UTF-8''" + encodedFileName);
         response.setContentType("application/octet-stream");
-        try (FileInputStream inputStream = new FileInputStream(file);
-            OutputStream outputStream = response.getOutputStream()) {
+        String fileSize = Optional.ofNullable(sysFile.getFileSize()).map(Long::intValue).map(String::valueOf)
+            .orElse("0");
+        if ("0".equals(fileSize)) {
+            File f = Paths.get(sysFile.getFilePath()).toFile();
+            if (f.exists()) {
+                fileSize = String.valueOf(f.length());
+            }
+        }
+        response.setHeader("Content-Length", fileSize);
+        try (FileInputStream inputStream = new FileInputStream(
+            file); OutputStream outputStream = response.getOutputStream()) {
             byte[] buffer = new byte[1024];
             int bytesRead;
             while ((bytesRead = inputStream.read(buffer)) != -1) {
