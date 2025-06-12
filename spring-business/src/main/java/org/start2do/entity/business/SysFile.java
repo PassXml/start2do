@@ -56,6 +56,7 @@ public class SysFile extends BaseModel2 {
   /** 后缀 */
   private String suffix;
 
+
   @OneToOne(fetch = FetchType.LAZY,mappedBy = "file")
   private SysFileExtInfo extInfo;
 

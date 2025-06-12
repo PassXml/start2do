@@ -26,7 +26,8 @@ public class DingPangFileDto implements Serializable {
     private String spaceId;
     private Integer fileSize;
     private String fileName;
-
+    private String unionId;
+    private String uid;
     private String processInstanceId;
 
     private DingPangFileDto() {
@@ -40,8 +41,11 @@ public class DingPangFileDto implements Serializable {
         this.fileName = fileName;
     }
 
-    public static DingPangFileDto buildDD(String fileId, String spaceId, Integer fileSize, String fileName) {
-        return new DingPangFileDto(KEY, fileId, spaceId, fileSize, fileName);
+    public static DingPangFileDto buildDD(String fileId, String spaceId, Integer fileSize, String fileName,
+        String unionId, String uid) {
+        DingPangFileDto dto = new DingPangFileDto(KEY, fileId, spaceId, fileSize, fileName);
+        dto.setUnionId(unionId).setUid(uid);
+        return dto;
     }
 
 }

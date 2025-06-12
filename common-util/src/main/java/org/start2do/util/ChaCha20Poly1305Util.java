@@ -30,13 +30,18 @@ public class ChaCha20Poly1305Util {
     public static byte[] encrypt(byte[] data, String key, String iv) {
         Cipher cipher = null;
         try {
-            cipher = Cipher.getInstance("ChaCha20-Poly1305/None/NoPadding");
+            try {
+                cipher = Cipher.getInstance("ChaCha20-Poly1305");
+            } catch (Exception e) {
+                cipher = Cipher.getInstance("ChaCha20-Poly1305/None/NoPadding");
+            }
             AlgorithmParameterSpec ivParameterSpec = new IvParameterSpec(iv.getBytes(StandardCharsets.UTF_8));
             SecretKeySpec keySpec = new SecretKeySpec(Base64.getDecoder().decode(key), "ChaCha20");
             cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivParameterSpec);
             return cipher.doFinal(data);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException |
                  IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
+
             throw new RuntimeException(e);
         }
     }
@@ -44,7 +49,11 @@ public class ChaCha20Poly1305Util {
     public static byte[] decrypt(byte[] cipherText, byte[] key, byte[] iv) {
         Cipher cipher = null;
         try {
-            cipher = Cipher.getInstance("ChaCha20-Poly1305/None/NoPadding");
+            try {
+                cipher = Cipher.getInstance("ChaCha20-Poly1305");
+            } catch (Exception e) {
+                cipher = Cipher.getInstance("ChaCha20-Poly1305/None/NoPadding");
+            }
             AlgorithmParameterSpec ivParameterSpec = new IvParameterSpec(iv);
             SecretKeySpec keySpec = new SecretKeySpec(key, "ChaCha20");
             cipher.init(Cipher.DECRYPT_MODE, keySpec, ivParameterSpec);
@@ -100,7 +109,11 @@ public class ChaCha20Poly1305Util {
     public static CipherOutputStream encrypt(OutputStream outputStream, byte[] key, byte[] iv) {
         Cipher cipher = null;
         try {
-            cipher = Cipher.getInstance("ChaCha20-Poly1305/None/NoPadding");
+            try {
+                cipher = Cipher.getInstance("ChaCha20-Poly1305");
+            } catch (Exception e) {
+                cipher = Cipher.getInstance("ChaCha20-Poly1305/None/NoPadding");
+            }
             AlgorithmParameterSpec ivParameterSpec = new IvParameterSpec(iv);
             SecretKeySpec keySpec = new SecretKeySpec(key, "ChaCha20");
             cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivParameterSpec);

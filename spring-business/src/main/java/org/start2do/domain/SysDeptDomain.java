@@ -30,6 +30,14 @@ public class SysDeptDomain implements EntityHook<SysDept> {
         return result;
     }
 
+    public Collection<String> findAllChildIds(List<String> id) {
+        List<String> list = new ArrayList<>();
+        for (String string : id) {
+            list.addAll(findAllChildId(string));
+        }
+        return list;
+    }
+
     @CacheEvict(value = "dept", allEntries = true)
     public void clear() {
 
