@@ -40,7 +40,8 @@ public class CEPProcessorService implements CommandLineRunner {
     @PostConstruct
     public void initializeFlinkEnvironment() {
         // 创建流处理环境
-        env = StreamExecutionEnvironment.createLocalEnvironment();
+        // 使用 getExecutionEnvironment() 更为通用，能自动适应不同执行环境
+        env = StreamExecutionEnvironment.getExecutionEnvironment();
         // 设置并行度
         env.setParallelism(flinkConfig.getParallelism());
 
@@ -88,7 +89,8 @@ public class CEPProcessorService implements CommandLineRunner {
 
         // HTTP数据源
         if (flinkConfig.getHttp().isEnabled()) {
-            DataStream<Event> httpStream = env.addSource(new HttpEventSource());
+            // 修复：为HttpEventSource构造函数传递所需的HttpConfig
+            DataStream<Event> httpStream = env.addSource(new HttpEventSource(flinkConfig.getHttp()));
             eventStream = httpStream;
             log.info("已启用HTTP事件源");
         }
