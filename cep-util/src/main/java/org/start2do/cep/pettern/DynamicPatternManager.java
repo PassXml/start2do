@@ -13,6 +13,10 @@ import org.apache.flink.cep.pattern.Pattern;
 import org.apache.flink.cep.pattern.conditions.SimpleCondition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.expression.Expression;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.start2do.cep.dto.CEPRule;
 import org.start2do.cep.dto.Event;
 
@@ -24,6 +28,7 @@ public class DynamicPatternManager {
     private final Map<String, CEPRule> rules = new ConcurrentHashMap<>();
     private final Map<String, Pattern<Event, ?>> patterns = new ConcurrentHashMap<>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private final ExpressionParser spelParser = new SpelExpressionParser();
 
     // 单例模式
     private static class SingletonHolder {
@@ -233,6 +238,20 @@ public class DynamicPatternManager {
      * 值比较逻辑
      */
     private boolean compareValues(Object actual, Object expected) {
+        // Handle SpEL expression if expected is a string containing SpEL syntax #{...}
+        if (expected instanceof String expectedStr && expectedStr.contains("#{")) {
+            try {
+                StandardEvaluationContext context = new StandardEvaluationContext();
+                context.setVariable("value", actual);
+                Expression expression = spelParser.parseExpression(expectedStr);
+                Boolean result = expression.getValue(context, Boolean.class);
+                return result != null && result;
+            } catch (Exception e) {
+                logger.error("SpEL expression evaluation failed for expression: {}", expectedStr, e);
+                return false;
+            }
+        }
+
         if (actual == null && expected == null) {
             return true;
         }
