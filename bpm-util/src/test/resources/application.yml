@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:mysql://192.168.30.113:3306/bpm_test?useUnicode=true&characterEncoding=utf8&useSSL=false
+    username: root
+    password: zxwz@123
+    driver-class-name: com.mysql.jdbc.Driver
+warm-flow:
+  banner: false
+  logic-delete-value: 1
