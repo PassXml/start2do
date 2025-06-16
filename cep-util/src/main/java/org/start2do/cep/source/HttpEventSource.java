@@ -6,12 +6,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.streaming.api.functions.source.legacy.SourceFunction;
-import org.springframework.boot.SpringApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.start2do.cep.config.FlinkConfig;
 import org.start2do.cep.dto.Event;
 import org.start2do.dto.R;
 
@@ -25,8 +26,17 @@ public class HttpEventSource implements SourceFunction<Event> {
     private static final BlockingQueue<Event> eventQueue = new LinkedBlockingQueue<>();
     private volatile boolean running = true;
 
+    private final FlinkConfig.HttpConfig httpConfig;
+
     @Override
     public void run(SourceContext<Event> ctx) throws Exception {
+        if (!httpConfig.isEnabled()) {
+            log.info("HTTP event source is disabled. The source will not start an HTTP server and will remain idle.");
+            while (running) {
+                Thread.sleep(1000L);
+            }
+            return;
+        }
         // 启动HTTP服务器
         startHttpServer();
 
@@ -54,7 +64,13 @@ public class HttpEventSource implements SourceFunction<Event> {
         // 在单独线程中启动Spring Boot应用
         new Thread(() -> {
             try {
-                SpringApplication.run(HttpEventSource.class);
+                log.info("Starting HTTP server on port {} with context path '{}'", httpConfig.getPort(), httpConfig.getContextPath());
+                new SpringApplicationBuilder(HttpEventSource.class)
+                    .properties(
+                        "server.port=" + httpConfig.getPort(),
+                        "server.servlet.context-path=" + httpConfig.getContextPath()
+                    )
+                    .run();
             } catch (Exception e) {
                 log.error("启动HTTP服务器失败", e);
             }
