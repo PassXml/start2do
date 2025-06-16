@@ -30,13 +30,6 @@ public class HttpEventSource implements SourceFunction<Event> {
 
     @Override
     public void run(SourceContext<Event> ctx) throws Exception {
-        if (!httpConfig.isEnabled()) {
-            log.info("HTTP event source is disabled. The source will not start an HTTP server and will remain idle.");
-            while (running) {
-                Thread.sleep(1000L);
-            }
-            return;
-        }
         // 启动HTTP服务器
         startHttpServer();
 
@@ -64,13 +57,10 @@ public class HttpEventSource implements SourceFunction<Event> {
         // 在单独线程中启动Spring Boot应用
         new Thread(() -> {
             try {
-                log.info("Starting HTTP server on port {} with context path '{}'", httpConfig.getPort(), httpConfig.getContextPath());
-                new SpringApplicationBuilder(HttpEventSource.class)
-                    .properties(
-                        "server.port=" + httpConfig.getPort(),
-                        "server.servlet.context-path=" + httpConfig.getContextPath()
-                    )
-                    .run();
+                log.info("Starting HTTP server on port {} with context path '{}'", httpConfig.getPort(),
+                    httpConfig.getContextPath());
+                new SpringApplicationBuilder(HttpEventSource.class).properties("server.port=" + httpConfig.getPort(),
+                    "server.servlet.context-path=" + httpConfig.getContextPath()).run();
             } catch (Exception e) {
                 log.error("启动HTTP服务器失败", e);
             }
