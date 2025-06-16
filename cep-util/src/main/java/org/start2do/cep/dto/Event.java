@@ -17,6 +17,9 @@ public class Event {
 
     private String eventId;
     private String eventType;
+    /**
+     * 事件来源，用于标识事件的产生方，例如：服务名、设备ID等
+     */
     private String source;
     private Map<String, Object> payload;
 
