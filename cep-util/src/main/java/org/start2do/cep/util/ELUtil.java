@@ -31,4 +31,23 @@ public class ELUtil {
             return false;
         }
     }
+
+    /**
+     * 评估SpEL表达式，并返回一个Object结果。
+     *
+     * @param expressionString SpEL表达式字符串. 例如: "#{#value.toString()}"
+     * @param actualValue      要在表达式中用作#value变量的值
+     * @return 表达式评估的结果对象. 如果发生错误则返回null.
+     */
+    public Object evaluateExpression(String expressionString, Object actualValue) {
+        try {
+            StandardEvaluationContext context = new StandardEvaluationContext();
+            context.setVariable("value", actualValue);
+            Expression expression = spelParser.parseExpression(expressionString);
+            return expression.getValue(context);
+        } catch (Exception e) {
+            log.error("SpEL expression evaluation failed for expression: {}", expressionString, e);
+            return null;
+        }
+    }
 }
