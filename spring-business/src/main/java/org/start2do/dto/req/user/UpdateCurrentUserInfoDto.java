@@ -10,9 +10,6 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class UpdateCurrentUserInfoDto {
 
-    @NotBlank(message = "用户ID不能为空")
-    private String id;
-
     private String realName;
     private String userPhone;
     private String userEmail;
