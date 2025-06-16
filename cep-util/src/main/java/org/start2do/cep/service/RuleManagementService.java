@@ -1,7 +1,7 @@
 package org.start2do.cep.service;
 
-
 import java.util.Map;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -14,9 +14,31 @@ public class RuleManagementService {
 
     private static final Logger logger = LoggerFactory.getLogger(RuleManagementService.class);
     private final org.start2do.cep.pettern.DynamicPatternManager patternManager;
+    private final RuleStorageService ruleStorageService;
 
-    public RuleManagementService() {
+    public RuleManagementService(RuleStorageService ruleStorageService) {
         this.patternManager = org.start2do.cep.pettern.DynamicPatternManager.getInstance();
+        this.ruleStorageService = ruleStorageService;
+    }
+
+    @PostConstruct
+    public void initializeRules() {
+        logger.info("从存储中初始化规则...");
+        Map<String, org.start2do.cep.dto.CEPRule> storedRules = ruleStorageService.loadAllRules();
+        if (storedRules == null || storedRules.isEmpty()) {
+            logger.info("存储中未找到规则.");
+            return;
+        }
+
+        for (org.start2do.cep.dto.CEPRule rule : storedRules.values()) {
+            try {
+                patternManager.addOrUpdateRule(rule);
+                logger.info("已加载规则: {} (启用: {})", rule.getRuleId(), rule.isEnabled());
+            } catch (Exception e) {
+                logger.error("加载规则失败: {}", rule.getRuleId(), e);
+            }
+        }
+        logger.info("规则初始化完成. 总共加载: {}", storedRules.size());
     }
 
     /**
@@ -26,6 +48,7 @@ public class RuleManagementService {
         try {
             validateRule(rule);
             patternManager.addOrUpdateRule(rule);
+            ruleStorageService.saveRule(rule);
             logger.info("规则创建成功: {}", rule.getRuleId());
         } catch (Exception e) {
             logger.error("创建规则失败: {}", rule.getRuleId(), e);
@@ -40,6 +63,7 @@ public class RuleManagementService {
         try {
             validateRule(rule);
             patternManager.addOrUpdateRule(rule);
+            ruleStorageService.saveRule(rule);
             logger.info("规则更新成功: {}", rule.getRuleId());
         } catch (Exception e) {
             logger.error("更新规则失败: {}", rule.getRuleId(), e);
@@ -53,6 +77,7 @@ public class RuleManagementService {
     public void deleteRule(String ruleId) {
         try {
             patternManager.removeRule(ruleId);
+            ruleStorageService.deleteRule(ruleId);
             logger.info("规则删除成功: {}", ruleId);
         } catch (Exception e) {
             logger.error("删除规则失败: {}", ruleId, e);
@@ -82,6 +107,7 @@ public class RuleManagementService {
         if (rule != null) {
             rule.setEnabled(true);
             patternManager.addOrUpdateRule(rule);
+            ruleStorageService.saveRule(rule);
             logger.info("规则已启用: {}", ruleId);
         }
     }
@@ -94,6 +120,7 @@ public class RuleManagementService {
         if (rule != null) {
             rule.setEnabled(false);
             patternManager.addOrUpdateRule(rule);
+            ruleStorageService.saveRule(rule);
             logger.info("规则已禁用: {}", ruleId);
         }
     }
