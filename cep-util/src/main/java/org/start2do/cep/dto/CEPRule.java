@@ -18,7 +18,9 @@ import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.annotatio
 @JsonSerialize
 @com.fasterxml.jackson.databind.annotation.JsonSerialize
 @ToString
-public class CEPRule {
+public class CEPRule implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private String ruleId;
     private String ruleName;
@@ -39,6 +41,8 @@ public class CEPRule {
     @com.fasterxml.jackson.databind.annotation.JsonSerialize
     @JsonSerialize
     public static class PatternStep implements Serializable {
+
+        private static final long serialVersionUID = 1L;
 
         private String stepName;
         private String eventType;
