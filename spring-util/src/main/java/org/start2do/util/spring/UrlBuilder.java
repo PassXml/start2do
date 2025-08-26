@@ -10,12 +10,55 @@ import java.util.Objects;
 
 public class UrlBuilder {
 
-    private final String baseUrl;
+    private String baseUrl;
     private final Map<String, String> params = new HashMap<>();
+    private String uri;
+    private boolean isHttps;
 
     public UrlBuilder(String baseUrl) {
         Objects.requireNonNull(baseUrl, "Base URL cannot be null");
         this.baseUrl = baseUrl;
+    }
+
+    public UrlBuilder(String host, int port, String contextPath) {
+        Objects.requireNonNull(host, "Host cannot be null");
+        if (port <= 0) {
+            throw new IllegalArgumentException("Port must be positive");
+        }
+        if (contextPath != null && contextPath.length() > 1 && !contextPath.startsWith("/")) {
+            throw new IllegalArgumentException("Context path must start with '/'");
+        }
+
+        this.isHttps = false;
+        rebuildUrl(host, port, contextPath);
+    }
+
+    public UrlBuilder(String host, int port, String contextPath, boolean isHttps) {
+        Objects.requireNonNull(host, "Host cannot be null");
+        if (port <= 0) {
+            throw new IllegalArgumentException("Port must be positive");
+        }
+        if (contextPath != null && contextPath.length() > 1 && !contextPath.startsWith("/")) {
+            throw new IllegalArgumentException("Context path must start with '/'");
+        }
+
+        this.isHttps = isHttps;
+        rebuildUrl(host, port, contextPath);
+    }
+
+    private void rebuildUrl(String host, int port, String contextPath) {
+        StringBuilder urlBuilder = new StringBuilder();
+        urlBuilder.append(host.startsWith("http") ? host : (isHttps ? "https://" : "http://")).append(host);
+
+        if (port != 80 && port != 443) {
+            urlBuilder.append(":").append(port);
+        }
+
+        if (contextPath != null && !contextPath.isEmpty()) {
+            urlBuilder.append(contextPath);
+        }
+
+        this.baseUrl = urlBuilder.toString();
     }
 
     public UrlBuilder addParam(String name, String value) {
@@ -25,15 +68,49 @@ public class UrlBuilder {
         return this;
     }
 
+    public UrlBuilder addUri(String uri) {
+        Objects.requireNonNull(uri, "URI cannot be null");
+        if (uri.startsWith("/")) {
+            this.uri = uri.substring(1);
+        } else {
+            this.uri = uri;
+        }
+        return this;
+    }
+
+    public UrlBuilder isHttps(boolean isHttps) {
+        this.isHttps = isHttps;
+        updateProtocol();
+        return this;
+    }
+
+    private void updateProtocol() {
+        if (baseUrl.startsWith("http://")) {
+            baseUrl = baseUrl.replaceFirst("http://", isHttps ? "https://" : "http://");
+        } else if (baseUrl.startsWith("https://")) {
+            baseUrl = baseUrl.replaceFirst("https://", isHttps ? "https://" : "http://");
+        } else {
+            baseUrl = (isHttps ? "https://" : "http://") + baseUrl;
+        }
+    }
+
     public String build() {
-        if (params.isEmpty()) {
-            return baseUrl;
+        StringBuilder urlBuilder = new StringBuilder(baseUrl);
+
+        if (uri != null && !uri.isEmpty()) {
+            if (!urlBuilder.toString().endsWith("/")) {
+                urlBuilder.append("/");
+            }
+            urlBuilder.append(uri);
         }
 
-        StringBuilder urlBuilder = new StringBuilder(baseUrl);
-        if (!baseUrl.contains("?")) {
+        if (params.isEmpty()) {
+            return urlBuilder.toString();
+        }
+
+        if (!urlBuilder.toString().contains("?")) {
             urlBuilder.append("?");
-        } else if (!baseUrl.endsWith("&")) {
+        } else if (!urlBuilder.toString().endsWith("&")) {
             urlBuilder.append("&");
         }
 
@@ -66,6 +143,37 @@ public class UrlBuilder {
         String url2 = builder2.addParam("param1", "value with spaces").addParam("param2", "anotherValue").build();
         System.out.println("Generated URL 2: "
                            + url2); // Output: Generated URL 2: https://www.example.com/api?param1=value+with+spaces&param2=anotherValue
+
+        // Test new constructor with host, port, context-path
+        UrlBuilder builder3 = new UrlBuilder("www.example.com", 8080, "/api");
+        String url3 = builder3.addUri("users").addParam("id", "123").build();
+        System.out.println(
+            "Generated URL 3: " + url3); // Output: Generated URL 3: http://www.example.com:8080/api/users?id=123
+
+        UrlBuilder builder4 = new UrlBuilder("localhost", 9090, "/app");
+        String url4 = builder4.addUri("data/list").addParam("page", "1").addParam("size", "10").build();
+        System.out.println(
+            "Generated URL 4: " + url4); // Output: Generated URL 4: http://localhost:9090/app/data/list?page=1&size=10
+
+        // Test with HTTPS and standard port
+        UrlBuilder builder5 = new UrlBuilder("https://secure.example.com", 443, "");
+        String url5 = builder5.addUri("auth").build();
+        System.out.println("Generated URL 5: " + url5); // Output: Generated URL 5: https://secure.example.com/auth
+        
+        // Test new constructor with isHttps parameter
+        UrlBuilder builder6 = new UrlBuilder("api.example.com", 8443, "/v1", true);
+        String url6 = builder6.addUri("endpoints").addParam("token", "abc123").build();
+        System.out.println("Generated URL 6: " + url6); // Output: Generated URL 6: https://api.example.com:8443/v1/endpoints?token=abc123
+        
+        // Test isHttps() method to toggle protocol
+        UrlBuilder builder7 = new UrlBuilder("toggle.example.com", 8080, "/api");
+        String url7 = builder7.addUri("test").isHttps(true).build();
+        System.out.println("Generated URL 7: " + url7); // Output: Generated URL 7: https://toggle.example.com:8080/api/test
+        
+        UrlBuilder builder8 = new UrlBuilder("switch.example.com", 3000, "/data", true);
+        String url8 = builder8.addUri("info").isHttps(false).build();
+        System.out.println("Generated URL 8: " + url8); // Output: Generated URL 8: http://switch.example.com:3000/data/info
+
         // 测试新的参数提取方法
         String testUrl = "https://www.example.com/search?q=Java&tag=spring&tag=boot&page=1";
         String qValue = extractParam(testUrl, "q");
