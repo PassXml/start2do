@@ -8,7 +8,7 @@ import javax.validation.ConstraintValidatorContext;
 public class InArraysStrValidation implements ConstraintValidator<InArray, String> {
 
     private Set<String> set = new HashSet<>();
-    private Boolean ignoreNull = false;
+    private Boolean ignoreNull;
 
     @Override
     public void initialize(InArray constraintAnnotation) {

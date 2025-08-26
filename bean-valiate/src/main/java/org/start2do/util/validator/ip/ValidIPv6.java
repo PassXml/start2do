@@ -1,4 +1,4 @@
-package org.start2do.util.validator.inarray;
+package org.start2do.util.validator.ip;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -9,14 +9,14 @@ import javax.validation.Payload;
 
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = {InArraysStrValidation.class, InArraysIntValidation.class, InArraysLongValidation.class})
-public @interface InArray {
+@Constraint(validatedBy = {IPV6Validation.class})
+public @interface ValidIPv6 {
 
-    String[] value() default {};
+    String value() default "^([\\da-fA-F]{1,4}:){7}[\\da-fA-F]{1,4}|:((:[\\da−fA−F]1,4)1,6|:)";
 
-    boolean ignoreNull() default false;
+    boolean checkNull() default true;
 
-    String message() default "${validatedValue} 不在{value}的取值范围内";
+    String message() default "${validatedValue} 非法IP";
 
     Class<?>[] groups() default {};
 

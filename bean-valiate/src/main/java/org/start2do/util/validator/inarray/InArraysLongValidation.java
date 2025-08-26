@@ -8,7 +8,7 @@ import javax.validation.ConstraintValidatorContext;
 public class InArraysLongValidation implements ConstraintValidator<InArray, Long> {
 
     private Set<Long> set = new HashSet<>();
-    private Boolean ignoreNull;
+    private boolean ignoreNull;
 
     @Override
     public void initialize(InArray constraintAnnotation) {

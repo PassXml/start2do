@@ -1,4 +1,5 @@
-package org.start2do.util.validator.inarray;
+package org.start2do.util.validator.list;
+
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,16 +8,15 @@ import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
+/**
+ * @author lijie
+ */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = {InArraysStrValidation.class, InArraysIntValidation.class, InArraysLongValidation.class})
-public @interface InArray {
+@Constraint(validatedBy = {ValidListItemValidation.class})
+public @interface ValidListItem {
 
-    String[] value() default {};
-
-    boolean ignoreNull() default false;
-
-    String message() default "${validatedValue} 不在{value}的取值范围内";
+    String message();
 
     Class<?>[] groups() default {};
 
