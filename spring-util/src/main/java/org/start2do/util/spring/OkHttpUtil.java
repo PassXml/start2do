@@ -19,14 +19,17 @@ import okhttp3.Response;
 public class OkHttpUtil {
 
     private static final OkHttpClient client;
-    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    private static final MediaType FORM_URL_ENCODED = MediaType.parse(
+    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    public static final MediaType FORM_URL_ENCODED = MediaType.parse(
         "application/x-www-form-urlencoded; charset=utf-8");
 
     static {
-        client = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS) // 连接超时时间
-            .readTimeout(10, TimeUnit.SECONDS)    // 读取超时时间
-            .writeTimeout(10, TimeUnit.SECONDS)   // 写入超时时间
+        // 连接超时时间
+        client = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS)
+            // 读取超时时间
+            .readTimeout(10, TimeUnit.SECONDS)
+            // 写入超时时间
+            .writeTimeout(10, TimeUnit.SECONDS)
             .build();
     }
 

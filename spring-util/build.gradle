@@ -40,7 +40,7 @@ dependencies {
     compileOnly 'com.squareup.okhttp3:okhttp:4.12.0'
     compileOnly("com.squareup.okhttp3:logging-interceptor:4.12.0")
     //
-    api(project(":common-redis"))
+    compileOnly(project(":common-redis"))
     compileOnly(project(":common-util"))
     testImplementation("io.vertx:vertx-core:$vertxVersion")
     compileOnly("jakarta.servlet:jakarta.servlet-api:6.1.0")

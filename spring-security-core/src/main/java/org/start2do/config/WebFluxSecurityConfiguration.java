@@ -25,7 +25,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
 import org.springframework.web.server.WebFilter;
+import org.start2do.SpringCommonConfig;
 import org.start2do.Start2doSecurityConfig;
+import org.start2do.constant.ErrorConstant;
 import org.start2do.dto.R;
 import org.start2do.filter.IPermission;
 import org.start2do.filter.JwtRequestWebFluxFilter;
@@ -41,6 +43,7 @@ import reactor.core.publisher.Mono;
 @ConditionalOnExpression("${jwt.enable:false}")
 public class WebFluxSecurityConfiguration {
 
+    private final SpringCommonConfig springCommonConfig;
     private final Start2doSecurityConfig config;
 //    @Bean
 //    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
@@ -65,8 +68,8 @@ public class WebFluxSecurityConfiguration {
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http,
-        ReactiveAuthenticationManager authenticationManager,
-        JwtRequestWebFluxFilter jwtRequestWebFluxFilter, IPermission permissionWebFilter) throws Exception {
+        ReactiveAuthenticationManager authenticationManager, JwtRequestWebFluxFilter jwtRequestWebFluxFilter,
+        IPermission permissionWebFilter) throws Exception {
         if (config.getEnable() != null && config.getEnable()) {
             if (config.getCheckExpired() != null) {
                 JwtTokenUtil.CheckExpired = config.getCheckExpired();
@@ -76,14 +79,10 @@ public class WebFluxSecurityConfiguration {
             }
             config.getWhiteList().add("/auth/login");
             config.getWhiteList().add("/auth/code");
-            http
-                .formLogin(FormLoginSpec::disable)
-                .httpBasic(HttpBasicSpec::disable)
-                .exceptionHandling(ctx -> {
+            http.formLogin(FormLoginSpec::disable).httpBasic(HttpBasicSpec::disable).exceptionHandling(ctx -> {
                     ctx.authenticationEntryPoint(
                         new HttpStatusServerEntryPoint(org.springframework.http.HttpStatus.UNAUTHORIZED));
-                })
-                .authorizeExchange(ctx -> {
+                }).authorizeExchange(ctx -> {
                     ctx.pathMatchers(config.getWhiteList().toArray(new String[]{})).permitAll().anyExchange()
                         .authenticated();
                 }).authenticationManager(authenticationManager)
@@ -95,12 +94,16 @@ public class WebFluxSecurityConfiguration {
                     ctx.accessDeniedHandler((exchange, denied) -> {
                         exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                         exchange.getResponse().getHeaders().add("Content-Type", "application/json;charset=UTF-8");
-                        return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory()
-                            .wrap(R.failed(401, "未登录").toJson().getBytes(StandardCharsets.UTF_8))));
+                        return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(
+                            R.failed(401, springCommonConfig.getErrorMsgs()
+                                    .getOrDefault(ErrorConstant.NOT_LOGIN, ErrorConstant.NOT_LOGIN)).toJson()
+                                .getBytes(StandardCharsets.UTF_8))));
 
                     }).authenticationEntryPoint((exchange, ex) -> {
-                        return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory()
-                            .wrap(R.failed(401, "未登录").toJson().getBytes(StandardCharsets.UTF_8))));
+                        return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(
+                            R.failed(401, springCommonConfig.getErrorMsgs()
+                                    .getOrDefault(ErrorConstant.NOT_LOGIN, ErrorConstant.NOT_LOGIN)).toJson()
+                                .getBytes(StandardCharsets.UTF_8))));
                     });
                 });
             return http.build();

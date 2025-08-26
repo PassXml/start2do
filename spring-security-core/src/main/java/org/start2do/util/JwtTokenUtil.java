@@ -144,10 +144,7 @@ public class JwtTokenUtil implements Serializable {
         System.out.println(new JwtTokenUtil().genKey());
     }
 
-    public String getUserId() {
-        if (MockUser) {
-            return MockUserId;
-        }
+    private String getJwtStr() {
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
         if (ra == null) {
             return null;
@@ -155,7 +152,18 @@ public class JwtTokenUtil implements Serializable {
         ServletRequestAttributes sra = (ServletRequestAttributes) ra;
         HttpServletRequest request = sra.getRequest();
         String header = request.getHeader(AUTHORIZATION);
-        return Optional.ofNullable(getClaimFromToken(header.substring(BearerLen), Claims::getSubject)).orElse(null);
+        if (StringUtils.isEmpty(header) || header.length() < JwtTokenUtil.BearerLen) {
+            return null;
+        }
+        return header.substring(BearerLen);
+    }
+
+    public String getUserId() {
+        if (MockUser) {
+            return MockUserId;
+        }
+
+        return Optional.ofNullable(getJwtStr()).map(s -> getClaimFromToken(s, Claims::getSubject)).orElse(null);
     }
 
     public Mono<String> getUserIdReactive() {
@@ -177,34 +185,13 @@ public class JwtTokenUtil implements Serializable {
         if (MockUser) {
             return MockUserNameRealName;
         }
-        RequestAttributes ra = RequestContextHolder.getRequestAttributes();
-        if (ra == null) {
-            return null;
-        }
-        ServletRequestAttributes sra = (ServletRequestAttributes) ra;
-        HttpServletRequest request = sra.getRequest();
-        String header = request.getHeader(AUTHORIZATION);
-        if (header == null || !header.startsWith(Bearer)) {
-            return null;
-        }
-        String token = header.substring(BearerLen);
-        Claims claims = getAllClaimsFromToken(token);
-        return Optional.ofNullable(claims.get(REALNAME)).map(Object::toString).orElse(null);
+        return Optional.ofNullable(getJwtStr()).map(JwtTokenUtil::getAllClaimsFromToken)
+            .map(claims -> claims.get(REALNAME))
+            .map(String::valueOf).orElse(null);
     }
 
     public Claims getClaims() {
-        RequestAttributes ra = RequestContextHolder.getRequestAttributes();
-        if (ra == null) {
-            return null;
-        }
-        ServletRequestAttributes sra = (ServletRequestAttributes) ra;
-        HttpServletRequest request = sra.getRequest();
-        String header = request.getHeader(AUTHORIZATION);
-        if (header == null || !header.startsWith(Bearer)) {
-            return null;
-        }
-        String token = header.substring(BearerLen);
-        return getAllClaimsFromToken(token);
+        return Optional.ofNullable(getJwtStr()).map(JwtTokenUtil::getAllClaimsFromToken).orElse(null);
     }
 
 
@@ -212,17 +199,10 @@ public class JwtTokenUtil implements Serializable {
         if (MockUser) {
             return MockUserName;
         }
-        RequestAttributes ra = RequestContextHolder.getRequestAttributes();
-        if (ra == null) {
-            return null;
-        }
-        ServletRequestAttributes sra = (ServletRequestAttributes) ra;
-        HttpServletRequest request = sra.getRequest();
-        String header = request.getHeader(AUTHORIZATION);
-        return getUsernameFromToken(header.substring(BearerLen));
+        return Optional.ofNullable(getJwtStr()).map(s -> getUsernameFromToken(s)).orElse(null);
     }
 
     public static String getUserId(String jwtStr) {
-        return Optional.ofNullable(getClaimFromToken(jwtStr, Claims::getSubject)).orElse(null);
+        return Optional.ofNullable(jwtStr).map(s -> getClaimFromToken(s, Claims::getSubject)).orElse(null);
     }
 }

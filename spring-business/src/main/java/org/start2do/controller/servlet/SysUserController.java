@@ -210,10 +210,6 @@ public class SysUserController {
             throw new BusinessException("无法获取当前用户信息，用户未登录或会话已过期");
         }
 
-        if (!req.getId().equals(currentUserId)) {
-            throw new BusinessException("无权修改他人信息");
-        }
-
         SysUser user = sysUserService.getById(currentUserId);
         if (user == null) {
             throw new BusinessException("用户不存在或已被删除");

@@ -13,7 +13,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "start2do.util.redis")
 public class RedisConfiguration {
 
-    private boolean enable;
+    private boolean enable = false;
     /**
      * key统一前缀
      */

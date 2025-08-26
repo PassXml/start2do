@@ -18,7 +18,9 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.start2do.SpringCommonConfig;
 import org.start2do.Start2doSecurityConfig;
+import org.start2do.constant.ErrorConstant;
 import org.start2do.dto.R;
 import org.start2do.filter.IPermission;
 import org.start2do.filter.JwtRequestFilter;
@@ -33,6 +35,7 @@ import org.start2do.util.JwtTokenUtil;
 @ConditionalOnExpression("${jwt.enable:false}")
 public class SecurityConfiguration {
 
+    private final SpringCommonConfig springCommonConfig;
     private final Start2doSecurityConfig config;
     private final JwtRequestFilter jwtRequestFilter;
     @Value("${spring.websecurity.debug:false}")
@@ -59,18 +62,19 @@ public class SecurityConfiguration {
             http.authorizeHttpRequests(ctx -> {
                     ctx.requestMatchers(config.getWhiteList().toArray(new String[]{})).permitAll().anyRequest()
                         .authenticated();
-                })
-                .exceptionHandling(ctx -> {
+                }).exceptionHandling(ctx -> {
                     ctx.accessDeniedHandler((request, response, accessDeniedException) -> {
                         response.setContentType("application/json;charset=UTF-8");
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        response.getWriter()
-                            .write(R.failed(401, "无权限").setError(accessDeniedException.getMessage()).toJson());
+                        response.getWriter().write(R.failed(401, springCommonConfig.getErrorMsgs()
+                                .getOrDefault(ErrorConstant.NO_PERMISSION, ErrorConstant.NO_PERMISSION))
+                            .setError(accessDeniedException.getMessage()).toJson());
                     }).authenticationEntryPoint((request, response, authException) -> {
                         response.setContentType("application/json;charset=UTF-8");
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        response.getWriter()
-                            .write(R.failed(401, "无权限").setError(authException.getMessage()).toJson());
+                        response.getWriter().write(R.failed(401, springCommonConfig.getErrorMsgs()
+                                .getOrDefault(ErrorConstant.NO_PERMISSION, ErrorConstant.NO_PERMISSION))
+                            .setError(authException.getMessage()).toJson());
                     });
 
                 })
@@ -78,8 +82,7 @@ public class SecurityConfiguration {
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 // 添加权限拦截器/过滤器，放在 JWT 认证之后
                 .addFilterBefore((Filter) permissionInterceptor, UsernamePasswordAuthenticationFilter.class)
-                .csrf(AbstractHttpConfigurer::disable)
-                .logout(ctx -> SecurityContextHolder.clearContext())
+                .csrf(AbstractHttpConfigurer::disable).logout(ctx -> SecurityContextHolder.clearContext())
 
             ;
 
