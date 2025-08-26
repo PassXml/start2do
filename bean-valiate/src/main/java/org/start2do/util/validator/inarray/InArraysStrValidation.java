@@ -26,8 +26,6 @@ public class InArraysStrValidation implements ConstraintValidator<InArray, Strin
         if (set.contains(s)) {
             return true;
         }
-        set.clear();
-        set = null;
         return false;
     }
 }

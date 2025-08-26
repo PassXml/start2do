@@ -27,8 +27,6 @@ public class InArraysIntValidation implements ConstraintValidator<InArray, Integ
         if (set.contains(integer)) {
             return true;
         }
-        set.clear();
-        set = null;
         return false;
     }
 }

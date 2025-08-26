@@ -26,8 +26,6 @@ public class InArraysLongValidation implements ConstraintValidator<InArray, Long
         if (set.contains(aLong)) {
             return true;
         }
-        set.clear();
-        set = null;
         return false;
     }
 }

@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/bpm_test?useUnicode=true&characterEncoding=utf8&useSSL=false
+    username: root
+    password: 123
+
+camunda:
+  bpm:
+    database:
+      schema-update: true
