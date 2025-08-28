@@ -19,5 +19,9 @@ public class OpsConfig {
     private boolean enable = false;
     private String totpSecretKey;
     private List<String> whitePath = List.of("/tmp/safezone");
+    /**
+      *  备份目录
+     */
+    private String bakDir="/data/application/bak";
 
 }
