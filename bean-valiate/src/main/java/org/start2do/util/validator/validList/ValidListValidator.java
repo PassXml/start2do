@@ -1,9 +1,9 @@
 package org.start2do.util.validator.validList;
 
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import jakarta.validation.Validator;
 import java.util.List;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-import javax.validation.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class ValidListValidator implements ConstraintValidator<ValidList, List<?>> {
