@@ -1,40 +1,78 @@
 package org.start2do.cep.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Map;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.experimental.Accessors;
 
-@Setter
-@Getter
-@Accessors(chain = true)
-@NoArgsConstructor
-@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
-public class Event implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
+public class Event {
     private String eventId;
     private String eventType;
-    /**
-     * 事件来源，用于标识事件的产生方，例如：服务名、设备ID等
-     */
     private String source;
     private Map<String, Object> payload;
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timestamp;
 
-    public Event(String eventId, String eventType, String source,
-        Map<String, Object> payload, LocalDateTime timestamp) {
+    public Event() {}
+
+    public Event(String eventId, String eventType, String source, Map<String, Object> payload, LocalDateTime timestamp) {
         this.eventId = eventId;
         this.eventType = eventType;
         this.source = source;
         this.payload = payload;
         this.timestamp = timestamp;
+    }
+
+    public String getEventId() {
+        return eventId;
+    }
+
+    public Event setEventId(String eventId) {
+        this.eventId = eventId;
+        return this;
+    }
+
+    public String getEventType() {
+        return eventType;
+    }
+
+    public Event setEventType(String eventType) {
+        this.eventType = eventType;
+        return this;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public Event setSource(String source) {
+        this.source = source;
+        return this;
+    }
+
+    public Map<String, Object> getPayload() {
+        return payload;
+    }
+
+    public Event setPayload(Map<String, Object> payload) {
+        this.payload = payload;
+        return this;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public Event setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "eventId='" + eventId + '\'' +
+                ", eventType='" + eventType + '\'' +
+                ", source='" + source + '\'' +
+                ", payload=" + payload +
+                ", timestamp=" + timestamp +
+                '}';
     }
 }

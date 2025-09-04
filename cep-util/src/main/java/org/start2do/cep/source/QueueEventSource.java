@@ -9,14 +9,14 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-public class HttpEventSource implements SourceFunction<Event> {
-    private static final Logger log = LoggerFactory.getLogger(HttpEventSource.class);
+public class QueueEventSource implements SourceFunction<Event> {
+    private static final Logger log = LoggerFactory.getLogger(QueueEventSource.class);
     private volatile boolean isRunning = true;
     private final BlockingQueue<Event> eventQueue;
     private static final int DEFAULT_QUEUE_CAPACITY = 10000;
     private static final BlockingQueue<Event> staticQueue = new LinkedBlockingQueue<>(DEFAULT_QUEUE_CAPACITY);
 
-    public HttpEventSource() {
+    public QueueEventSource() {
         this.eventQueue = staticQueue;
     }
 
@@ -51,7 +51,7 @@ public class HttpEventSource implements SourceFunction<Event> {
                 Event event = eventQueue.poll(1, TimeUnit.SECONDS);
                 if (event != null) {
                     ctx.collect(event);
-                    log.debug("Emitted HTTP event: {}", event);
+                    log.debug("Emitted event: {}", event);
                 }
             } catch (InterruptedException e) {
                 if (!isRunning) {
