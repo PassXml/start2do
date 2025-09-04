@@ -3,6 +3,7 @@ package org.start2do.script.config;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.time.Duration;
+import java.util.Set;
 import javax.script.CompiledScript;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -45,8 +46,17 @@ public class NashornAutoConfig {
             config.setGlobalScript(config.getGlobalScript()
                                    + "var HTTP = Java.type('org.start2do.script.util.impl.functions.HttpUtil');\r\n");
         }
-        IScriptRunner runnerJs = new ScriptJsNashornImpl(config.getWhiteList(), caffeine, config.getGlobalScript(),
-            config.getMaxCPUTime(), config.getMaxMemory(),config.getMaxPoolSize());
+        Set<String> blackList = config.getBlackList();
+        if (blackList == null) {
+            blackList.add("java.lang.Runtime");
+            blackList.add("java.lang.Process");
+            blackList.add("java.lang.System");
+            blackList.add("java.io.*");
+            blackList.add("java.nio.*");
+            blackList.add("sun.misc.Unsafe");
+        }
+        IScriptRunner runnerJs = new ScriptJsNashornImpl(config.getWhiteList(), blackList, caffeine,
+            config.getGlobalScript(), config.getMaxCPUTime(), config.getMaxMemory(), config.getMaxPoolSize());
         if (configuration.getDefaultRunner() == Type.Nashorn) {
             ScriptRunner.setDefaultInstance(runnerJs);
         } else {
