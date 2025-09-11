@@ -29,6 +29,7 @@ import reactor.util.context.Context;
 public class AutoScanConfig {
 
     @Bean
+    @ConditionalOnProperty(prefix = "jwt",name = "enable-password-encoder",havingValue = "true")
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -49,7 +50,7 @@ public class AutoScanConfig {
 
 
     @Bean
-    @ConditionalOnMissingBean(CustomContextInfo.class)
+    @ConditionalOnMissingBean(IRestPwService.class)
     @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
     public IRestPwService iRestPwService() {
         return new IRestPwService() {
@@ -75,7 +76,7 @@ public class AutoScanConfig {
     @ConditionalOnMissingBean(CustomContextInfo.class)
     @ConditionalOnProperty(name = "jwt.enable", havingValue = "true")
     public CustomContextInfo customContextInfo() {
-        return new CustomContextInfo(){
+        return new CustomContextInfo() {
 
             @Override
             public void loadReqBefore(JwtRequest request) {

@@ -21,4 +21,5 @@ public class Start2doSecurityConfig {
 
     private String secret;
 
+    private boolean enablePasswordEncoder = false;
 }
