@@ -11,7 +11,6 @@ import io.ebean.platform.clickhouse.ClickHousePlatform;
 import io.ebean.spring.txn.SpringJdbcTransactionManager;
 import java.sql.SQLException;
 import java.util.Properties;
-import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -30,8 +29,9 @@ public class EbeanClickHouseAutoConfig {
     public static final String ClickHouseEbeanDatabase = "ClickHouseEbeanDatabase";
 
     @Bean(ClickHouseEbeanDatabase)
+    @ConditionalOnProperty(prefix = "start2do.click-house", name = "enable-ebean-database", havingValue = "true")
     public Database ClickHouseDatabase(CurrentUserProvider currentUserProvider,
-        @Qualifier("ClickHouseDatabase") DataSource dataSource) {
+        @Qualifier("ClickHouseDatabase") ClickHouseDataSource dataSource) {
         DatabaseConfig databaseConfig = new DatabaseConfig();
         databaseConfig.setName(ClickHouseEbeanDatabase);
         databaseConfig.setDataSource(dataSource);
@@ -43,7 +43,7 @@ public class EbeanClickHouseAutoConfig {
     }
 
     @Bean({"ClickHouseDatabase", "CLickHouseDataSource"})
-    public DataSource clickHouseDatabase(ClickHouseConfig config) throws SQLException {
+    public ClickHouseDataSource clickHouseDatabase(ClickHouseConfig config) throws SQLException {
         Properties properties = new Properties();
         properties.setProperty(ClickHouseDefaults.USER.getKey(), config.getUsername());
         properties.setProperty(ClickHouseDefaults.PASSWORD.getKey(), config.getPassword());
@@ -51,7 +51,7 @@ public class EbeanClickHouseAutoConfig {
     }
 
     @Bean("ClickHouseSessionFactory")
-    public SqlSessionFactory clickHouseSessionFactory(@Qualifier("ClickHouseDatabase") DataSource dataSource,
+    public SqlSessionFactory clickHouseSessionFactory(@Qualifier("ClickHouseDatabase") ClickHouseDataSource dataSource,
         ClickHouseConfig config) throws Exception {
         // mapper的xml形式文件位置必须要配置，不然将报错：no statement （这种错误也可能是mapper的xml中，namespace与项目的路径不一致导致）
         Resource[] mapperRes = new PathMatchingResourcePatternResolver().getResources(config.getMapperLocations());

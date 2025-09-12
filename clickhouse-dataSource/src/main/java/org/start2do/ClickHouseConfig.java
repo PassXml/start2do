@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 public class ClickHouseConfig {
 
     private Boolean enable;
+    private boolean enableEbeanDatabase = true;
     private String url;
     private String username;
     private String password;
