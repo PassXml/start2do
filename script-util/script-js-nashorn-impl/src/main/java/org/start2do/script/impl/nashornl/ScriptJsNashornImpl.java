@@ -17,7 +17,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 import javax.script.Bindings;
 import javax.script.Compilable;
 import javax.script.CompiledScript;
@@ -93,7 +92,7 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
         init(whiteList, Caffeine.newBuilder().expireAfterAccess(Duration.ofMinutes(15)).build(), null);
     }
 
-    public ScriptJsNashornImpl(Set<Class<?>> clazzList, Cache<String, CompiledScript> caffeine, String globalScript,
+    public ScriptJsNashornImpl(Set<String> clazzList, Cache<String, CompiledScript> caffeine, String globalScript,
         long maxCPUTime, long maxMemory, int maxPoolSize) {
         this.MAX_POOL_SIZE = maxPoolSize;
         ScriptJsNashornImpl.INSTANCE = this;
@@ -102,7 +101,7 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
         }
         this.maxCPUTime = maxCPUTime;
         this.maxMemory = maxMemory;
-        init(clazzList.stream().map(Class::getName).collect(Collectors.toSet()), caffeine, globalScript);
+        init(clazzList, caffeine, globalScript);
 
     }
 
@@ -317,16 +316,65 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
         protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
             // 支持白名单通配符与内部类判断
             // 1. 通配符说明：
-            //    - \"*\"  匹配单段（不跨越 '.' 与 '$'）
-            //    - \"**\" 跨段通配（可跨越多个 '.' 或 '$'）
-            //    示例：com.zte.*       -> 匹配 com.zte.Outer
-            //          com.zte.**.*    -> 匹配 com.zte.xxx.yyy.Outer
-            // 2. 内部类支持：当未直接匹配到时，自动以外部类名（去除'$'之后部分）再匹配一次
-            if (!isAllowedByWhitelist(name)) {
-                log.warn("不允许加载的类:{}", name);
-                throw new ClassNotFoundException("不允许加载的类" + name);
+            //    - "*"   匹配单段（不跨越 '.' 与 '$'）
+            //    - "**"  跨段通配（可跨越多个 '.' 或 '$'）
+            // 2. 内部类支持：未直接匹配到时，自动以外部类名（去除'$'之后部分）再匹配一次
+            // 3. Spring Boot 兼容：白名单通过后，按 TCCL → 组件CL → 当前CL → 系统CL → super.loadClass 顺序尝试
+            synchronized (getClassLoadingLock(name)) {
+                // 避免重复加载
+                Class<?> loaded = findLoadedClass(name);
+                if (loaded != null) {
+                    if (resolve) {
+                        resolveClass(loaded);
+                    }
+                    return loaded;
+                }
+
+                if (!isAllowedByWhitelist(name)) {
+                    log.warn("不允许加载的类:{}", name);
+                    throw new ClassNotFoundException("不允许加载的类" + name);
+                }
+
+                Class<?> clazz = null;
+                // 依次尝试多种类加载器，提升 Spring Boot 环境兼容性
+                ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+                ClassLoader componentCl = ScriptJsNashornImpl.class.getClassLoader();
+                ClassLoader currentCl = this.getClass().getClassLoader();
+                ClassLoader sysCl = getSystemClassLoader();
+
+                clazz = tryLoadBy("TCCL", name, tccl);
+                if (clazz == null) clazz = tryLoadBy("ComponentCL", name, componentCl);
+                if (clazz == null) clazz = tryLoadBy("CurrentCL", name, currentCl);
+                if (clazz == null) clazz = tryLoadBy("SystemCL", name, sysCl);
+                if (clazz == null) {
+                    try {
+                        clazz = super.loadClass(name, false);
+                    } catch (ClassNotFoundException ignore) {
+                    }
+                }
+
+                if (clazz == null) {
+                    throw new ClassNotFoundException("未找到类（已通过白名单）:" + name);
+                }
+                if (resolve) {
+                    resolveClass(clazz);
+                }
+                return clazz;
             }
-            return super.loadClass(name, resolve);
+        }
+
+        private Class<?> tryLoadBy(String tag, String name, ClassLoader cl) {
+            if (cl == null) {
+                return null;
+            }
+            try {
+                return Class.forName(name, false, cl);
+            } catch (ClassNotFoundException e) {
+                return null;
+            } catch (LinkageError e) {
+                // 若发生链接错误，交由上层继续其它加载器尝试，避免中断
+                return null;
+            }
         }
 
         /**
@@ -372,8 +420,13 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
         /**
          * 将白名单通配符转换为正则并匹配。
          * 规则：
-         *  - '*'  -> 不跨越分隔符（'.' 或 '$'）的任意字符
-         *  - '**' -> 任意字符（可跨越 '.' 与 '$'）
+         *  - '.'  -> 作为分隔符，匹配实际类名中的 '.' 或 '$'（兼容内部类二进制名）
+         *  - '*'  -> 单段匹配：不跨越分隔符（'.' 或 '$'）的任意字符
+         *  - '**' -> 跨段匹配：任意字符（可跨越 '.' 与 '$'）
+         *
+         * 说明：Nashorn 在 Class 解析时会将右侧分段逐步由 '.' 改为 '$' 以尝试内部类加载，
+         *      因此这里将模式中的 '.' 视为分隔符，允许匹配两种实际形式，
+         *      使诸如 "org.start2do.util.*" 能匹配到 "org.start2do.util$DateUtil"。
          */
         private boolean wildcardMatch(String pattern, String className) {
             String regex = toRegexFromPattern(pattern);
@@ -382,9 +435,10 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
 
         /**
          * 将类似 com.zte.**.* 的模式转换为正则：
-         *  - 先对正则敏感字符进行转义（除 '*' 外）
-         *  - 再将 '**' 转为跨段匹配 [\s\S]*（包含 '.' 与 '$'）
-         *  - 将 '*'  转为单段匹配 [^\.\$]*
+         *  - 正则敏感字符转义（保留 '*' 处理）
+         *  - '.'  视为分隔符，转换为 (?:\\.|\\$)
+         *  - '**' 转为跨段匹配 [\\s\\S]*（包含 '.' 与 '$'）
+         *  - '*'  转为单段匹配 [^\\.\\$]*（不跨越分隔符）
          */
         private String toRegexFromPattern(String pattern) {
             StringBuilder sb = new StringBuilder();
@@ -393,7 +447,8 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
                 char c = arr[i];
                 switch (c) {
                     case '.':
-                        sb.append("\\.");
+                        // 将模式中的分隔符 '.' 同时匹配实际类名中的 '.' 或 '$'
+                        sb.append("(?:\\.|\\$)");
                         break;
                     case '$':
                         sb.append("\\$");

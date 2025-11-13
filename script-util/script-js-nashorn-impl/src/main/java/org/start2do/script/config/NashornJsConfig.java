@@ -24,6 +24,6 @@ public class NashornJsConfig {
     private boolean enableDB = false;
     private boolean enableJsonOperate = false;
     private boolean enableHTTP = false;
-    private Set<Class<?>> whiteList;
+    private Set<String> whiteList;
     private Duration expireAfterAccess;
 }
