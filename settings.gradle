@@ -33,3 +33,5 @@ include 'script-util:script-av-impl'
 include 'script-util:script-js-nashorn-impl'
 include 'bpm-core'
 
+
+include 'bpm-warm-flow'

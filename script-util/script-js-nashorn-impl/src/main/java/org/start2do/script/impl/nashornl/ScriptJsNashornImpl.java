@@ -127,6 +127,17 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
         return dto;
     }
 
+    /**
+     * 将传入脚本包裹为 IIFE（立即执行函数）。
+     * 作用：为每次执行提供独立的词法作用域，避免 ES6 的 const/let 在同一 Global 环境下二次执行时报错。
+     */
+    private String wrapInIIFE(String code) {
+        if (code == null) {
+            return null;
+        }
+        return "(function(){\n" + code + "\n})();";
+    }
+
     private void init(Set<String> set, Cache<String, CompiledScript> caffeine, String globalScript) {
         ScriptJsNashornImpl.INSTANCE = this;
         SCRIPT_CACHE = caffeine;
@@ -193,8 +204,10 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
     @Override
     public CompiledScript preLoad(String id, String script) {
         try {
-            CompiledScript compile = ((Compilable) engine).compile(
-                StringUtils.isNotEmpty(GLOBAL_SCRIPT) ? GLOBAL_SCRIPT + script : script);
+            // 为避免 ES6 的 const/let 在同一引擎全局环境下二次执行报“已声明”错误，
+            // 将脚本包装到 IIFE（立即执行函数）中，保证每次执行拥有独立词法作用域。
+            String toCompile = StringUtils.isNotEmpty(GLOBAL_SCRIPT) ? GLOBAL_SCRIPT + script : script;
+            CompiledScript compile = ((Compilable) engine).compile(wrapInIIFE(toCompile));
             SCRIPT_CACHE.put(id, compile);
             return compile;
         } catch (ScriptException e) {
@@ -252,6 +265,11 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
                     return new ScriptRunnerResult().setSuccess(false).setErrorInfo("脚本为空");
                 }
             }
+            // 非缓存或未命中缓存时，直接执行脚本也需要包裹 IIFE，另外保持与缓存模式一致的 GLOBAL_SCRIPT 注入
+            if (compiledScript == null && StringUtils.isNotEmpty(script)) {
+                String exec = StringUtils.isNotEmpty(GLOBAL_SCRIPT) ? GLOBAL_SCRIPT + script : script;
+                script = wrapInIIFE(exec);
+            }
             SandboxThread sandboxThread = new SandboxThread(getEngine(), compiledScript, script, bindings.getBindings(),
                 maxCPUTime, maxMemory);
             executorService.execute(sandboxThread);
@@ -297,11 +315,108 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
 
         @Override
         protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-            if (!WHITE_LIST.contains(name)) {
+            // 支持白名单通配符与内部类判断
+            // 1. 通配符说明：
+            //    - \"*\"  匹配单段（不跨越 '.' 与 '$'）
+            //    - \"**\" 跨段通配（可跨越多个 '.' 或 '$'）
+            //    示例：com.zte.*       -> 匹配 com.zte.Outer
+            //          com.zte.**.*    -> 匹配 com.zte.xxx.yyy.Outer
+            // 2. 内部类支持：当未直接匹配到时，自动以外部类名（去除'$'之后部分）再匹配一次
+            if (!isAllowedByWhitelist(name)) {
                 log.warn("不允许加载的类:{}", name);
                 throw new ClassNotFoundException("不允许加载的类" + name);
             }
             return super.loadClass(name, resolve);
+        }
+
+        /**
+         * 白名单匹配：支持精确、通配（* / **）与内部类（$）
+         */
+        private boolean isAllowedByWhitelist(String className) {
+            if (WHITE_LIST == null || WHITE_LIST.isEmpty()) {
+                return false;
+            }
+            // 先尝试精确匹配
+            if (WHITE_LIST.contains(className)) {
+                return true;
+            }
+            // 内部类：尝试以外部类名匹配（去掉'$'及其后缀）
+            String outerClassName = null;
+            int dollarIdx = className.indexOf('$');
+            if (dollarIdx > 0) {
+                outerClassName = className.substring(0, dollarIdx);
+                if (WHITE_LIST.contains(outerClassName)) {
+                    return true;
+                }
+            }
+
+            // 通配符匹配
+            for (String pattern : WHITE_LIST) {
+                if (pattern == null) {
+                    continue;
+                }
+                if (pattern.indexOf('*') < 0) {
+                    // 非通配：已在 contains 检查过，跳过
+                    continue;
+                }
+                if (wildcardMatch(pattern, className)) {
+                    return true;
+                }
+                if (outerClassName != null && wildcardMatch(pattern, outerClassName)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * 将白名单通配符转换为正则并匹配。
+         * 规则：
+         *  - '*'  -> 不跨越分隔符（'.' 或 '$'）的任意字符
+         *  - '**' -> 任意字符（可跨越 '.' 与 '$'）
+         */
+        private boolean wildcardMatch(String pattern, String className) {
+            String regex = toRegexFromPattern(pattern);
+            return className.matches(regex);
+        }
+
+        /**
+         * 将类似 com.zte.**.* 的模式转换为正则：
+         *  - 先对正则敏感字符进行转义（除 '*' 外）
+         *  - 再将 '**' 转为跨段匹配 [\s\S]*（包含 '.' 与 '$'）
+         *  - 将 '*'  转为单段匹配 [^\.\$]*
+         */
+        private String toRegexFromPattern(String pattern) {
+            StringBuilder sb = new StringBuilder();
+            char[] arr = pattern.toCharArray();
+            for (int i = 0; i < arr.length; i++) {
+                char c = arr[i];
+                switch (c) {
+                    case '.':
+                        sb.append("\\.");
+                        break;
+                    case '$':
+                        sb.append("\\$");
+                        break;
+                    case '*':
+                        if (i + 1 < arr.length && arr[i + 1] == '*') {
+                            // '**' -> 跨段（包含 '.' 与 '$'）的任意字符
+                            sb.append("[\\s\\S]*");
+                            i++; // 跳过第二个 '*'
+                        } else {
+                            // '*' -> 单段（不包含 '.' 与 '$'）
+                            sb.append("[^\\.\\$]*");
+                        }
+                        break;
+                    case '+': case '?': case '^': case '{': case '}':
+                    case '(': case ')': case '[': case ']': case '|': case '\\':
+                        sb.append('\\').append(c);
+                        break;
+                    default:
+                        sb.append(c);
+                }
+            }
+            return "^" + sb + "$";
         }
     }
 }

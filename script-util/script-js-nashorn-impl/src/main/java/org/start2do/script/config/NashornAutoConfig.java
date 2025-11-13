@@ -38,18 +38,24 @@ public class NashornAutoConfig {
         }
         if (config.isEnableDB()) {
             config.setGlobalScript(config.getGlobalScript()
-                                   + "var DB = Java.type('org.start2do.script.util.impl.functions.DBOperateFunction');");
+                + "var DB = Java.type('org.start2do.script.util.impl.functions.DBOperateFunction');");
         }
         if (config.isEnableJsonOperate()) {
             config.setGlobalScript(config.getGlobalScript()
-                                   + "var JSONUtil = Java.type('org.start2do.script.util.impl.functions.JacksonOperateFunction');");
+                + "var JSONUtil = Java.type('org.start2do.script.util.impl.functions.JacksonOperateFunction');");
         }
         if (config.isEnableHTTP()) {
             config.setGlobalScript(config.getGlobalScript()
-                                   + "var HTTP = Java.type('org.start2do.script.util.impl.functions.HttpUtil');\r\n");
+                + "var HTTP = Java.type('org.start2do.script.util.impl.functions.HttpUtil');\r\n");
         }
-        IScriptRunner runnerJs = new ScriptJsNashornImpl(config.getWhiteList(), caffeine, config.getGlobalScript(),
-            config.getMaxCPUTime(), config.getMaxMemory(), config.getMaxPoolSize());
+        IScriptRunner runnerJs = new ScriptJsNashornImpl(
+            config.getWhiteList(),
+            caffeine,
+            config.getGlobalScript(),
+            config.getMaxCPUTime(),
+            config.getMaxMemory(),
+            config.getMaxPoolSize()
+        );
         if (configuration.getDefaultRunner() == Type.Nashorn) {
             ScriptRunner.setDefaultInstance(runnerJs);
         } else {
