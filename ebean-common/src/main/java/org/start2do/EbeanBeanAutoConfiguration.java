@@ -170,8 +170,9 @@ public class EbeanBeanAutoConfiguration {
 
     @Bean
     @ConditionalOnBean(DataSource.class)
-    public SysSettingUtil sysSettingUtil(DataSource dataSource, SysSettingService sysSettingService) {
-        SysSettingUtil util = new SysSettingUtil(sysSettingService);
+    public SysSettingUtil sysSettingUtil(DataSource dataSource,
+        BusinessSettingInitConfiguration businessSettingInitConfiguration, SysSettingService sysSettingService) {
+        SysSettingUtil util = new SysSettingUtil(sysSettingService, businessSettingInitConfiguration);
         return util;
     }
 }
