@@ -64,6 +64,17 @@ public class SysSettingUtil {
             .orElseGet(() -> key);
     }
 
+    public static String getLabel(String type, String key, String defaultValue) {
+        if (StringUtils.isEmpty(type)) {
+            return defaultValue;
+        }
+        if (StringUtils.isEmpty(key)) {
+            return defaultValue;
+        }
+        return Optional.ofNullable(SysSettingUtil.sysSettingUtil).map(t -> t.hashMap.get(type)).map(t -> t.get(key))
+            .orElseGet(() -> defaultValue);
+    }
+
     public static ConcurrentHashMap<String, String> getItems(String type) {
         return Optional.ofNullable(SysSettingUtil.sysSettingUtil).map(e -> e.hashMap.get(type))
             .orElse(new ConcurrentHashMap<>());
