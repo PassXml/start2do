@@ -104,4 +104,84 @@ public final class StringUtils {
         }
         return hexValue.toString();
     }
+
+    /**
+     * 驼峰命名转为大写下划线命名（UPPER_SNAKE_CASE）
+     *
+     * 例如：userName -> USER_NAME ，UserName -> USER_NAME
+     */
+    public String camelToUpperSnake(String input) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+        StringBuilder sb = new StringBuilder();
+        char[] chars = input.trim().toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            char c = chars[i];
+            if (Character.isUpperCase(c)) {
+                // 当前是大写字母并且前面不是开头、下划线或大写连续块的中间，则补一个下划线
+                if (i > 0) {
+                    char prev = chars[i - 1];
+                    boolean prevIsUpper = Character.isUpperCase(prev);
+                    boolean prevIsUnderscore = prev == '_';
+                    // 如果上一个是小写或数字，或者上一个是大写但后一个是小写，则认为是新单词边界
+                    boolean needUnderscore = !prevIsUpper && !prevIsUnderscore;
+                    if (!needUnderscore && prevIsUpper && i + 1 < chars.length) {
+                        char next = chars[i + 1];
+                        if (Character.isLowerCase(next)) {
+                            needUnderscore = true;
+                        }
+                    }
+                    if (needUnderscore && sb.charAt(sb.length() - 1) != '_') {
+                        sb.append('_');
+                    }
+                }
+                sb.append(Character.toUpperCase(c));
+            } else {
+                sb.append(Character.toUpperCase(c));
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 大写下划线命名（UPPER_SNAKE_CASE）转为小驼峰命名（lowerCamelCase）
+     *
+     * 例如：USER_NAME -> userName
+     */
+    public String upperSnakeToLowerCamel(String input) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+        StringBuilder sb = new StringBuilder();
+        String[] parts = input.toLowerCase().split("_");
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i];
+            if (part.isEmpty()) {
+                continue;
+            }
+            if (i == 0) {
+                sb.append(part);
+            } else {
+                sb.append(Character.toUpperCase(part.charAt(0)));
+                if (part.length() > 1) {
+                    sb.append(part.substring(1));
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 大写下划线命名（UPPER_SNAKE_CASE）转为大驼峰命名（UpperCamelCase）
+     *
+     * 例如：USER_NAME -> UserName
+     */
+    public String upperSnakeToUpperCamel(String input) {
+        String lowerCamel = upperSnakeToLowerCamel(input);
+        if (lowerCamel == null || lowerCamel.isEmpty()) {
+            return lowerCamel;
+        }
+        return Character.toUpperCase(lowerCamel.charAt(0)) + lowerCamel.substring(1);
+    }
 }

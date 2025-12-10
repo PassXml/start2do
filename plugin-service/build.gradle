@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'com.zte'
+version '1.0.1-SNAPSHOT'
+application {
+    mainClass = "com.zte.plugin.PluginServiceApplication"
+}
+dependencies {
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation project(":plugin-api")
+    // 引入 PF4J 桥接模块，使本服务可以直接控制 PluginManager
+    implementation "org.pf4j:pf4j:3.14.0"
+    testImplementation("org.slf4j:slf4j-api")
+    testImplementation("org.slf4j:slf4j-simple")
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}

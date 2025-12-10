@@ -38,11 +38,27 @@ public class SysSettingUtil {
 
     @PostConstruct
     public void init() {
-        List<String> keys = businessSettingInitConfiguration.getSettings().stream().map(SettingItem::getKey)
+        // 使用配置文件中的初始化项进行初始化
+        if (businessSettingInitConfiguration == null) {
+            return;
+        }
+        init(businessSettingInitConfiguration.getSettings());
+    }
+
+    /**
+     * 支持外部传入初始化配置列表进行初始化
+     *
+     * @param settings 业务配置初始化项列表
+     */
+    public void init(List<SettingItem> settings) {
+        if (settings == null || settings.isEmpty()) {
+            return;
+        }
+        List<String> keys = settings.stream().map(SettingItem::getKey)
             .collect(Collectors.toList());
         Set<String> set = sysSettingService.findAll(new QSysSetting().key.in(keys)).stream().map(SysSetting::getKey)
             .collect(Collectors.toSet());
-        for (SettingItem setting : businessSettingInitConfiguration.getSettings()) {
+        for (SettingItem setting : settings) {
             if (set.contains(setting.getKey())) {
                 continue;
             }

@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.zte'
+version = '1.0.1-SNAPSHOT'
+
+dependencies {
+    compileOnly "org.springframework.boot:spring-boot-autoconfigure:2.7.18"
+    compileOnly "org.pf4j:pf4j:3.14.0"
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}

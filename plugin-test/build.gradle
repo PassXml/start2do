@@ -1,0 +1,38 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.zte'
+version = '1.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    implementation project(":plugin-api")
+    compileOnly("org.springframework.boot:spring-boot-starter-web")
+    annotationProcessor "org.pf4j:pf4j:3.14.0"
+    compileOnly "org.pf4j:pf4j:3.14.0"
+
+}
+
+
+tasks.withType(Jar) {
+    // 若想模拟 addDefaultImplementationEntries / addDefaultSpecificationEntries
+    manifest {
+        attributes(
+                // pf4j 插件相关自定义条目
+                'Plugin-Class': 'org.start2do.test.plugin.PluginConfig',
+                'Plugin-Id': 'com.zte',
+                'Plugin-Version': '0.0.1',
+                'Plugin-Description': 'My example plugin',
+                'Plugin-Provider': 'Decebal Suiu'
+        )
+    }
+}
+test {
+    useJUnitPlatform()
+}

@@ -35,3 +35,6 @@ include 'bpm-core'
 
 
 include 'bpm-warm-flow'
+include 'plugin-api'
+include 'plugin-service'
+include 'plugin-test'
