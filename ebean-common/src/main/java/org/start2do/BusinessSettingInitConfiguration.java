@@ -16,6 +16,16 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "start2do.business.init")
 public class BusinessSettingInitConfiguration {
 
+    /**
+     * 初始化重试次数，主要用于在数据库尚未准备好的情况下进行短暂重试
+     */
+    private Integer retryTimes = 3;
+
+    /**
+     * 初始化重试间隔（毫秒）
+     */
+    private Long retryIntervalMs = 2000L;
+
     private List<SettingItem> settings;
 
     @Setter

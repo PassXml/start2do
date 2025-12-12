@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+org.start2do.plugin.client.autoconfigure.PluginClientAutoConfiguration
+

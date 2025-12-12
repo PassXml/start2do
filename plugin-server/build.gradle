@@ -1,0 +1,26 @@
+plugins {
+    id 'application'
+}
+
+group = 'com.zte'
+version = '1.0.1-SNAPSHOT'
+
+application {
+    // 插件管理服务启动类
+    mainClass = 'org.start2do.plugin.server.PluginServerApplication'
+}
+
+dependencies {
+    // Web 接口
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    // 复用插件公共接口定义
+    implementation project(":plugin-api")
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
+

@@ -1,0 +1,20 @@
+server:
+  port: 8808
+spring:
+  application:
+    name: plugin-test
+
+# 插件系统统一配置（供 plugin-service 与 plugin-server 共用）
+plugin:
+  runtime:
+    # 业务节点本地插件目录（测试环境放到 build 目录下，避免污染根目录）
+    storage-path: ./build/client/plugins/runtime
+  client:
+    # 管理端地址，测试中使用随机端口时会被覆盖
+    server-base-url: http://localhost:8082
+    app-name: plugin-test-client
+    node-id: plugin-test-node-1
+    # 在 Docker/K8s 等容器环境下，如需覆盖自动探测的 IP，可显式配置：
+    # ip: 192.168.0.10
+    # 心跳间隔设置得较大，避免在短时间测试内频繁访问
+    heartbeat-interval-seconds: 10

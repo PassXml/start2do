@@ -1,0 +1,55 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.zte'
+version = '1.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":plugin-api")
+    compileOnly("org.springframework.boot:spring-boot-starter-web")
+    // SOAP WebService 示例所需的 JAX-WS 注解（仅编译期依赖，运行时由宿主应用提供实现）
+    compileOnly 'javax.jws:javax.jws-api:1.1'
+    annotationProcessor "org.pf4j:pf4j:3.14.0"
+    compileOnly "org.pf4j:pf4j:3.14.0"
+
+    // ===== 测试依赖（仅用于在本模块下编写 plugin-client / plugin-server 的测试服务用例） =====
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    // Spring Boot Web + Test，用于启动内嵌 Web 环境
+    testImplementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+    testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+    // 引入插件相关模块，仅在测试范围内使用，避免污染实际插件包
+    testImplementation("org.slf4j:slf4j-api")
+    testImplementation("org.slf4j:slf4j-simple")
+    testImplementation("mysql:mysql-connector-java:8.0.26")
+    testImplementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:2.3.2")
+    testImplementation project(":plugin-api")
+    testImplementation project(":plugin-service")
+    testImplementation project(":plugin-client")
+    testImplementation project(":plugin-service-mybatis")
+    testImplementation "com.zaxxer:HikariCP:5.0.1"
+
+}
+
+
+tasks.withType(Jar) {
+    // 若想模拟 addDefaultImplementationEntries / addDefaultSpecificationEntries
+    manifest {
+        attributes(
+                // pf4j 插件相关自定义条目
+                'Plugin-Class': 'org.start2do.test.plugin.PluginConfig',
+                'Plugin-Id': 'com.zte',
+                'Plugin-Version': '0.0.1',
+                'Plugin-Description': 'My example plugin',
+                'Plugin-Provider': 'Decebal Suiu'
+        )
+    }
+}
+test {
+    useJUnitPlatform()
+}

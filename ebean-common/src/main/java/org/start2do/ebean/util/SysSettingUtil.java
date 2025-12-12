@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -36,13 +35,21 @@ public class SysSettingUtil {
         SysSettingUtil.sysSettingUtil = this;
     }
 
-    @PostConstruct
+    /**
+     * 使用配置文件中的初始化项进行初始化
+     * 注意：该方法不再在 Bean PostConstruct 阶段调用，而是由应用就绪事件触发，
+     * 避免在 DataSource / Ebean 尚未完全准备好时访问数据库。
+     */
     public void init() {
-        // 使用配置文件中的初始化项进行初始化
         if (businessSettingInitConfiguration == null) {
             return;
         }
-        init(businessSettingInitConfiguration.getSettings());
+        try {
+            init(businessSettingInitConfiguration.getSettings());
+        } catch (Exception e) {
+            // 启动阶段避免因为初始化失败导致应用不可用，错误记录后由后续任务或人工干预处理
+            log.error("业务配置初始化失败，将在后续手动或定时任务中重试", e);
+        }
     }
 
     /**
@@ -54,6 +61,42 @@ public class SysSettingUtil {
         if (settings == null || settings.isEmpty()) {
             return;
         }
+        // 为了兼容第三方在应用早期调用 init(List<SettingItem>) 的场景，这里增加简单的重试机制，
+        // 以应对 DataSource / Ebean 尚未完全初始化导致的短暂失败；参数可通过配置覆盖。
+        int maxRetry = Optional.ofNullable(businessSettingInitConfiguration)
+            .map(BusinessSettingInitConfiguration::getRetryTimes)
+            .filter(v -> v != null && v > 0)
+            .orElse(3);
+        long sleepMs = Optional.ofNullable(businessSettingInitConfiguration)
+            .map(BusinessSettingInitConfiguration::getRetryIntervalMs)
+            .filter(v -> v != null && v > 0)
+            .orElse(2000L);
+        for (int i = 1; i <= maxRetry; i++) {
+            try {
+                doInit(settings);
+                return;
+            } catch (Exception e) {
+                if (i == maxRetry) {
+                    // 最后一轮仍然失败，抛出异常给调用方处理
+                    log.error("业务配置初始化失败，已重试 {} 次仍然失败", maxRetry, e);
+                    throw e;
+                }
+                log.warn("业务配置初始化失败，可能是数据库尚未准备好，第 {} 次重试将在 {} ms 后进行", i, sleepMs);
+                try {
+                    Thread.sleep(sleepMs);
+                } catch (InterruptedException interruptedException) {
+                    Thread.currentThread().interrupt();
+                    // 中断时不再继续重试，直接退出
+                    return;
+                }
+            }
+        }
+    }
+
+    /**
+     * 实际的初始化逻辑：查询已存在的配置并插入缺失项
+     */
+    private void doInit(List<SettingItem> settings) {
         List<String> keys = settings.stream().map(SettingItem::getKey)
             .collect(Collectors.toList());
         Set<String> set = sysSettingService.findAll(new QSysSetting().key.in(keys)).stream().map(SysSetting::getKey)

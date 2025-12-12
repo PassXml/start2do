@@ -14,11 +14,14 @@ public class EbeanSpringInitListener implements ApplicationListener<Availability
     public void onApplicationEvent(AvailabilityChangeEvent event) {
         if (ReadinessState.ACCEPTING_TRAFFIC == event.getState()) {
             try {
-                if (SysSettingUtil.getSysSettingUtil() != null) {
-                    SysSettingUtil.getSysSettingUtil().sync();
+                SysSettingUtil util = SysSettingUtil.getSysSettingUtil();
+                if (util != null) {
+                    // 应用就绪后再进行业务配置初始化和缓存同步，确保 DataSource / Ebean 已准备完成
+                    util.init();
+                    util.sync();
                 }
             } catch (Throwable e) {
-                log.error(e.getMessage());
+                log.error("应用就绪阶段业务配置初始化或同步失败", e);
             }
         }
     }

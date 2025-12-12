@@ -11,12 +11,16 @@ application {
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation project(":plugin-api")
+    testImplementation project(":plugin-service-soap")
     // 引入 PF4J 桥接模块，使本服务可以直接控制 PluginManager
     implementation "org.pf4j:pf4j:3.14.0"
     testImplementation("org.slf4j:slf4j-api")
     testImplementation("org.slf4j:slf4j-simple")
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation "org.apache.cxf:cxf-spring-boot-starter-jaxws:3.5.6"
+    testImplementation "javax.jws:javax.jws-api:1.1"
+    testImplementation "javax.xml.ws:jaxws-api:2.3.1"
 }
 
 test {

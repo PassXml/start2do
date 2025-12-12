@@ -6,5 +6,5 @@ spring:
     name: plugin-service
 
 plugin:
-  storage-path: ./plugins/eip
-
+  runtime:
+    storage-path: ./plugins/eip

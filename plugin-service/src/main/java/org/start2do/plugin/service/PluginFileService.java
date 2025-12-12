@@ -1,16 +1,19 @@
 package org.start2do.plugin.service;
 
-import java.util.Optional;
-import org.start2do.plugin.config.PluginStorageProperties;
-import org.start2do.plugin.dto.PluginInfo;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.jar.Attributes;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginManager;
@@ -18,6 +21,10 @@ import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.start2do.plugin.config.PluginSystemProperties;
+import org.start2do.plugin.dto.PluginInfo;
+import org.start2do.plugin.dto.PluginJarMetaDto;
+import org.start2do.plugin.handle.PluginControllerMappingConflictException;
 
 /**
  * 插件文件管理服务
@@ -29,7 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class PluginFileService {
 
-    private final PluginStorageProperties properties;
+    private final PluginSystemProperties pluginSystemProperties;
 
     /**
      * PF4J 插件管理器
@@ -42,7 +49,7 @@ public class PluginFileService {
      * 获取插件根目录，不存在时自动创建
      */
     private File getRootDir() {
-        String path = properties.getStoragePath();
+        String path = pluginSystemProperties.getRuntime().getStoragePath();
         if (path == null || path.trim().isEmpty()) {
             throw new IllegalStateException("插件存储目录未配置");
         }
@@ -123,22 +130,74 @@ public class PluginFileService {
             // 未启用 PF4J 桥接，跳过运行时启用
             return null;
         }
+        String pluginId = null;
         try {
+            // 若插件对应的 JAR 已处于运行状态，则直接返回，避免重复加载与误删文件
             if (isRunStateByFilePath(enabledJar.toPath())) {
-                throw new RuntimeException("插件已运行");
+                log.info("PF4J 动态启用插件: 已处于运行状态, path={}", enabledJar.getAbsolutePath());
+                return PluginState.STARTED.toString();
             }
             // 若插件尚未加载，则按文件路径动态加载
-            String pluginId = pluginManager.loadPlugin(enabledJar.toPath());
-            pluginManager.startPlugin(pluginId);
+            pluginId = pluginManager.loadPlugin(enabledJar.toPath());
+            PluginState plugin = pluginManager.startPlugin(pluginId);
             log.info("PF4J 动态加载并启动插件成功, baseName={}, pluginId={}", enabledJar.getAbsolutePath(), pluginId);
-            return Optional.ofNullable(getPluginInfoById(pluginId)).map(PluginWrapper::getPluginState)
-                .map(PluginState::toString).orElseGet(() -> PluginState.UNLOADED.toString());
+            return Optional.ofNullable(plugin).map(PluginState::toString).orElseGet(() -> "ERROR");
         } catch (Exception e) {
-            String name = enabledJar.toString();
-            disabledFile(name);
-            log.warn("PF4J 启用插件失败, baseName={}, msg={}", name, e.getMessage(), e);
+            // 启用失败时，卸载插件并删除本地 JAR，避免子节点残留无效插件文件
+            cleanupFailedPluginStart(enabledJar, pluginId, e);
+            // 如果是 Controller 路由冲突，向上抛出详细异常信息，便于上传/启用接口直接返回
+            PluginControllerMappingConflictException conflict = findControllerConflictException(e);
+            if (conflict != null) {
+                throw conflict;
+            }
         }
         return PluginState.UNLOADED.toString();
+    }
+
+    /**
+     * 插件启用失败后的清理逻辑：尽量卸载插件并删除对应 JAR 文件
+     */
+    private void cleanupFailedPluginStart(File enabledJar, String pluginId, Exception cause) {
+        try {
+            if (pluginId != null) {
+                try {
+                    pluginManager.stopPlugin(pluginId);
+                } catch (Exception ignore) {
+                    // 忽略停止异常，继续尝试卸载与删除文件
+                }
+                try {
+                    pluginManager.unloadPlugin(pluginId);
+                } catch (Exception ignore) {
+                    // 忽略卸载异常
+                }
+            }
+        } catch (Exception ignore) {
+            // 避免清理过程中异常打断后续逻辑
+        }
+
+        if (enabledJar != null && enabledJar.exists()) {
+            boolean deleted = enabledJar.delete();
+            if (!deleted) {
+                log.warn("插件启用失败后删除本地 JAR 文件失败, path={}", enabledJar.getAbsolutePath());
+            } else {
+                log.info("插件启用失败后已删除本地 JAR 文件, path={}", enabledJar.getAbsolutePath());
+            }
+        }
+        log.warn("PF4J 启用插件失败, path={}, msg={}", enabledJar != null ? enabledJar.getAbsolutePath() : "<null>",
+            cause.getMessage(), cause);
+    }
+
+    /**
+     * 从异常链中查找插件 Controller 路由冲突异常
+     */
+    private PluginControllerMappingConflictException findControllerConflictException(Throwable e) {
+        while (e != null) {
+            if (e instanceof PluginControllerMappingConflictException) {
+                return (PluginControllerMappingConflictException) e;
+            }
+            e = e.getCause();
+        }
+        return null;
     }
 
     public PluginWrapper getPluginInfoById(String pluginId) {
@@ -190,25 +249,112 @@ public class PluginFileService {
             throw new IllegalArgumentException("只支持上传 .jar 文件");
         }
 
-        validateName(originalName);
+        // 先写入临时文件，再从 JAR 中解析 Plugin-Id / Plugin-Version，统一命名为 pluginId-version.jar
+        File tmp = File.createTempFile("plugin-upload-", ".jar");
+        try {
+            file.transferTo(tmp);
 
-        File target = enable ? enabledFile(originalName) : disabledFile(originalName);
-        if (target.exists()) {
-            if (isRunStateByFilePath(target.toPath())) {
-                PluginWrapper wrapper = getPluginInfoByFilePath(target);
+            PluginJarMetaDto dto = resolveStandardJarName(tmp, originalName);
+            validateName(dto.getFileName());
+
+            File target = enable ? enabledFile(dto.getFileName()) : disabledFile(dto.getFileName());
+            if (target.exists()) {
+                // 若目标文件已存在且对应插件正在运行，先停用再覆盖
+                PluginWrapper wrapper = getPluginInfoById(dto.getPluginId());
                 if (wrapper != null) {
                     stopPluginIfPossible(wrapper.getPluginId());
                 }
+                Files.delete(target.toPath());
             }
-            target.delete();
+            getRootDir();
+            // 使用原子移动，避免出现半写入文件；若文件系统不支持原子移动（如跨磁盘），则降级为普通移动
+            try {
+                Files.move(tmp.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING,
+                    StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException ex) {
+                log.warn("当前文件系统不支持原子移动, 将回退为普通移动, tmp={}, target={}", tmp.getAbsolutePath(),
+                    target.getAbsolutePath());
+                Files.move(tmp.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            // 若上传后立即启用，则通知 PF4J 动态加载插件
+            if (enable) {
+                return startPluginIfPossible(target);
+            }
+            return null;
+        } finally {
+            // 双保险：若前面出现异常，确保临时文件被清理
+            if (tmp.exists()) {
+                //noinspection ResultOfMethodCallIgnored
+                tmp.delete();
+            }
+        }
+    }
+
+    /**
+     * 通过本地 JAR 文件上传插件（供内部使用，例如 plugin-client 从管理端下载后写入本地）
+     *
+     * @param jarFile      本地 JAR 文件
+     * @param enable       是否立即启用
+     * @param originalName 原始文件名（用于日志与异常提示，可为 jarFile.getName()）
+     */
+    public String upload(File jarFile, boolean enable, String originalName) throws IOException {
+        if (jarFile == null || !jarFile.isFile()) {
+            throw new IllegalArgumentException("上传文件不存在或不是普通文件");
+        }
+        if (originalName == null || !originalName.endsWith(".jar")) {
+            originalName = jarFile.getName();
+        }
+
+        PluginJarMetaDto dto = resolveStandardJarName(jarFile, originalName);
+        validateName(dto.getFileName());
+
+        File target = enable ? enabledFile(dto.getFileName()) : disabledFile(dto.getFileName());
+        if (target.exists()) {
+            PluginWrapper wrapper = getPluginInfoById(dto.getPluginId());
+            if (wrapper != null) {
+                stopPluginIfPossible(wrapper.getPluginId());
+            }
+            Files.delete(target.toPath());
         }
         getRootDir();
-        file.transferTo(target);
-        // 若上传后立即启用，则通知 PF4J 动态加载插件
+        Files.copy(jarFile.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
         if (enable) {
             return startPluginIfPossible(target);
         }
         return null;
+    }
+
+    /**
+     * 根据 JAR Manifest 信息推导标准文件名：pluginId-version.jar
+     * <p>
+     * 必须从 Manifest 中读取到 Plugin-Id / Plugin-Version， 否则视为非法插件包，拒绝上传。
+     */
+    private PluginJarMetaDto resolveStandardJarName(File jarFile, String originalName) {
+        try (FileInputStream fis = new FileInputStream(jarFile); JarInputStream jis = new JarInputStream(fis)) {
+            Manifest manifest = jis.getManifest();
+            if (manifest != null) {
+                Attributes attrs = manifest.getMainAttributes();
+                String pluginId = attrs.getValue("Plugin-Id");
+                String version = attrs.getValue("Plugin-Version");
+
+                if (pluginId != null && !pluginId.trim().isEmpty() && version != null && !version.trim().isEmpty()) {
+                    // 规范化为 pluginId-version.jar
+                    return new PluginJarMetaDto(pluginId.trim(), version.trim());
+                }
+            }
+            log.warn("插件 JAR Manifest 中缺少 Plugin-Id 或 Plugin-Version, originalName={}", originalName);
+            throw new IllegalArgumentException(
+                "插件 Jar 缺少 Manifest 中的 Plugin-Id 或 Plugin-Version，请检查构建配置");
+        } catch (Exception e) {
+            if (e instanceof IllegalArgumentException) {
+                throw (IllegalArgumentException) e;
+            }
+            log.warn("解析插件 JAR Manifest 失败, originalName={}, msg={}", originalName, e.getMessage(), e);
+            throw new IllegalArgumentException(
+                "解析插件 Jar Manifest 失败，请检查是否包含有效的 Plugin-Id 与 Plugin-Version", e);
+        }
     }
 
     private PluginWrapper getPluginInfoByFilePath(File target) {
@@ -223,40 +369,107 @@ public class PluginFileService {
     }
 
     /**
-     * 启用插件：{name}.jar.disable -> {name}.jar
+     * 根据插件 ID 在本地存储目录中查找插件文件
+     *
+     * @param pluginId 插件 ID（来自 Manifest 中的 Plugin-Id）
+     * @param enabled  true 表示查找启用文件（*.jar），false 表示查找禁用文件（*.jar.disable）
      */
-    public String enable(String baseName) throws IOException {
-        validateName(baseName);
+    private File findPluginFileByPluginId(String pluginId, boolean enabled) {
+        File rootDir = getRootDir();
+        File[] files = rootDir.listFiles();
+        if (files == null) {
+            return null;
+        }
 
-        File disabled = disabledFile(baseName);
-        File enabled = enabledFile(baseName);
-
-        if (!disabled.exists()) {
-            if (enabled.exists()) {
-                // 文件已经是启用状态，尝试确保 PF4J 中也已启动
-                return startPluginIfPossible(enabled);
+        File candidate = null;
+        for (File file : files) {
+            if (!file.isFile()) {
+                continue;
             }
-            throw new IllegalStateException("未找到禁用状态的插件文件: " + baseName);
+            String name = file.getName();
+            boolean fileEnabled;
+            if (name.endsWith(".jar.disable")) {
+                fileEnabled = false;
+            } else if (name.endsWith(".jar")) {
+                fileEnabled = true;
+            } else {
+                continue;
+            }
+            if (fileEnabled != enabled) {
+                continue;
+            }
+
+            try {
+                PluginJarMetaDto meta = resolveStandardJarName(file, name);
+                if (pluginId.equals(meta.getPluginId())) {
+                    // 若存在多个版本，优先选择最新修改时间的文件
+                    if (candidate == null || file.lastModified() > candidate.lastModified()) {
+                        candidate = file;
+                    }
+                }
+            } catch (IllegalArgumentException ex) {
+                // 非合法插件包，忽略
+                log.debug("按插件 ID 查找插件文件时解析失败, file={}, msg={}", file.getAbsolutePath(), ex.getMessage());
+            }
         }
 
-        if (enabled.exists()) {
-            throw new IllegalStateException("启用目标文件已存在，请检查是否重名: " + enabled.getName());
-        }
-
-        Files.move(disabled.toPath(), enabled.toPath(), StandardCopyOption.ATOMIC_MOVE);
-
-        // 文件层面启用后，同步到 PF4J 运行时
-        return startPluginIfPossible(enabled);
+        return candidate;
     }
 
     /**
-     * 停用插件：{name}.jar -> {name}.jar.disable
+     * 启用插件：根据插件 ID，将 {pluginId-xxx}.jar.disable -> {pluginId-xxx}.jar 并通过 PF4J 启动
+     */
+    public String enable(String pluginId) throws IOException {
+        if (pluginId == null || pluginId.trim().isEmpty()) {
+            throw new IllegalArgumentException("插件 ID 不能为空");
+        }
+        String normalizedId = pluginId.trim();
+
+        // 1. 优先寻找禁用状态文件（*.jar.disable）
+        File disabledFile = findPluginFileByPluginId(normalizedId, false);
+        if (disabledFile == null) {
+            // 2. 若找不到禁用文件，但存在启用文件，则仅保证 PF4J 中处于启动状态
+            File enabledFile = findPluginFileByPluginId(normalizedId, true);
+            if (enabledFile != null) {
+                return startPluginIfPossible(enabledFile);
+            }
+            throw new IllegalStateException("未找到插件 ID 为 " + normalizedId + " 的插件文件");
+        }
+
+        File enabledTarget = enabledFile(disabledFile.getName());
+        if (enabledTarget.exists()) {
+            throw new IllegalStateException("启用目标文件已存在，请检查是否重名: " + enabledTarget.getName());
+        }
+
+        // 3. 文件层面从 *.jar.disable 切换为 *.jar
+        Files.move(disabledFile.toPath(), enabledTarget.toPath(), StandardCopyOption.ATOMIC_MOVE);
+
+        // 4. 同步到 PF4J 运行时
+        return startPluginIfPossible(enabledTarget);
+    }
+
+    /**
+     * 停用插件：根据插件 ID，将 {pluginId-xxx}.jar -> {pluginId-xxx}.jar.disable 并通过 PF4J 停用
      */
     public void disable(String pluginId) throws IOException {
-        String fileName = stopPluginIfPossible(pluginId);
-        if (fileName != null) {
-            Files.move(enabledFile(fileName).toPath(), disabledFile(fileName).toPath(), StandardCopyOption.ATOMIC_MOVE);
+        if (pluginId == null || pluginId.trim().isEmpty()) {
+            throw new IllegalArgumentException("插件 ID 不能为空");
         }
+        String normalizedId = pluginId.trim();
+
+        // 1. 先尝试通过 PF4J 停用运行中的插件
+        stopPluginIfPossible(normalizedId);
+
+        // 2. 查找启用状态的插件文件并切换为禁用文件
+        File enabledFile = findPluginFileByPluginId(normalizedId, true);
+        if (enabledFile == null) {
+            // 若本地不存在启用文件，则认为已经是停用态，直接返回
+            log.info("停用插件时未找到启用状态文件, pluginId={}", normalizedId);
+            return;
+        }
+
+        File disabledTarget = disabledFile(enabledFile.getName());
+        Files.move(enabledFile.toPath(), disabledTarget.toPath(), StandardCopyOption.ATOMIC_MOVE);
     }
 
     /**
@@ -287,31 +500,105 @@ public class PluginFileService {
     }
 
     /**
-     * 列出所有插件文件
+     * 根据插件 ID 删除其所有本地插件文件（启用/禁用），并尝试通过 PF4J 卸载
+     * <p>
+     * 该方法主要供集群客户端使用，当管理端下发“移除插件”指令时，
+     * 可根据 pluginId 清理由本节点负责的所有本地副本。
      */
-    public List<PluginInfo> listPlugins() {
-        List<PluginInfo> result = new ArrayList<>();
-        for (PluginWrapper plugin : pluginManager.getPlugins()) {
-            Path path = plugin.getPluginPath();
-            result.add(new PluginInfo(plugin.getPluginId(), path.getFileName().toString(),
-                plugin.getPluginState() != PluginState.UNLOADED, path.toAbsolutePath().toString()));
+    public void deleteByPluginId(String pluginId) throws IOException {
+        if (pluginId == null || pluginId.trim().isEmpty()) {
+            throw new IllegalArgumentException("插件 ID 不能为空");
         }
+        String normalizedId = pluginId.trim();
+
+        // 1. 先尝试通过 PF4J 停用运行中的插件
+        stopPluginIfPossible(normalizedId);
+
+        // 2. 删除本地存储目录中该插件的所有 Jar 文件（启用/禁用）
         File rootDir = getRootDir();
         File[] files = rootDir.listFiles();
         if (files == null) {
-            return result;
+            return;
         }
-
         for (File file : files) {
             if (!file.isFile()) {
                 continue;
             }
             String name = file.getName();
-            boolean enabled = false;
-            PluginInfo info = new PluginInfo().setPluginId(null).setFileName(name).setEnabled(enabled)
-                .setFullPath(file.getAbsolutePath());
-            result.add(info);
+            if (!name.endsWith(".jar") && !name.endsWith(".jar.disable")) {
+                continue;
+            }
+            try {
+                PluginJarMetaDto meta = resolveStandardJarName(file, name);
+                if (normalizedId.equals(meta.getPluginId())) {
+                    Files.delete(file.toPath());
+                }
+            } catch (IllegalArgumentException ex) {
+                // 非合法插件包，忽略
+                log.debug("按插件 ID 删除插件文件时解析失败, file={}, msg={}", file.getAbsolutePath(), ex.getMessage());
+            }
         }
-        return result;
+    }
+
+    /**
+     * 列出所有插件文件
+     */
+    public List<PluginInfo> listPlugins() {
+        // 使用 fullPath 作为 key 聚合信息，避免重复
+        java.util.Map<String, PluginInfo> map = new java.util.LinkedHashMap<>();
+
+        // 1. 先从文件系统中扫描插件 Jar（无论启用/禁用），并尽量解析出 pluginId
+        File rootDir = getRootDir();
+        File[] files = rootDir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (!file.isFile()) {
+                    continue;
+                }
+                String name = file.getName();
+                boolean enabled;
+                if (name.endsWith(".jar.disable")) {
+                    enabled = false;
+                } else if (name.endsWith(".jar")) {
+                    enabled = true;
+                } else {
+                    // 非插件文件，忽略
+                    continue;
+                }
+
+                String pluginId = null;
+                try {
+                    PluginJarMetaDto meta = resolveStandardJarName(file, name);
+                    pluginId = meta.getPluginId();
+                } catch (IllegalArgumentException ex) {
+                    // 非合法插件包，保留文件信息但 pluginId 为空，方便运维排查
+                    log.warn("扫描插件文件时解析 Manifest 失败, file={}, msg={}", file.getAbsolutePath(), ex.getMessage());
+                }
+
+                PluginInfo info = new PluginInfo()
+                    .setPluginId(pluginId)
+                    .setFileName(name)
+                    .setEnabled(enabled)
+                    .setFullPath(file.getAbsolutePath());
+                map.put(file.getAbsolutePath(), info);
+            }
+        }
+
+        // 2. 再叠加 PF4J 运行时信息（主要用于补全 pluginId 或纳入非默认目录的插件）
+        for (PluginWrapper plugin : pluginManager.getPlugins()) {
+            Path path = plugin.getPluginPath().toAbsolutePath().normalize();
+            String fullPath = path.toString();
+            PluginInfo info = map.get(fullPath);
+            if (info == null) {
+                boolean enabled = plugin.getPluginState() != PluginState.UNLOADED;
+                info = new PluginInfo(plugin.getPluginId(), path.getFileName().toString(), enabled, fullPath);
+                map.put(fullPath, info);
+            } else {
+                // 以运行时信息为准补全/覆盖 pluginId
+                info.setPluginId(plugin.getPluginId());
+            }
+        }
+
+        return new ArrayList<>(map.values());
     }
 }

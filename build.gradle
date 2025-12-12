@@ -53,6 +53,7 @@ allprojects {
                       "spring-util"           : JavaVersion.VERSION_1_8,
                       "bean-valiate"          : JavaVersion.VERSION_1_8,
                       "script-common"         : JavaVersion.VERSION_11,
+                      "plugin-service-soap"   : JavaVersion.VERSION_1_8,
                       "script-av-impl"        : JavaVersion.VERSION_11,
                       "script-js-nashorn-impl": JavaVersion.VERSION_11,
                       "script-js-impl"        : JavaVersion.VERSION_17,

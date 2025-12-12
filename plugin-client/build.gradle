@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.zte'
+version = '1.0.1-SNAPSHOT'
+
+dependencies {
+    // 插件扩展点定义
+    implementation project(":plugin-api")
+    // 复用本地插件文件与 PF4J 集成能力
+    implementation project(":plugin-service")
+
+    // 仅在宿主应用引入 Spring Web 组件时才生效
+    // 使用根项目统一管理的 Spring 版本，避免无版本坐标导致解析失败
+    compileOnly "org.springframework:spring-web:${springVersion}"
+    // spring-boot-autoconfigure 的编译期依赖已在 root build.gradle 的 allprojects 中统一声明，
+    // 这里无需重复声明（避免漏填版本号）
+    compileOnly("org.slf4j:slf4j-api")
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
