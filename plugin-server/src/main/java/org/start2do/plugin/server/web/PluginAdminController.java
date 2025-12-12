@@ -40,7 +40,7 @@ import org.start2do.plugin.server.web.dto.PluginGrayNodesRequest;
  * 统一由该模块进行插件上传、版本管理、灰度发布与回滚。
  */
 @RestController
-@RequestMapping("/api/plugins")
+@RequestMapping("/api/plugins/server")
 @RequiredArgsConstructor
 public class PluginAdminController {
 
@@ -54,7 +54,7 @@ public class PluginAdminController {
     public ApiResponse<PluginVersionInfo> upload(
         @RequestParam(value = "changelog", required = false) String changelog,
         @RequestPart("file") MultipartFile file) throws IOException {
-        return ApiResponse.success(pluginAdminService.upload( file, changelog));
+        return ApiResponse.success(pluginAdminService.upload(file, changelog));
     }
 
     /**
