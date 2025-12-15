@@ -15,6 +15,8 @@ dependencies {
     // SOAP WebService 示例所需的 JAX-WS 注解（仅编译期依赖，运行时由宿主应用提供实现）
     compileOnly 'javax.jws:javax.jws-api:1.1'
     annotationProcessor "org.pf4j:pf4j:3.14.0"
+    // 使用 plugin-api 提供的注解处理器，自动生成 PF4J 扩展实现
+    annotationProcessor project(":plugin-api")
     compileOnly "org.pf4j:pf4j:3.14.0"
 
     // ===== 测试依赖（仅用于在本模块下编写 plugin-client / plugin-server 的测试服务用例） =====
@@ -28,6 +30,7 @@ dependencies {
     testImplementation("org.slf4j:slf4j-simple")
     testImplementation project(":plugin-api")
     testImplementation project(":plugin-service")
+    testAnnotationProcessor project(":plugin-service")
     testImplementation project(":plugin-client")
     testImplementation project(":plugin-server")
     compileOnly "org.mybatis:mybatis:3.5.13"
@@ -36,19 +39,19 @@ dependencies {
 }
 
 
-tasks.withType(Jar) {
-    // 若想模拟 addDefaultImplementationEntries / addDefaultSpecificationEntries
-    manifest {
-        attributes(
-                // pf4j 插件相关自定义条目
-                'Plugin-Class': 'com.start2do.test.plugin.PluginConfig',
-                'Plugin-Id': 'com.zte',
-                'Plugin-Version': '0.0.1',
-                'Plugin-Description': 'My example plugin',
-                'Plugin-Provider': 'Decebal Suiu'
-        )
-    }
-}
+//tasks.withType(Jar) {
+//    // 若想模拟 addDefaultImplementationEntries / addDefaultSpecificationEntries
+//    manifest {
+//        attributes(
+//                // pf4j 插件相关自定义条目
+//                'Plugin-Class': 'com.start2do.test.plugin.PluginConfig',
+//                'Plugin-Id': 'com.zte',
+//                'Plugin-Version': '0.0.1',
+//                'Plugin-Description': 'My example plugin',
+//                'Plugin-Provider': 'Decebal Suiu'
+//        )
+//    }
+//}
 test {
     useJUnitPlatform()
 }

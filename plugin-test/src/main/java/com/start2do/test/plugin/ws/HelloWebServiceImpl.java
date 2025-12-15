@@ -1,15 +1,17 @@
 package com.start2do.test.plugin.ws;
 
+import com.start2do.test.plugin.service.Test2Service;
 import javax.annotation.Resource;
 import javax.jws.WebService;
 import lombok.RequiredArgsConstructor;
-import com.start2do.test.plugin.service.Test2Service;
+import org.start2do.plugin.api.spring.annotation.PluginSoapService;
 
 /**
  * 示例 SOAP WebService 实现类
  * <p>
  * 通过 {@link WebService} 注解声明为 JAX-WS 服务实现， 同时依赖插件内部的 TestService，演示与插件 Service 的协同。
  */
+@PluginSoapService
 @WebService(
     serviceName = "HelloWebService",
     portName = "HelloWebServicePort",
@@ -31,4 +33,3 @@ public class HelloWebServiceImpl implements HelloWebService {
         return "Hello, " + name + " (from plugin SOAP, version=" + version + ")";
     }
 }
-
