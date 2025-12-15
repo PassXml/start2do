@@ -2,11 +2,12 @@ package org.start2do.plugin.handle;
 
 import java.io.File;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginWrapper;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.start2do.plugin.config.PluginSystemProperties;
 
@@ -24,12 +25,16 @@ public class PluginSystemInitializer {
     private final PluginSystemProperties pluginSystemProperties;
 
     /**
-     * PF4J 插件管理器，由 plugin-bridge 自动配置。 当 eip.pf4j.enabled != true 时，该 Bean 不存在。
+     * PF4J 插件管理器，由 plugin-bridge 自动配置。
+     * 当 eip.pf4j.enabled != true 时，该 Bean 不存在。
      */
     private final PluginManager pluginManager;
 
-    @PostConstruct
-    public void init() {
+    /**
+     * 监听 SpringBoot ApplicationReadyEvent，确保 Spring 完成初始化后再加载插件系统
+     */
+    @EventListener(ApplicationReadyEvent.class)
+    public void onApplicationReady() {
         String path = pluginSystemProperties.getRuntime().getStoragePath();
         if (path == null || path.trim().isEmpty()) {
             log.warn("插件系统初始化: 未配置 plugin.storage-path，PF4J 将无法加载任何插件");
