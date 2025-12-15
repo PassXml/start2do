@@ -2,7 +2,6 @@ package org.start2do.plugin.server.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -17,16 +16,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.jar.Attributes;
-import java.util.jar.JarInputStream;
-import java.util.jar.Manifest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.start2do.plugin.api.dto.GrayStrategy;
+import org.start2do.plugin.api.dto.PluginJarMeta;
 import org.start2do.plugin.api.dto.PluginReleaseConfig;
 import org.start2do.plugin.api.dto.PluginSnapshot;
+import org.start2do.plugin.api.util.PluginJarMetaUtils;
 import org.start2do.plugin.config.PluginSystemProperties;
 import org.start2do.plugin.server.model.PluginVersionInfo;
 import org.start2do.plugin.server.web.dto.PluginDeployRequest;
@@ -86,30 +84,17 @@ public class PluginAdminService {
     }
 
     /**
-     * 上传插件新版本时，从插件 JAR 的 Manifest 中解析出 pluginId 和 version
+     * 上传插件新版本时，从插件 JAR 中解析出 pluginId 和 version。
+     * <p>
+     * 优先读取 plugin.properties（plugin.id / plugin.version），
+     * 若不存在则回退到 Manifest 中的 Plugin-Id / Plugin-Version。
      */
     private PluginJarMeta resolveJarMeta(File jarFile, String originalName) {
-        try (FileInputStream fis = new FileInputStream(jarFile); JarInputStream jis = new JarInputStream(fis)) {
-            Manifest manifest = jis.getManifest();
-            if (manifest != null) {
-                Attributes attrs = manifest.getMainAttributes();
-                String pluginId = attrs.getValue("Plugin-Id");
-                String version = attrs.getValue("Plugin-Version");
-
-                if (pluginId != null && !pluginId.trim().isEmpty() && version != null && !version.trim().isEmpty()) {
-                    return new PluginJarMeta(pluginId.trim(), version.trim());
-                }
-            }
-            log.warn("插件 JAR Manifest 中缺少 Plugin-Id 或 Plugin-Version, originalName={}", originalName);
-            throw new IllegalArgumentException(
-                "插件 Jar 缺少 Manifest 中的 Plugin-Id 或 Plugin-Version，请检查构建配置");
-        } catch (Exception e) {
-            if (e instanceof IllegalArgumentException) {
-                throw (IllegalArgumentException) e;
-            }
-            log.warn("解析插件 JAR Manifest 失败, originalName={}, msg={}", originalName, e.getMessage(), e);
-            throw new IllegalArgumentException(
-                "解析插件 Jar Manifest 失败，请检查是否包含有效的 Plugin-Id 与 Plugin-Version", e);
+        try {
+            return PluginJarMetaUtils.resolveFromJar(jarFile, originalName);
+        } catch (IllegalArgumentException e) {
+            log.warn("解析插件 JAR 元数据失败, originalName={}, msg={}", originalName, e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -465,25 +450,4 @@ public class PluginAdminService {
         return jar;
     }
 
-    /**
-     * 简单封装从 JAR 中解析的插件元数据
-     */
-    private static class PluginJarMeta {
-
-        private final String pluginId;
-        private final String version;
-
-        private PluginJarMeta(String pluginId, String version) {
-            this.pluginId = pluginId;
-            this.version = version;
-        }
-
-        public String getPluginId() {
-            return pluginId;
-        }
-
-        public String getVersion() {
-            return version;
-        }
-    }
 }

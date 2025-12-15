@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'org.start2do'
-version = '1.0.1-SNAPSHOT'
+version = '2.0.9.2.13-SNAPSHOT'
 
 application {
     // 插件管理服务启动类

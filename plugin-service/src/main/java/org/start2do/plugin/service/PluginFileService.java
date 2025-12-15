@@ -1,7 +1,6 @@
 package org.start2do.plugin.service;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
@@ -11,9 +10,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.jar.Attributes;
-import java.util.jar.JarInputStream;
-import java.util.jar.Manifest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginManager;
@@ -21,9 +17,10 @@ import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.start2do.plugin.api.dto.PluginJarMeta;
+import org.start2do.plugin.api.util.PluginJarMetaUtils;
 import org.start2do.plugin.config.PluginSystemProperties;
 import org.start2do.plugin.dto.PluginInfo;
-import org.start2do.plugin.dto.PluginJarMetaDto;
 import org.start2do.plugin.handle.PluginControllerMappingConflictException;
 
 /**
@@ -249,12 +246,12 @@ public class PluginFileService {
             throw new IllegalArgumentException("只支持上传 .jar 文件");
         }
 
-        // 先写入临时文件，再从 JAR 中解析 Plugin-Id / Plugin-Version，统一命名为 pluginId-version.jar
+        // 先写入临时文件，再从 JAR 中解析插件元数据（plugin.id / plugin.version 或 Manifest 中的 Plugin-Id / Plugin-Version），统一命名为 pluginId-version.jar
         File tmp = File.createTempFile("plugin-upload-", ".jar");
         try {
             file.transferTo(tmp);
 
-            PluginJarMetaDto dto = resolveStandardJarName(tmp, originalName);
+            PluginJarMeta dto = resolveStandardJarName(tmp, originalName);
             validateName(dto.getFileName());
 
             File target = enable ? enabledFile(dto.getFileName()) : disabledFile(dto.getFileName());
@@ -306,7 +303,7 @@ public class PluginFileService {
             originalName = jarFile.getName();
         }
 
-        PluginJarMetaDto dto = resolveStandardJarName(jarFile, originalName);
+        PluginJarMeta dto = resolveStandardJarName(jarFile, originalName);
         validateName(dto.getFileName());
 
         File target = enable ? enabledFile(dto.getFileName()) : disabledFile(dto.getFileName());
@@ -327,33 +324,18 @@ public class PluginFileService {
     }
 
     /**
-     * 根据 JAR Manifest 信息推导标准文件名：pluginId-version.jar
+     * 根据插件 Jar 元数据推导标准文件名：pluginId-version.jar。
      * <p>
-     * 必须从 Manifest 中读取到 Plugin-Id / Plugin-Version， 否则视为非法插件包，拒绝上传。
+     * 优先从 plugin.properties 中读取 plugin.id / plugin.version，
+     * 若不存在则回退到 Manifest 中的 Plugin-Id / Plugin-Version。
      */
-    private PluginJarMetaDto resolveStandardJarName(File jarFile, String originalName) {
-        try (FileInputStream fis = new FileInputStream(jarFile); JarInputStream jis = new JarInputStream(fis)) {
-            Manifest manifest = jis.getManifest();
-            if (manifest != null) {
-                Attributes attrs = manifest.getMainAttributes();
-                String pluginId = attrs.getValue("Plugin-Id");
-                String version = attrs.getValue("Plugin-Version");
-
-                if (pluginId != null && !pluginId.trim().isEmpty() && version != null && !version.trim().isEmpty()) {
-                    // 规范化为 pluginId-version.jar
-                    return new PluginJarMetaDto(pluginId.trim(), version.trim());
-                }
-            }
-            log.warn("插件 JAR Manifest 中缺少 Plugin-Id 或 Plugin-Version, originalName={}", originalName);
-            throw new IllegalArgumentException(
-                "插件 Jar 缺少 Manifest 中的 Plugin-Id 或 Plugin-Version，请检查构建配置");
-        } catch (Exception e) {
-            if (e instanceof IllegalArgumentException) {
-                throw (IllegalArgumentException) e;
-            }
-            log.warn("解析插件 JAR Manifest 失败, originalName={}, msg={}", originalName, e.getMessage(), e);
-            throw new IllegalArgumentException(
-                "解析插件 Jar Manifest 失败，请检查是否包含有效的 Plugin-Id 与 Plugin-Version", e);
+    private PluginJarMeta resolveStandardJarName(File jarFile, String originalName) {
+        try {
+            return PluginJarMetaUtils.resolveFromJar(jarFile, originalName);
+        } catch (IllegalArgumentException e) {
+            // 统一在此处加日志，避免各处重复实现解析逻辑
+            log.warn("解析插件 JAR 元数据失败, originalName={}, msg={}", originalName, e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -400,7 +382,7 @@ public class PluginFileService {
             }
 
             try {
-                PluginJarMetaDto meta = resolveStandardJarName(file, name);
+                PluginJarMeta meta = resolveStandardJarName(file, name);
                 if (pluginId.equals(meta.getPluginId())) {
                     // 若存在多个版本，优先选择最新修改时间的文件
                     if (candidate == null || file.lastModified() > candidate.lastModified()) {
@@ -529,7 +511,7 @@ public class PluginFileService {
                 continue;
             }
             try {
-                PluginJarMetaDto meta = resolveStandardJarName(file, name);
+                PluginJarMeta meta = resolveStandardJarName(file, name);
                 if (normalizedId.equals(meta.getPluginId())) {
                     Files.delete(file.toPath());
                 }
@@ -568,11 +550,11 @@ public class PluginFileService {
 
                 String pluginId = null;
                 try {
-                    PluginJarMetaDto meta = resolveStandardJarName(file, name);
+                    PluginJarMeta meta = resolveStandardJarName(file, name);
                     pluginId = meta.getPluginId();
                 } catch (IllegalArgumentException ex) {
                     // 非合法插件包，保留文件信息但 pluginId 为空，方便运维排查
-                    log.warn("扫描插件文件时解析 Manifest 失败, file={}, msg={}", file.getAbsolutePath(), ex.getMessage());
+                    log.warn("扫描插件文件时解析插件元数据失败, file={}, msg={}", file.getAbsolutePath(), ex.getMessage());
                 }
 
                 PluginInfo info = new PluginInfo()
