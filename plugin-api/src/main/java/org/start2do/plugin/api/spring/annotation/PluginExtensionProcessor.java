@@ -307,7 +307,8 @@ public class PluginExtensionProcessor extends AbstractProcessor {
     private void renderMapperMethod(StringBuilder sb) {
         sb.append("    @Override\n");
         sb.append("    public java.util.Collection<org.start2do.plugin.api.spring.MapperMeta> getMappers() {\n");
-        sb.append("        java.util.List<org.start2do.plugin.api.spring.MapperMeta> list = new java.util.ArrayList<>();\n");
+        sb.append(
+            "        java.util.List<org.start2do.plugin.api.spring.MapperMeta> list = new java.util.ArrayList<>();\n");
         for (TypeElement type : mapperTypes) {
             PluginMapper ann = type.getAnnotation(PluginMapper.class);
             String dsId = ann != null ? ann.dataSourceId() : "";
@@ -363,8 +364,10 @@ public class PluginExtensionProcessor extends AbstractProcessor {
 
     private void renderDatabaseMethod(StringBuilder sb) {
         sb.append("    @Override\n");
-        sb.append("    public java.util.Collection<org.start2do.plugin.api.spring.PluginDatabaseMeta> getDatabases() {\n");
-        sb.append("        java.util.List<org.start2do.plugin.api.spring.PluginDatabaseMeta> list = new java.util.ArrayList<>();\n");
+        sb.append(
+            "    public java.util.Collection<org.start2do.plugin.api.spring.PluginDatabaseMeta> getDatabases() {\n");
+        sb.append(
+            "        java.util.List<org.start2do.plugin.api.spring.PluginDatabaseMeta> list = new java.util.ArrayList<>();\n");
         for (TypeElement type : databaseTypes) {
             PluginDatabase[] anns = type.getAnnotationsByType(PluginDatabase.class);
             if (anns == null || anns.length == 0) {
@@ -427,14 +430,47 @@ public class PluginExtensionProcessor extends AbstractProcessor {
         }
     }
 
+    /**
+     * 將原始字符串轉義為適合同時用於 Java 字面量與 properties 文件的格式。
+     * <p>
+     * 規則：
+     * <ul>
+     *   <li>反斜杠與雙引號前置反斜杠</li>
+     *   <li>換行、回車、製表符轉為 \n / \r / \t</li>
+     *   <li>所有非可打印 ASCII 字符（含中文）轉為 \\uXXXX 形式，保證 properties 按 ISO-8859-1 讀取時不會亂碼</li>
+     * </ul>
+     * <p>
+     * - 對於 plugin.properties：java.util.Properties 讀取時會自動將 \\uXXXX 解析回原始字符<br>
+     * - 對於生成的 Java 源碼：編譯器也會按 \\uXXXX 轉義得到正確的運行時字符串
+     */
     private String escape(String raw) {
+        if (raw == null) {
+            return "";
+        }
         StringBuilder sb = new StringBuilder(raw.length() + 16);
         for (int i = 0; i < raw.length(); i++) {
             char c = raw.charAt(i);
-            if (c == '\\' || c == '\"') {
-                sb.append('\\').append(c);
-            } else {
-                sb.append(c);
+            switch (c) {
+                case '\\':
+                case '\"':
+                    sb.append('\\').append(c);
+                    break;
+                case '\r':
+                    sb.append("\\r");
+                    break;
+                case '\n':
+                    sb.append("\\n");
+                    break;
+                case '\t':
+                    sb.append("\\t");
+                    break;
+                default:
+                    // 非可打印 ASCII（包含中文）統一輸出為 \\uXXXX，避免 properties 編碼問題
+                    if (c < 0x20 || c > 0x7e) {
+                        sb.append(String.format("\\u%04X", (int) c));
+                    } else {
+                        sb.append(c);
+                    }
             }
         }
         return sb.toString();
