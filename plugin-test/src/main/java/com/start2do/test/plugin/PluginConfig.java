@@ -7,7 +7,7 @@ import org.start2do.plugin.api.spring.annotation.PluginDatabases;
 import org.start2do.plugin.api.spring.annotation.PluginDescriptor;
 
 @PluginDescriptor(
-    id = "com.zte",
+    id = "org.start2do",
     version = "0.0.1",
     provider = "kiki",
     description = "你好"

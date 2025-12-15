@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-group = 'com.zte'
+group = 'org.start2do'
 version = '1.0.1-SNAPSHOT'
 
 dependencies {

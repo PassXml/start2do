@@ -3,10 +3,10 @@ plugins {
     id 'application'
 }
 
-group = 'com.zte'
+group = 'org.start2do'
 version = '1.0.1-SNAPSHOT'
 application {
-    mainClassName = 'com.zte.TestApplication'
+    mainClassName = 'org.start2do.TestApplication'
 }
 repositories {
     mavenCentral()

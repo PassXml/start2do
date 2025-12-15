@@ -434,7 +434,7 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
         }
 
         /**
-         * 将类似 com.zte.**.* 的模式转换为正则：
+         * 将类似 org.start2do.**.* 的模式转换为正则：
          *  - 正则敏感字符转义（保留 '*' 处理）
          *  - '.'  视为分隔符，转换为 (?:\\.|\\$)
          *  - '**' 转为跨段匹配 [\\s\\S]*（包含 '.' 与 '$'）

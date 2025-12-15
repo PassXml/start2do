@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-group = 'com.zte'
+group = 'org.start2do'
 version = '1.0.1-SNAPSHOT'
 
 repositories {
@@ -38,7 +38,7 @@ tasks.withType(Jar) {
         attributes(
                 // pf4j 插件相关自定义条目
                 'Plugin-Class': 'org.start2do.test.plugin.PluginConfig',
-                'Plugin-Id': 'com.zte',
+                'Plugin-Id': 'org.start2do',
                 'Plugin-Version': '0.0.1',
                 'Plugin-Description': 'My example plugin',
                 'Plugin-Provider': 'Decebal Suiu'

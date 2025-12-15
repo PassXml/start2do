@@ -70,7 +70,7 @@ public class PluginController {
     /**
      * 查询插件列表
      */
-    @GetMapping
+    @GetMapping(value = {"", "/", "/list"})
     public ApiResponse<List<PluginInfo>> list() {
         return ApiResponse.success(pluginFileService.listPlugins());
     }

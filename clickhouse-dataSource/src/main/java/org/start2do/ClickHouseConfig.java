@@ -23,6 +23,6 @@ public class ClickHouseConfig {
     private String driverClassName = "com.clickhouse.jdbc.ClickHouseDriver";
     private String configLocation = "classpath:mybatis/mybatis-config.xml";
     private String mapperLocations = "classpath*:mybatis/clickhouse/*.xml";
-    private String basePackage = "com.zte.clickhouse";
+    private String basePackage = "org.start2do.clickhouse";
 
 }

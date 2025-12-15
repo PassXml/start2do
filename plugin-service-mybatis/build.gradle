@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
 }
 
-group = 'com.zte'
+group = 'org.start2do'
 version = rootProject.version
 
 dependencies {

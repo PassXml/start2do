@@ -3,10 +3,10 @@ plugins {
     id 'application'
 }
 
-group 'com.zte'
+group 'org.start2do'
 version '1.0.1-SNAPSHOT'
 application {
-    mainClass = "com.zte.plugin.PluginServiceApplication"
+    mainClass = "org.start2do.plugin.PluginServiceApplication"
 }
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web"
