@@ -12,14 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.cxf.Bus;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.pf4j.PluginManager;
-import org.pf4j.PluginState;
-import org.pf4j.PluginStateEvent;
-import org.pf4j.PluginStateListener;
-import org.pf4j.PluginWrapper;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
+import org.start2do.plugin.api.pf4j.Pf4jBridge;
 import org.start2do.plugin.api.spring.PluginSpringBeanUtils;
 import org.start2do.plugin.api.spring.SoapWebServiceExtension;
 import org.start2do.plugin.api.spring.SoapWebServiceExtension.WebServiceMeta;
@@ -32,12 +28,7 @@ import org.start2do.plugin.api.spring.SoapWebServiceExtension.WebServiceMeta;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@DependsOn({
-    // 确保插件通用 Bean（包括 @PluginBean 声明的实现类）已经通过 Pf4jSpringMvcBridge 注册为 Spring Bean，
-    // 再进行 SOAP WebService 的发布，否则在发布阶段会因为找不到对应 Bean 而失败。
-    "pf4jSpringMvcBridge", "pf4jMybatisDataSourceBridge", "pf4jMybatisMapperBridge"
-})
-public class Pf4jSoapBridge implements PluginStateListener {
+public class Pf4jSoapBridge implements Pf4jBridge {
 
     private final PluginManager pluginManager;
     private final ConfigurableApplicationContext applicationContext;
@@ -58,29 +49,22 @@ public class Pf4jSoapBridge implements PluginStateListener {
             log.info("Pf4jSoapBridge 初始化: 未找到 PluginManager，跳过 SOAP 动态注册");
             return;
         }
-
-        pluginManager.addPluginStateListener(this);
-
-        // 对已 STARTED 的插件做一次补偿注册
-        for (PluginWrapper wrapper : pluginManager.getPlugins()) {
-            if (wrapper.getPluginState() == PluginState.STARTED) {
-                registerPluginSoapServices(wrapper.getPluginId());
-            }
-        }
-
-        log.info("Pf4jSoapBridge 初始化完成");
+        log.info("Pf4jSoapBridge 初始化完成，将由 Pf4jBridgeOrchestrator 统一编排触发");
     }
 
     @Override
-    public void pluginStateChanged(PluginStateEvent event) {
-        String pluginId = event.getPlugin().getPluginId();
-        PluginState state = event.getPluginState();
-        if (state == PluginState.STARTED) {
-            registerPluginSoapServices(pluginId);
-        } else if (state == PluginState.UNLOADED || state == PluginState.STOPPED
-            || state == PluginState.DISABLED || state == PluginState.FAILED) {
-            unregisterPluginSoapServices(pluginId);
-        }
+    public int getOrder() {
+        return 400;
+    }
+
+    @Override
+    public void onPluginStarted(String pluginId) {
+        registerPluginSoapServices(pluginId);
+    }
+
+    @Override
+    public void onPluginStopped(String pluginId) {
+        unregisterPluginSoapServices(pluginId);
     }
 
     /**

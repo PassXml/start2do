@@ -8,15 +8,12 @@ import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginManager;
-import org.pf4j.PluginState;
-import org.pf4j.PluginStateEvent;
-import org.pf4j.PluginStateListener;
-import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
 import org.start2do.MultiDatasourcePrimaryConfig;
 import org.start2do.MybatisDatasourceFactory;
+import org.start2do.plugin.api.pf4j.Pf4jBridge;
 import org.start2do.plugin.api.spring.MybatisDataSourceExtension;
 import org.start2do.plugin.api.spring.PluginDatabaseMeta;
 import org.start2do.plugin.api.spring.PluginSpringBeanUtils;
@@ -33,7 +30,7 @@ import org.start2do.plugin.api.spring.PluginSpringBeanUtils;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class Pf4jMybatisDataSourceBridge implements PluginStateListener {
+public class Pf4jMybatisDataSourceBridge implements Pf4jBridge {
 
     private final PluginManager pluginManager;
 
@@ -52,31 +49,22 @@ public class Pf4jMybatisDataSourceBridge implements PluginStateListener {
             log.info("Pf4jMybatisDataSourceBridge 初始化: 未找到 PluginManager，跳过插件数据源动态注册");
             return;
         }
-
-        pluginManager.addPluginStateListener(this);
-
-        // 对已 STARTED 的插件做一次补偿注册
-        for (PluginWrapper wrapper : pluginManager.getPlugins()) {
-            if (wrapper.getPluginState() == PluginState.STARTED) {
-                registerPluginDataSources(wrapper.getPluginId());
-            }
-        }
-
-        log.info("Pf4jMybatisDataSourceBridge 初始化完成");
+        log.info("Pf4jMybatisDataSourceBridge 初始化完成，将由 Pf4jBridgeOrchestrator 统一编排触发");
     }
 
     @Override
-    public void pluginStateChanged(PluginStateEvent event) {
-        String pluginId = event.getPlugin().getPluginId();
-        PluginState state = event.getPluginState();
-        if (state == PluginState.STARTED) {
-            registerPluginDataSources(pluginId);
-        } else if (state == PluginState.UNLOADED
-            || state == PluginState.STOPPED
-            || state == PluginState.DISABLED
-            || state == PluginState.FAILED) {
-            unregisterPluginDataSources(pluginId);
-        }
+    public int getOrder() {
+        return 100;
+    }
+
+    @Override
+    public void onPluginStarted(String pluginId) {
+        registerPluginDataSources(pluginId);
+    }
+
+    @Override
+    public void onPluginStopped(String pluginId) {
+        unregisterPluginDataSources(pluginId);
     }
 
     /**

@@ -7,8 +7,8 @@ group 'org.start2do'
 version '2.0.9.2.13-SNAPSHOT'
 dependencies {
     compileOnly "org.springframework.boot:spring-boot-starter-web"
-    compileOnly project(":plugin-api")
-    compileOnly "org.pf4j:pf4j:3.14.0"
+    api project(":plugin-api")
+    api "org.pf4j:pf4j:3.14.0"
     // 引入 PF4J 桥接模块，使本服务可以直接控制 PluginManager
     testImplementation project(":plugin-api")
     testImplementation project(":plugin-service-mybatis")
