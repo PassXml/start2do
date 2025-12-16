@@ -18,6 +18,7 @@ import org.pf4j.PluginStateListener;
 import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
@@ -41,6 +42,7 @@ import org.start2do.plugin.api.spring.MapperMeta;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@DependsOn(value = {"pf4jMybatisDataSourceBridge"})
 public class Pf4jMybatisMapperBridge implements PluginStateListener {
 
     private final PluginManager pluginManager;

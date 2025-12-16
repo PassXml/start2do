@@ -8,16 +8,16 @@ version = rootProject.version
 dependencies {
     api project(':plugin-api')
 
-    implementation "org.springframework.boot:spring-boot-starter-web"
-    implementation "org.springframework.boot:spring-boot-autoconfigure:2.7.18"
-    implementation "org.pf4j:pf4j:3.14.0"
+    compileOnly "org.springframework.boot:spring-boot-starter-web"
+    compileOnly "org.springframework.boot:spring-boot-autoconfigure:2.7.18"
+    compileOnly "org.pf4j:pf4j:3.14.0"
 
     // CXF JAX-WS 支持（3.x 分支兼容 Spring Boot 2.x / JDK 8+）
-    implementation "org.apache.cxf:cxf-spring-boot-starter-jaxws:3.5.6"
+    api "org.apache.cxf:cxf-spring-boot-starter-jaxws:3.5.6"
 
     // JAX-WS 注解与 API（仅编译期，用于提供 javax.jws.* / javax.xml.ws.*）
-    compileOnly "javax.jws:javax.jws-api:1.1"
-    compileOnly "javax.xml.ws:jaxws-api:2.3.1"
+    api "javax.jws:javax.jws-api:1.1"
+    api "javax.xml.ws:jaxws-api:2.3.1"
 
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'

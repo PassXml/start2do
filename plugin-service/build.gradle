@@ -5,15 +5,15 @@ plugins {
 
 group 'org.start2do'
 version '2.0.9.2.13-SNAPSHOT'
-application {
-    mainClass = "org.start2do.plugin.PluginServiceApplication"
-}
 dependencies {
-    implementation "org.springframework.boot:spring-boot-starter-web"
-    implementation project(":plugin-api")
-    testImplementation project(":plugin-service-soap")
+    compileOnly "org.springframework.boot:spring-boot-starter-web"
+    compileOnly project(":plugin-api")
+    compileOnly "org.pf4j:pf4j:3.14.0"
     // 引入 PF4J 桥接模块，使本服务可以直接控制 PluginManager
-    implementation "org.pf4j:pf4j:3.14.0"
+    testImplementation project(":plugin-api")
+    testImplementation project(":plugin-service-mybatis")
+    testImplementation "org.pf4j:pf4j:3.14.0"
+    testImplementation project(":plugin-service-soap")
     testImplementation("org.slf4j:slf4j-api")
     testImplementation("org.slf4j:slf4j-simple")
     testImplementation platform('org.junit:junit-bom:5.10.0')
@@ -21,6 +21,10 @@ dependencies {
     testImplementation "org.apache.cxf:cxf-spring-boot-starter-jaxws:3.5.6"
     testImplementation "javax.jws:javax.jws-api:1.1"
     testImplementation "javax.xml.ws:jaxws-api:2.3.1"
+    testImplementation "mysql:mysql-connector-java:8.0.26"
+    testImplementation("com.zaxxer:HikariCP:6.2.1")
+    testImplementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:2.3.2")
+
 }
 
 test {

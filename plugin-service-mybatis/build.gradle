@@ -19,8 +19,8 @@ dependencies {
     implementation "org.pf4j:pf4j:3.14.0"
 
     // MyBatis 核心与 Spring 集成
-    implementation "org.mybatis:mybatis:3.5.13"
-    implementation "org.mybatis:mybatis-spring:2.1.2"
+    api "org.mybatis:mybatis:3.5.13"
+    api "org.mybatis:mybatis-spring:2.1.2"
 
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'

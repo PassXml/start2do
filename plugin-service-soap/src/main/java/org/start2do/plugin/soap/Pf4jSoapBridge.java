@@ -17,6 +17,7 @@ import org.pf4j.PluginStateEvent;
 import org.pf4j.PluginStateListener;
 import org.pf4j.PluginWrapper;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 import org.start2do.plugin.api.spring.PluginSpringBeanUtils;
@@ -26,14 +27,16 @@ import org.start2do.plugin.api.spring.SoapWebServiceExtension.WebServiceMeta;
 /**
  * PF4J 与 CXF SOAP 的桥接组件
  * <p>
- * 职责：
- * 1. 监听插件生命周期（启动 / 停止）
- * 2. 在插件启动时，从插件扩展点获取 @WebService 实现类，并通过 CXF 动态发布 Endpoint
- * 3. 在插件停止时，停止并移除对应的 SOAP Endpoint
+ * 职责： 1. 监听插件生命周期（启动 / 停止） 2. 在插件启动时，从插件扩展点获取 @WebService 实现类，并通过 CXF 动态发布 Endpoint 3. 在插件停止时，停止并移除对应的 SOAP Endpoint
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@DependsOn({
+    // 确保插件通用 Bean（包括 @PluginBean 声明的实现类）已经通过 Pf4jSpringMvcBridge 注册为 Spring Bean，
+    // 再进行 SOAP WebService 的发布，否则在发布阶段会因为找不到对应 Bean 而失败。
+    "pf4jSpringMvcBridge", "pf4jMybatisDataSourceBridge", "pf4jMybatisMapperBridge"
+})
 public class Pf4jSoapBridge implements PluginStateListener {
 
     private final PluginManager pluginManager;
@@ -124,7 +127,8 @@ public class Pf4jSoapBridge implements PluginStateListener {
                     endpoint.publish(address);
 
                     endpoints.add(endpoint);
-                    log.info("插件 {} 发布 SOAP WebService 成功: class={}, address={}, serviceName={}, portName={}, ns={}",
+                    log.info(
+                        "插件 {} 发布 SOAP WebService 成功: class={}, address={}, serviceName={}, portName={}, ns={}",
                         pluginId, implClass.getName(), address, serviceName, portName, targetNs);
                 } catch (Exception e) {
                     log.error("插件 {} 发布 SOAP WebService 失败: class={}", pluginId, implClass.getName(), e);

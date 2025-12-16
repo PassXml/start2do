@@ -19,6 +19,7 @@ import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -40,6 +41,7 @@ import org.start2do.plugin.api.spring.SpringPluginBeansExtension;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@DependsOn(value = {"pf4jMybatisDataSourceBridge", "pf4jMybatisMapperBridge"})
 public class Pf4jSpringMvcBridge implements PluginStateListener {
 
     /**
@@ -99,8 +101,7 @@ public class Pf4jSpringMvcBridge implements PluginStateListener {
      * 注册指定插件声明的所有 Bean 与 Controller
      */
     private void registerPluginControllers(String pluginId) {
-        RequestMappingHandlerMapping handlerMapping =
-            applicationContext.getBean(RequestMappingHandlerMapping.class);
+        RequestMappingHandlerMapping handlerMapping = applicationContext.getBean(RequestMappingHandlerMapping.class);
         AutowireCapableBeanFactory acf = applicationContext.getAutowireCapableBeanFactory();
         ConfigurableListableBeanFactory beanFactory = applicationContext.getBeanFactory();
 
@@ -127,8 +128,7 @@ public class Pf4jSpringMvcBridge implements PluginStateListener {
      * 反注册指定插件的所有 Controller
      */
     private void unregisterPluginControllers(String pluginId) {
-        RequestMappingHandlerMapping handlerMapping =
-            applicationContext.getBean(RequestMappingHandlerMapping.class);
+        RequestMappingHandlerMapping handlerMapping = applicationContext.getBean(RequestMappingHandlerMapping.class);
         ConfigurableListableBeanFactory beanFactory = applicationContext.getBeanFactory();
 
         // 先移除 RequestMapping，再销毁 Bean，保证 HandlerMapping 不再引用即将销毁的 Bean
@@ -139,21 +139,18 @@ public class Pf4jSpringMvcBridge implements PluginStateListener {
     /**
      * 注册插件中声明的 Service/Component 等普通 Bean
      */
-    private boolean registerPluginBeans(String pluginId,
-        AutowireCapableBeanFactory acf,
-        ConfigurableListableBeanFactory beanFactory,
-        List<String> beanNames) {
+    private boolean registerPluginBeans(String pluginId, AutowireCapableBeanFactory acf,
+        ConfigurableListableBeanFactory beanFactory, List<String> beanNames) {
         // 这些 Bean 可能会被 Controller 注入，所以必须先于 Controller 创建
-        List<SpringPluginBeansExtension> beanExtensions =
-            pluginManager.getExtensions(SpringPluginBeansExtension.class, pluginId);
+        List<SpringPluginBeansExtension> beanExtensions = pluginManager.getExtensions(SpringPluginBeansExtension.class,
+            pluginId);
         for (SpringPluginBeansExtension be : beanExtensions) {
             for (Class<?> beanClass : be.getBeanClasses()) {
                 String beanName = PluginSpringBeanUtils.buildPluginBeanName(pluginId, beanClass);
                 try {
                     Object bean = acf.createBean(beanClass);
                     PluginSpringBeanUtils.registerPluginBean(pluginId, beanName, bean, beanFactory, pluginBeanNames);
-                    log.info("插件 {} 注册 Bean 成功: beanName={}, class={}",
-                        pluginId, beanName, beanClass.getName());
+                    log.info("插件 {} 注册 Bean 成功: beanName={}, class={}", pluginId, beanName, beanClass.getName());
                 } catch (Exception e) {
                     log.error("插件 {} 注册 Bean 失败: class={}, 卸载插件", pluginId, beanClass.getName(), e);
                     unregisterPluginControllers(pluginId);
@@ -168,16 +165,13 @@ public class Pf4jSpringMvcBridge implements PluginStateListener {
     /**
      * 注册插件提供的 Controller 及其对应的 RequestMapping
      */
-    private boolean registerPluginControllerBeans(String pluginId,
-        RequestMappingHandlerMapping handlerMapping,
-        AutowireCapableBeanFactory acf,
-        ConfigurableListableBeanFactory beanFactory,
-        List<String> beanNames,
+    private boolean registerPluginControllerBeans(String pluginId, RequestMappingHandlerMapping handlerMapping,
+        AutowireCapableBeanFactory acf, ConfigurableListableBeanFactory beanFactory, List<String> beanNames,
         List<RequestMappingInfo> mappings) {
 
         // 1. 获取插件实现的 SpringMvcControllerExtension 扩展点
-        List<SpringMvcControllerExtension> extensions =
-            pluginManager.getExtensions(SpringMvcControllerExtension.class, pluginId);
+        List<SpringMvcControllerExtension> extensions = pluginManager.getExtensions(SpringMvcControllerExtension.class,
+            pluginId);
 
         if (extensions.isEmpty()) {
             log.info("插件 {} 未提供 SpringMvcControllerExtension，跳过 Controller 注册", pluginId);
@@ -193,8 +187,8 @@ public class Pf4jSpringMvcBridge implements PluginStateListener {
                 try {
                     validateControllerMappingConflicts(controllerClass, handlerMapping, pluginId);
                 } catch (IllegalStateException conflict) {
-                    log.error("插件 {} 注册 Controller 失败，检测到路径冲突: class={}, msg={}",
-                        pluginId, controllerClass.getName(), conflict.getMessage());
+                    log.error("插件 {} 注册 Controller 失败，检测到路径冲突: class={}, msg={}", pluginId,
+                        controllerClass.getName(), conflict.getMessage());
                     pluginManager.unloadPlugin(pluginId);
                     unregisterPluginControllers(pluginId);
                     return false;
@@ -224,11 +218,8 @@ public class Pf4jSpringMvcBridge implements PluginStateListener {
     /**
      * 为单个 Controller Bean 注册 RequestMapping，并记录映射信息
      */
-    private void registerRequestMappingsForController(String pluginId,
-        RequestMappingHandlerMapping handlerMapping,
-        String beanName,
-        Class<?> controllerClass,
-        List<RequestMappingInfo> mappings) {
+    private void registerRequestMappingsForController(String pluginId, RequestMappingHandlerMapping handlerMapping,
+        String beanName, Class<?> controllerClass, List<RequestMappingInfo> mappings) {
         // 注册 RequestMapping（detectHandlerMethods 是受保护方法，这里通过反射调用）
         invokeDetectHandlerMethods(handlerMapping, beanName);
 
@@ -236,8 +227,8 @@ public class Pf4jSpringMvcBridge implements PluginStateListener {
         List<RequestMappingInfo> infos = findMappingsByBeanName(handlerMapping, beanName);
         mappings.addAll(infos);
 
-        log.info("插件 {} 注册 Controller 成功: beanName={}, class={}, mappings={}",
-            pluginId, beanName, controllerClass.getName(), infos.size());
+        log.info("插件 {} 注册 Controller 成功: beanName={}, class={}, mappings={}", pluginId, beanName,
+            controllerClass.getName(), infos.size());
     }
 
     /**
@@ -259,14 +250,9 @@ public class Pf4jSpringMvcBridge implements PluginStateListener {
      * 销毁插件动态注册的所有 Bean（包括 Service、Component、Controller 等）
      */
     private void destroyPluginBeans(String pluginId, ConfigurableListableBeanFactory beanFactory) {
-        PluginSpringBeanUtils.destroyPluginBeans(
-            pluginId,
-            beanFactory,
-            pluginBeanNames,
+        PluginSpringBeanUtils.destroyPluginBeans(pluginId, beanFactory, pluginBeanNames,
             beanName -> log.info("插件 {} 销毁插件 Bean: {}", pluginId, beanName),
-            (beanName, ex) -> log
-                .warn("插件 {} 销毁插件 Bean 失败(忽略继续): beanName={}", pluginId, beanName, ex)
-        );
+            (beanName, ex) -> log.warn("插件 {} 销毁插件 Bean 失败(忽略继续): beanName={}", pluginId, beanName, ex));
     }
 
     /**
@@ -297,8 +283,8 @@ public class Pf4jSpringMvcBridge implements PluginStateListener {
     private void invokeDetectHandlerMethods(RequestMappingHandlerMapping handlerMapping, String beanName) {
         try {
             // 使用 Spring 提供的工具从类及其父类中查找方法，兼容不同版本
-            java.lang.reflect.Method method =
-                ReflectionUtils.findMethod(handlerMapping.getClass(), "detectHandlerMethods", Object.class);
+            java.lang.reflect.Method method = ReflectionUtils.findMethod(handlerMapping.getClass(),
+                "detectHandlerMethods", Object.class);
             if (method == null) {
                 throw new IllegalStateException(
                     "在 RequestMappingHandlerMapping 及其父类中未找到 detectHandlerMethods(Object) 方法");
@@ -317,16 +303,15 @@ public class Pf4jSpringMvcBridge implements PluginStateListener {
      * IllegalStateException，阻止插件继续注册。
      */
     private void validateControllerMappingConflicts(Class<?> controllerClass,
-        RequestMappingHandlerMapping handlerMapping,
-        String pluginId) {
+        RequestMappingHandlerMapping handlerMapping, String pluginId) {
         Map<RequestMappingInfo, HandlerMethod> existing = handlerMapping.getHandlerMethods();
         if (existing == null || existing.isEmpty()) {
             return;
         }
 
         // 通过反射调用 protected RequestMappingHandlerMapping.getMappingForMethod(Method, Class<?>)
-        Method getMappingForMethod =
-            ReflectionUtils.findMethod(handlerMapping.getClass(), "getMappingForMethod", Method.class, Class.class);
+        Method getMappingForMethod = ReflectionUtils.findMethod(handlerMapping.getClass(), "getMappingForMethod",
+            Method.class, Class.class);
         if (getMappingForMethod == null) {
             log.warn("无法找到 RequestMappingHandlerMapping.getMappingForMethod(Method, Class)，跳过路径冲突预检测");
             return;
@@ -339,8 +324,8 @@ public class Pf4jSpringMvcBridge implements PluginStateListener {
             try {
                 newInfo = (RequestMappingInfo) getMappingForMethod.invoke(handlerMapping, method, controllerClass);
             } catch (Exception e) {
-                log.warn("分析插件 {} Controller 映射失败, class={}, method={}", pluginId,
-                    controllerClass.getName(), method.getName(), e);
+                log.warn("分析插件 {} Controller 映射失败, class={}, method={}", pluginId, controllerClass.getName(),
+                    method.getName(), e);
                 continue;
             }
             if (newInfo == null) {
@@ -360,14 +345,8 @@ public class Pf4jSpringMvcBridge implements PluginStateListener {
                     String conflictPattern = firstCommonPattern(newPatterns, existPatterns);
                     String message = String.format(
                         "插件 Controller 路由冲突: plugin=%s, controller=%s, method=%s, url=%s, newHttpMethods=%s, existingBean=%s, existingHttpMethods=%s",
-                        pluginId,
-                        controllerClass.getName(),
-                        method.getName(),
-                        conflictPattern,
-                        newMethods,
-                        existBean,
-                        existMethods
-                    );
+                        pluginId, controllerClass.getName(), method.getName(), conflictPattern, newMethods, existBean,
+                        existMethods);
                     throw new PluginControllerMappingConflictException(message);
                 }
             }
@@ -377,8 +356,8 @@ public class Pf4jSpringMvcBridge implements PluginStateListener {
     /**
      * 统一从 RequestMappingInfo 中提取 URL pattern 字符串，兼容两种路径匹配策略：
      * <p>
-     * - 传统 AntPathMatcher：使用 PatternsRequestCondition.getPatterns() <br>
-     * - PathPatternParser：使用 PathPatternsRequestCondition.getPatternValues()
+     * - 传统 AntPathMatcher：使用 PatternsRequestCondition.getPatterns() <br> - PathPatternParser：使用
+     * PathPatternsRequestCondition.getPatternValues()
      */
     @SuppressWarnings("unchecked")
     private Set<String> extractPatterns(RequestMappingInfo info) {
@@ -437,7 +416,8 @@ public class Pf4jSpringMvcBridge implements PluginStateListener {
             log.debug("当前 Spring 版本不支持 PathPatternsRequestCondition, info={}", info);
         } catch (Exception ex) {
             // 为避免影响主流程，这里只记录告警并返回空集合
-            log.warn("从 PathPatternsRequestCondition 提取 URL pattern 失败，将忽略该映射进行冲突检测, info={}", info, ex);
+            log.warn("从 PathPatternsRequestCondition 提取 URL pattern 失败，将忽略该映射进行冲突检测, info={}", info,
+                ex);
         }
 
         return Collections.emptySet();

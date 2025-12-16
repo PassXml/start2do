@@ -10,14 +10,13 @@ repositories {
 }
 
 dependencies {
-    implementation project(":plugin-api")
     compileOnly("org.springframework.boot:spring-boot-starter-web")
     // SOAP WebService 示例所需的 JAX-WS 注解（仅编译期依赖，运行时由宿主应用提供实现）
     compileOnly 'javax.jws:javax.jws-api:1.1'
-    annotationProcessor "org.pf4j:pf4j:3.14.0"
-    // 使用 plugin-api 提供的注解处理器，自动生成 PF4J 扩展实现
-    annotationProcessor project(":plugin-api")
     compileOnly "org.pf4j:pf4j:3.14.0"
+    implementation project(":plugin-api")
+    annotationProcessor project(":plugin-api")
+    // 使用 plugin-api 提供的注解处理器，自动生成 PF4J 扩展实现
 
     // ===== 测试依赖（仅用于在本模块下编写 plugin-client / plugin-server 的测试服务用例） =====
     testImplementation platform('org.junit:junit-bom:5.10.0')

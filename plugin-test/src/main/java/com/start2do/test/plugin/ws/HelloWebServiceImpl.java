@@ -16,7 +16,8 @@ import org.start2do.plugin.api.spring.annotation.PluginSoapService;
     serviceName = "HelloWebService",
     portName = "HelloWebServicePort",
     targetNamespace = "http://test.plugin.start2do.org/ws",
-    endpointInterface = "org.start2do.test.plugin.ws.HelloWebService"
+    // 注意这里要填写接口的“完整限定名”，需要与 HelloWebService.java 的 package 保持一致
+    endpointInterface = "com.start2do.test.plugin.ws.HelloWebService"
 )
 @RequiredArgsConstructor
 public class HelloWebServiceImpl implements HelloWebService {
