@@ -24,6 +24,11 @@ public class TestController {
         return ResponseEntity.ok(service.version());
     }
 
+    @GetMapping("plugin-config")
+    public ResponseEntity<String> pluginConfig() {
+        return ResponseEntity.ok(service.greeting());
+    }
+
     @PostMapping("abc")
     public ResponseEntity<String> abc(@RequestBody String body) {
         return ResponseEntity.ok(body);
