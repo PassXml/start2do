@@ -1,0 +1,61 @@
+plugins {
+    id 'java'
+    id 'groovy'
+    id 'java-gradle-plugin'
+}
+
+group = 'org.start2do'
+version = '2.0.9.2.13-SNAPSHOT'
+
+gradlePlugin {
+    plugins {
+        ebeanFixPlugin {
+            id = 'org.start2do.ebean-fix'
+            implementationClass = 'org.start2do.ebean.fix.gradle.EbeanFixPlugin'
+        }
+    }
+}
+
+dependencies {
+    // ASM 库
+    implementation 'org.ow2.asm:asm:9.7'
+    implementation 'org.ow2.asm:asm-commons:9.7'
+    implementation 'org.ow2.asm:asm-util:9.7'
+
+    // Gradle API (for plugin development)
+    implementation gradleApi()
+    implementation localGroovy()
+
+    // Ebean 相关
+    compileOnly "io.ebean:ebean-querybean"
+    compileOnly "io.ebean:ebean"
+
+    // 日志
+    compileOnly 'org.slf4j:slf4j-api:2.0.5'
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// 配置处理重复文件策略
+tasks.withType(Jar) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// 配置 JAR 任务以支持 Java Agent
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes(
+            'Premain-Class': 'org.start2do.ebean.fix.QueryBeanAgent',
+            'Agent-Class': 'org.start2do.ebean.fix.QueryBeanAgent',
+            'Can-Redefine-Classes': 'true',
+            'Can-Retransform-Classes': 'true',
+            'Main-Class': 'org.start2do.ebean.fix.QueryBeanTransformer'
+        )
+    }
+}

@@ -1,0 +1,67 @@
+/*
+ * 将此配置添加到根项目的 build.gradle 中
+ * 用于自动为所有使用 Ebean 的模块应用 ebean-fix 插件
+ */
+
+// ==================== Ebean Fix 插件自动配置 ====================
+// 说明：任何应用了 io.ebean 插件的模块都会自动应用 ebean-fix 转换
+// 无需在子模块中手动配置
+
+subprojects {
+    afterEvaluate { project ->
+        // 检查项目是否应用了 io.ebean 插件
+        if (project.plugins.hasPlugin('io.ebean')) {
+            logger.lifecycle("[Ebean Fix] 为模块 ${project.name} 自动应用 ebean-fix 插件")
+
+            // 配置 buildscript 依赖
+            project.buildscript {
+                dependencies {
+                    classpath rootProject.project(':plugin-ebean-fix')
+                }
+            }
+
+            // 应用插件
+            try {
+                project.apply plugin: 'org.start2do.ebean-fix'
+
+                // 配置插件
+                project.extensions.configure('ebeanFix') { extension ->
+                    extension.enabled = true
+
+                    // 可以通过命令行参数控制 verbose: -PebeanFixVerbose=true
+                    extension.verbose = project.hasProperty('ebeanFixVerbose') ?
+                        project.property('ebeanFixVerbose').toBoolean() : false
+
+                    extension.failOnError = true
+                }
+
+                logger.lifecycle("[Ebean Fix] ✓ 插件已成功应用到模块: ${project.name}")
+            } catch (Exception e) {
+                logger.error("[Ebean Fix] ✗ 应用插件失败: ${project.name}", e)
+            }
+        }
+    }
+}
+
+// ==================== 全局任务：一键转换所有模块 ====================
+tasks.register('ebeanFixAllModules') {
+    group = 'build'
+    description = '转换所有模块的 Ebean QueryBean'
+
+    doLast {
+        def ebeanModules = subprojects.findAll { it.plugins.hasPlugin('io.ebean') }
+        if (ebeanModules.isEmpty()) {
+            println "没有找到使用 Ebean 的模块"
+        } else {
+            println "找到 ${ebeanModules.size()} 个使用 Ebean 的模块："
+            ebeanModules.each { println "  - ${it.name}" }
+        }
+    }
+
+    // 依赖所有 ebean 模块的编译和转换任务
+    subprojects.each { subproject ->
+        if (subproject.plugins.hasPlugin('io.ebean')) {
+            dependsOn "${subproject.path}:build"
+        }
+    }
+}
