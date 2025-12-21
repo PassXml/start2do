@@ -180,6 +180,7 @@ public class PluginExtensionProcessor extends AbstractProcessor {
         }
 
         String pluginClass = pluginDescriptorElement.getQualifiedName().toString();
+        String version = resolvePluginVersion(desc.version());
 
         FileObject fileObject = processingEnv.getFiler()
             .createResource(StandardLocation.CLASS_OUTPUT, "", "plugin.properties", pluginDescriptorElement);
@@ -187,7 +188,7 @@ public class PluginExtensionProcessor extends AbstractProcessor {
         try (Writer writer = fileObject.openWriter()) {
             writer.write("plugin.id=" + escape(desc.id()) + "\n");
             writer.write("plugin.class=" + pluginClass + "\n");
-            writer.write("plugin.version=" + escape(desc.version()) + "\n");
+            writer.write("plugin.version=" + escape(version) + "\n");
             if (!desc.provider().isEmpty()) {
                 writer.write("plugin.provider=" + escape(desc.provider()) + "\n");
             }
@@ -195,6 +196,25 @@ public class PluginExtensionProcessor extends AbstractProcessor {
             writer.write("plugin.description=" + escape(desc.description()) + "\n");
             }
         }
+    }
+
+    /**
+     * 解析插件版本号。
+     * <p>
+     * 优先级：
+     * 1) 注解处理器参数（-Aplugin.version=...）
+     * 2) @PluginDescriptor.version
+     * 3) 为空时使用构建时刻时间戳（毫秒）
+     */
+    private String resolvePluginVersion(String declared) {
+        String option = processingEnv.getOptions().get("plugin.version");
+        if (option != null && !option.trim().isEmpty()) {
+            return option.trim();
+        }
+        if (declared != null && !declared.trim().isEmpty()) {
+            return declared.trim();
+        }
+        return String.valueOf(System.currentTimeMillis());
     }
 
     /**

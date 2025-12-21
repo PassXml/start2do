@@ -22,8 +22,11 @@ public @interface PluginDescriptor {
 
     /**
      * 插件版本号，对应 PF4J 的 plugin.version。
+     * <p>
+     * 约定：
+     * - 若为空字符串，则由编译期注解处理器自动填充为“构建时刻时间戳”（用于避免同名插件包覆盖导致的缓存问题）。
      */
-    String version();
+    String version() default "";
 
     /**
      * 插件提供方（作者 / 组织），对应 PF4J 的 plugin.provider。
@@ -35,4 +38,3 @@ public @interface PluginDescriptor {
      */
     String description() default "";
 }
-

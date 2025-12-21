@@ -38,6 +38,7 @@ public class PluginFileService {
     private final PluginSystemProperties pluginSystemProperties;
     private final PluginConfigRegistry pluginConfigRegistry;
     private final Environment environment;
+    private final PluginRuntimeRegistry pluginRuntimeRegistry;
 
     /**
      * PF4J 插件管理器
@@ -143,8 +144,18 @@ public class PluginFileService {
                         : existing.getPluginPath().toAbsolutePath().normalize();
                     Path newPath = enabledJar.toPath().toAbsolutePath().normalize();
                     if (existing.getPluginState() == PluginState.STARTED && newPath.equals(existingPath)) {
-                        log.info("PF4J 动态启用插件: 已处于运行状态, pluginId={}, path={}", pluginId, enabledJar.getAbsolutePath());
-                        return PluginState.STARTED.toString();
+                        // 若插件文件已被外部更新（同路径覆盖），则需要“先卸载再重新加载”，否则仍会使用旧 ClassLoader
+                        if (pluginRuntimeRegistry.hasJarFingerprintChanged(pluginId, enabledJar)) {
+                            log.info("检测到插件文件已更新，将重启插件以生效: pluginId={}, path={}",
+                                pluginId, enabledJar.getAbsolutePath());
+                            stopPluginIfPossible(pluginId);
+                        } else {
+                            // 若未记录过指纹（例如插件不是通过 PluginFileService 启动），先记录基线，避免后续无法检测变化
+                            pluginRuntimeRegistry.recordJarFingerprint(pluginId, enabledJar);
+                            log.info("PF4J 动态启用插件: 已处于运行状态, pluginId={}, path={}", pluginId,
+                                enabledJar.getAbsolutePath());
+                            return PluginState.STARTED.toString();
+                        }
                     }
                     stopPluginIfPossible(pluginId);
                 }
@@ -171,6 +182,8 @@ public class PluginFileService {
             }
             PluginState plugin = pluginManager.startPlugin(pluginId);
             log.info("PF4J 动态加载并启动插件成功, baseName={}, pluginId={}", enabledJar.getAbsolutePath(), pluginId);
+            // 记录本次启动对应文件指纹（用于后续 enable 时判断是否发生“同路径覆盖更新”）
+            pluginRuntimeRegistry.recordJarFingerprint(pluginId, enabledJar);
             return Optional.ofNullable(plugin).map(PluginState::toString).orElseGet(() -> "ERROR");
         } catch (Exception e) {
             // 启用失败时，卸载插件并删除本地 JAR，避免子节点残留无效插件文件
@@ -205,6 +218,7 @@ public class PluginFileService {
                 } catch (Exception ignore) {
                     // 忽略卸载配置异常
                 }
+                pluginRuntimeRegistry.clear(pluginId);
             }
         } catch (Exception ignore) {
             // 避免清理过程中异常打断后续逻辑
@@ -260,6 +274,7 @@ public class PluginFileService {
                 jarPath = info.getPluginPath().getFileName().toString();
                 pluginManager.stopPlugin(pluginId);
                 pluginManager.unloadPlugin(pluginId);
+                pluginRuntimeRegistry.clear(pluginId);
                 log.info("PF4J 停用并卸载插件成功, pluginId={}", pluginId);
                 return jarPath;
             }
@@ -680,4 +695,5 @@ public class PluginFileService {
 
         return new ArrayList<>(map.values());
     }
+
 }

@@ -12,6 +12,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.start2do.plugin.config.PluginSystemProperties;
 import org.start2do.plugin.env.PluginConfigRegistry;
+import org.start2do.plugin.service.PluginRuntimeRegistry;
 
 /**
  * 插件系统启动初始化组件
@@ -27,6 +28,7 @@ public class PluginSystemInitializer {
     private final PluginSystemProperties pluginSystemProperties;
     private final PluginConfigRegistry pluginConfigRegistry;
     private final Environment environment;
+    private final PluginRuntimeRegistry pluginRuntimeRegistry;
 
     /**
      * PF4J 插件管理器，由 plugin-bridge 自动配置。
@@ -67,12 +69,24 @@ public class PluginSystemInitializer {
                 }
                 pluginManager.startPlugin(plugin.getDescriptor().getPluginId());
                 log.info("插件状态：{},{}", plugin.getDescriptor().getPluginId(), plugin.getPluginState());
+                try {
+                    if (plugin.getPluginPath() != null) {
+                        pluginRuntimeRegistry.recordJarFingerprint(plugin.getPluginId(), plugin.getPluginPath());
+                    }
+                } catch (Exception ignore) {
+                    // 忽略记录失败
+                }
             } catch (Exception e) {
                 pluginManager.unloadPlugin(plugin.getDescriptor().getPluginId());
                 try {
                     pluginConfigRegistry.unload(plugin.getPluginId());
                 } catch (Exception ignore) {
                     // 忽略卸载配置失败
+                }
+                try {
+                    pluginRuntimeRegistry.clear(plugin.getPluginId());
+                } catch (Exception ignore) {
+                    // 忽略清理失败
                 }
                 log.error("插件启动失败：{},{},{}", plugin.getPluginId(), plugin.getPluginPath(), e.getMessage());
             }

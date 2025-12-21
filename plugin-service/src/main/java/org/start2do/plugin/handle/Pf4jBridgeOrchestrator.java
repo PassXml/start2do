@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.start2do.plugin.api.pf4j.Pf4jBridge;
 import org.start2do.plugin.env.PluginConfigRegistry;
 import org.start2do.plugin.env.PluginContextHolder;
+import org.start2do.plugin.service.PluginRuntimeRegistry;
 
 /**
  * PF4J 桥接监听器编排器（推荐方案）
@@ -37,6 +38,7 @@ public class Pf4jBridgeOrchestrator implements PluginStateListener, SmartInitial
     private final PluginManager pluginManager;
     private final ConfigurableApplicationContext applicationContext;
     private final PluginConfigRegistry pluginConfigRegistry;
+    private final PluginRuntimeRegistry pluginRuntimeRegistry;
 
     private volatile List<Pf4jBridge> orderedBridges = Collections.emptyList();
 
@@ -95,6 +97,14 @@ public class Pf4jBridgeOrchestrator implements PluginStateListener, SmartInitial
         }
         String pluginId = plugin.getPluginId();
         withPluginClassLoader(plugin, () -> {
+            // 记录插件包文件指纹，便于后续 enable 时检测“同路径覆盖更新”
+            try {
+                if (plugin.getPluginPath() != null) {
+                    pluginRuntimeRegistry.recordJarFingerprint(pluginId, plugin.getPluginPath());
+                }
+            } catch (Exception ignore) {
+                // 忽略记录失败
+            }
             // 先加载插件 application*.yml 快照，确保后续桥接/Bean 实例化可读取插件配置
             try {
                 pluginConfigRegistry.loadOrReload(pluginId, plugin.getPluginClassLoader(),
@@ -135,6 +145,11 @@ public class Pf4jBridgeOrchestrator implements PluginStateListener, SmartInitial
             pluginConfigRegistry.unload(pluginId);
         } catch (Exception ex) {
             log.warn("插件 {} 卸载配置失败(忽略继续)", pluginId, ex);
+        }
+        try {
+            pluginRuntimeRegistry.clear(pluginId);
+        } catch (Exception ex) {
+            log.warn("插件 {} 清理运行态信息失败(忽略继续)", pluginId, ex);
         }
     }
 
