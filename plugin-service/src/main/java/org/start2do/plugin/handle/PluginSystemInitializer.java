@@ -7,9 +7,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginWrapper;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.core.env.Environment;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.start2do.plugin.config.PluginSystemProperties;
+import org.start2do.plugin.env.PluginConfigRegistry;
 
 /**
  * 插件系统启动初始化组件
@@ -23,6 +25,8 @@ public class PluginSystemInitializer {
 
 
     private final PluginSystemProperties pluginSystemProperties;
+    private final PluginConfigRegistry pluginConfigRegistry;
+    private final Environment environment;
 
     /**
      * PF4J 插件管理器，由 plugin-bridge 自动配置。
@@ -53,10 +57,23 @@ public class PluginSystemInitializer {
         pluginManager.loadPlugins();
         for (PluginWrapper plugin : pluginManager.getPlugins()) {
             try {
+                // 预加载插件包内 application*.yml，便于插件在 Plugin#start 等阶段读取配置
+                try {
+                    pluginConfigRegistry.loadOrReload(plugin.getPluginId(), plugin.getPluginClassLoader(),
+                        environment.getActiveProfiles());
+                } catch (Exception ex) {
+                    // 配置不存在或解析失败不应阻断插件启动
+                    log.warn("插件 {} 预加载 application*.yml 失败(忽略继续)", plugin.getPluginId(), ex);
+                }
                 pluginManager.startPlugin(plugin.getDescriptor().getPluginId());
                 log.info("插件状态：{},{}", plugin.getDescriptor().getPluginId(), plugin.getPluginState());
             } catch (Exception e) {
                 pluginManager.unloadPlugin(plugin.getDescriptor().getPluginId());
+                try {
+                    pluginConfigRegistry.unload(plugin.getPluginId());
+                } catch (Exception ignore) {
+                    // 忽略卸载配置失败
+                }
                 log.error("插件启动失败：{},{},{}", plugin.getPluginId(), plugin.getPluginPath(), e.getMessage());
             }
         }

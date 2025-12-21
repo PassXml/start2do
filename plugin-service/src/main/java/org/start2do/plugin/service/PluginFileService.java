@@ -15,12 +15,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.start2do.plugin.api.dto.PluginJarMeta;
 import org.start2do.plugin.api.util.PluginJarMetaUtils;
 import org.start2do.plugin.config.PluginSystemProperties;
 import org.start2do.plugin.dto.PluginInfo;
+import org.start2do.plugin.env.PluginConfigRegistry;
 import org.start2do.plugin.handle.PluginControllerMappingConflictException;
 
 /**
@@ -34,6 +36,8 @@ import org.start2do.plugin.handle.PluginControllerMappingConflictException;
 public class PluginFileService {
 
     private final PluginSystemProperties pluginSystemProperties;
+    private final PluginConfigRegistry pluginConfigRegistry;
+    private final Environment environment;
 
     /**
      * PF4J 插件管理器
@@ -156,6 +160,15 @@ public class PluginFileService {
             if (loadedPluginId != null) {
                 pluginId = loadedPluginId;
             }
+            // 在真正 startPlugin 之前预加载插件 application*.yml，便于插件在 Plugin#start 阶段读取配置
+            try {
+                PluginWrapper wrapper = pluginId == null ? null : pluginManager.getPlugin(pluginId);
+                if (wrapper != null) {
+                    pluginConfigRegistry.loadOrReload(pluginId, wrapper.getPluginClassLoader(), environment.getActiveProfiles());
+                }
+            } catch (Exception ex) {
+                log.warn("插件 {} 预加载 application*.yml 失败(忽略继续)", pluginId, ex);
+            }
             PluginState plugin = pluginManager.startPlugin(pluginId);
             log.info("PF4J 动态加载并启动插件成功, baseName={}, pluginId={}", enabledJar.getAbsolutePath(), pluginId);
             return Optional.ofNullable(plugin).map(PluginState::toString).orElseGet(() -> "ERROR");
@@ -186,6 +199,11 @@ public class PluginFileService {
                     pluginManager.unloadPlugin(pluginId);
                 } catch (Exception ignore) {
                     // 忽略卸载异常
+                }
+                try {
+                    pluginConfigRegistry.unload(pluginId);
+                } catch (Exception ignore) {
+                    // 忽略卸载配置异常
                 }
             }
         } catch (Exception ignore) {

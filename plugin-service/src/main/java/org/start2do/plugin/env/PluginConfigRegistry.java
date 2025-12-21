@@ -79,6 +79,20 @@ public class PluginConfigRegistry {
         return map.get(key);
     }
 
+    /**
+     * 获取指定插件的配置快照（只包含插件包内 application*.yml 的解析结果）。
+     *
+     * @param pluginId 插件 ID
+     * @return 不可变 Map；不存在则返回空 Map
+     */
+    public Map<String, Object> snapshot(String pluginId) {
+        if (pluginId == null) {
+            return Collections.emptyMap();
+        }
+        Map<String, Object> map = propertiesByPluginId.get(pluginId);
+        return map == null ? Collections.emptyMap() : map;
+    }
+
     private Map<String, Object> loadMergedYaml(String pluginId, ClassLoader pluginClassLoader, String[] activeProfiles) {
         StandardEnvironment profileEnv = new StandardEnvironment();
         if (activeProfiles != null && activeProfiles.length > 0) {
