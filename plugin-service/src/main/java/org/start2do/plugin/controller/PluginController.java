@@ -68,6 +68,17 @@ public class PluginController {
     }
 
     /**
+     * 按插件 ID 清理（卸载并删除所有版本的启用/禁用文件）。
+     * <p>
+     * 适合“老插件残留导致类冲突/方法不一致”场景，清理后再上传新包。
+     */
+    @PostMapping("/deleteByPluginId")
+    public ApiResponse<Void> deleteByPluginId(@RequestParam("pluginId") String pluginId) throws IOException {
+        pluginFileService.deleteByPluginId(pluginId);
+        return ApiResponse.success(null);
+    }
+
+    /**
      * 查询插件列表
      */
     @GetMapping(value = {"", "/", "/list"})

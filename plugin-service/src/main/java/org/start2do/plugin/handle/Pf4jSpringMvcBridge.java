@@ -1,8 +1,10 @@
 package org.start2do.plugin.handle;
 
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -187,10 +189,31 @@ public class Pf4jSpringMvcBridge implements Pf4jBridge {
                 }
 
                 try {
+                    // 确保在插件 ClassLoader 上下文中实例化 Bean，避免 LocalVariableTableParameterNameDiscoverer 无法解析方法签名中的插件类
+                    ClassLoader currentTccl = Thread.currentThread().getContextClassLoader();
+                    if (pluginClassLoader != null && !pluginClassLoader.equals(currentTccl)) {
+                        log.warn("插件 {} 实例化 Controller 时 TCCL 不一致，当前={}, 插件={}, 将重新设置",
+                            pluginId, currentTccl, pluginClassLoader);
+                        Thread.currentThread().setContextClassLoader(pluginClassLoader);
+                    }
+
                     applicationContext.getBean(beanName);
                     registerRequestMappingsForController(pluginId, handlerMapping, beanName, controllerClass, mappings);
                 } catch (Exception e) {
-                    log.error("插件 {} 注册 Controller 失败: class={}", pluginId, controllerClass.getName(), e);
+                    // 增强错误诊断：检查是否是 LocalVariableTableParameterNameDiscoverer 导致的类加载问题
+                    String errorMsg = e.getMessage();
+                    if (errorMsg != null && errorMsg.contains("cannot be resolved in the class object")) {
+                        logControllerClassDiagnostics(pluginId, controllerClass);
+                        log.error("插件 {} 注册 Controller 失败: class={}. " +
+                                "检测到方法解析失败，可能原因: " +
+                                "1) Controller 方法签名中的参数/返回值类型在插件 ClassLoader 中不可见; " +
+                                "2) 请确保所有依赖类都包含在插件的 dependencies.txt 或正确配置了类加载策略; " +
+                                "3) 建议插件编译开启 -parameters；或在 Controller 构造函数上添加 @ConstructorProperties / @Autowired 明确标注；" +
+                                "4) 检查是否存在同名类多份（.class 资源与已加载 Class 不一致）",
+                            pluginId, controllerClass.getName(), e);
+                    } else {
+                        log.error("插件 {} 注册 Controller 失败: class={}", pluginId, controllerClass.getName(), e);
+                    }
                     unloadAndCleanup(pluginId);
                     return;
                 }
@@ -320,6 +343,16 @@ public class Pf4jSpringMvcBridge implements Pf4jBridge {
                 registry.removeBeanDefinition(beanName);
             }
             RootBeanDefinition bd = new RootBeanDefinition(beanClass);
+
+            // 关键修复：设置 BeanDefinition 使用当前的 BeanClassLoader（即插件 ClassLoader），
+            // 确保 LocalVariableTableParameterNameDiscoverer 在解析方法签名时能够正确加载插件类
+            ClassLoader currentBeanCl = ((ConfigurableListableBeanFactory) registry).getBeanClassLoader();
+            if (currentBeanCl != null) {
+                bd.setBeanClass(beanClass);
+                // 确保 BeanDefinition 知道应该使用哪个 ClassLoader 来解析类型
+                bd.setAttribute("PLUGIN_CLASS_LOADER", currentBeanCl);
+            }
+
             registry.registerBeanDefinition(beanName, bd);
             return true;
         } catch (Exception ex) {
@@ -335,6 +368,44 @@ public class Pf4jSpringMvcBridge implements Pf4jBridge {
             log.warn("插件 {} 卸载失败(忽略继续清理): {}", pluginId, ex.getMessage(), ex);
         }
         unregisterPluginControllers(pluginId);
+    }
+
+    private void logControllerClassDiagnostics(String pluginId, Class<?> controllerClass) {
+        if (controllerClass == null) {
+            return;
+        }
+        try {
+            ClassLoader cl = controllerClass.getClassLoader();
+            String resourcePath = controllerClass.getName().replace('.', '/') + ".class";
+            String codeSource = null;
+            try {
+                if (controllerClass.getProtectionDomain() != null
+                    && controllerClass.getProtectionDomain().getCodeSource() != null
+                    && controllerClass.getProtectionDomain().getCodeSource().getLocation() != null) {
+                    codeSource = controllerClass.getProtectionDomain().getCodeSource().getLocation().toString();
+                }
+            } catch (Exception ignore) {
+                // 忽略：不同安全策略下可能不可访问
+            }
+
+            List<String> resources = new ArrayList<>();
+            if (cl != null) {
+                Enumeration<URL> urls = cl.getResources(resourcePath);
+                while (urls != null && urls.hasMoreElements()) {
+                    URL u = urls.nextElement();
+                    if (u != null) {
+                        resources.add(u.toString());
+                    }
+                }
+            }
+            log.error("插件 {} Controller 类诊断: class={}, classLoader={}, codeSource={}, classResources={}",
+                pluginId, controllerClass.getName(),
+                cl == null ? "<null>" : cl.getClass().getName(),
+                codeSource == null ? "<unknown>" : codeSource,
+                resources.isEmpty() ? "<empty>" : resources);
+        } catch (Exception ex) {
+            log.warn("插件 {} Controller 类诊断失败(忽略继续): class={}", pluginId, controllerClass.getName(), ex);
+        }
     }
 
     /**

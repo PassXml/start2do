@@ -129,13 +129,33 @@ public class PluginFileService {
         }
         String pluginId = null;
         try {
+            // 先解析 pluginId，便于在“同 pluginId 已加载旧版本”场景先卸载清理，避免 loadPlugin 失败后误删新包
+            pluginId = tryResolvePluginIdFromJar(enabledJar);
+            if (pluginId != null) {
+                PluginWrapper existing = getPluginInfoById(pluginId);
+                if (existing != null) {
+                    Path existingPath = existing.getPluginPath() == null
+                        ? null
+                        : existing.getPluginPath().toAbsolutePath().normalize();
+                    Path newPath = enabledJar.toPath().toAbsolutePath().normalize();
+                    if (existing.getPluginState() == PluginState.STARTED && newPath.equals(existingPath)) {
+                        log.info("PF4J 动态启用插件: 已处于运行状态, pluginId={}, path={}", pluginId, enabledJar.getAbsolutePath());
+                        return PluginState.STARTED.toString();
+                    }
+                    stopPluginIfPossible(pluginId);
+                }
+            }
+
             // 若插件对应的 JAR 已处于运行状态，则直接返回，避免重复加载与误删文件
             if (isRunStateByFilePath(enabledJar.toPath())) {
                 log.info("PF4J 动态启用插件: 已处于运行状态, path={}", enabledJar.getAbsolutePath());
                 return PluginState.STARTED.toString();
             }
             // 若插件尚未加载，则按文件路径动态加载
-            pluginId = pluginManager.loadPlugin(enabledJar.toPath());
+            String loadedPluginId = pluginManager.loadPlugin(enabledJar.toPath());
+            if (loadedPluginId != null) {
+                pluginId = loadedPluginId;
+            }
             PluginState plugin = pluginManager.startPlugin(pluginId);
             log.info("PF4J 动态加载并启动插件成功, baseName={}, pluginId={}", enabledJar.getAbsolutePath(), pluginId);
             return Optional.ofNullable(plugin).map(PluginState::toString).orElseGet(() -> "ERROR");
@@ -255,14 +275,12 @@ public class PluginFileService {
             validateName(dto.getFileName());
 
             File target = enable ? enabledFile(dto.getFileName()) : disabledFile(dto.getFileName());
-            if (target.exists()) {
-                // 若目标文件已存在且对应插件正在运行，先停用再覆盖
-                PluginWrapper wrapper = getPluginInfoById(dto.getPluginId());
-                if (wrapper != null) {
-                    stopPluginIfPossible(wrapper.getPluginId());
-                }
-                Files.delete(target.toPath());
+            // 先停用并卸载旧版本，再清理同一 pluginId 的历史包（避免多版本残留）
+            if (pluginManager != null) {
+                stopPluginIfPossible(dto.getPluginId());
             }
+            cleanupLocalPluginFilesByPluginId(dto.getPluginId(), target.toPath());
+
             getRootDir();
             // 使用原子移动，避免出现半写入文件；若文件系统不支持原子移动（如跨磁盘），则降级为普通移动
             try {
@@ -307,13 +325,11 @@ public class PluginFileService {
         validateName(dto.getFileName());
 
         File target = enable ? enabledFile(dto.getFileName()) : disabledFile(dto.getFileName());
-        if (target.exists()) {
-            PluginWrapper wrapper = getPluginInfoById(dto.getPluginId());
-            if (wrapper != null) {
-                stopPluginIfPossible(wrapper.getPluginId());
-            }
-            Files.delete(target.toPath());
+        if (pluginManager != null) {
+            stopPluginIfPossible(dto.getPluginId());
         }
+        cleanupLocalPluginFilesByPluginId(dto.getPluginId(), target.toPath());
+
         getRootDir();
         Files.copy(jarFile.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
@@ -336,6 +352,57 @@ public class PluginFileService {
             // 统一在此处加日志，避免各处重复实现解析逻辑
             log.warn("解析插件 JAR 元数据失败, originalName={}, msg={}", originalName, e.getMessage(), e);
             throw e;
+        }
+    }
+
+    private String tryResolvePluginIdFromJar(File jarFile) {
+        if (jarFile == null || !jarFile.isFile()) {
+            return null;
+        }
+        try {
+            PluginJarMeta meta = resolveStandardJarName(jarFile, jarFile.getName());
+            return meta == null ? null : meta.getPluginId();
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    /**
+     * 清理同一 pluginId 的历史插件包（启用/禁用），避免多版本残留导致“同名类多份/加载来源不一致”。
+     * <p>
+     * 注意：会保留 keepPath 对应的文件（若传入）。
+     */
+    private void cleanupLocalPluginFilesByPluginId(String pluginId, Path keepPath) {
+        if (pluginId == null || pluginId.trim().isEmpty()) {
+            return;
+        }
+        File rootDir = getRootDir();
+        File[] files = rootDir.listFiles();
+        if (files == null) {
+            return;
+        }
+        Path keep = keepPath == null ? null : keepPath.toAbsolutePath().normalize();
+        for (File file : files) {
+            if (file == null || !file.isFile()) {
+                continue;
+            }
+            String name = file.getName();
+            if (!name.endsWith(".jar") && !name.endsWith(".jar.disable")) {
+                continue;
+            }
+            Path cur = file.toPath().toAbsolutePath().normalize();
+            if (keep != null && keep.equals(cur)) {
+                continue;
+            }
+            try {
+                PluginJarMeta meta = resolveStandardJarName(file, name);
+                if (meta != null && pluginId.equals(meta.getPluginId())) {
+                    Files.deleteIfExists(cur);
+                    log.info("已清理历史插件包: pluginId={}, file={}", pluginId, cur);
+                }
+            } catch (Exception ex) {
+                log.debug("清理历史插件包时解析失败(忽略): file={}, msg={}", file.getAbsolutePath(), ex.getMessage());
+            }
         }
     }
 
@@ -426,6 +493,9 @@ public class PluginFileService {
         // 3. 文件层面从 *.jar.disable 切换为 *.jar
         Files.move(disabledFile.toPath(), enabledTarget.toPath(), StandardCopyOption.ATOMIC_MOVE);
 
+        // 清理同一 pluginId 的其他历史包，只保留当前启用目标
+        cleanupLocalPluginFilesByPluginId(normalizedId, enabledTarget.toPath());
+
         // 4. 同步到 PF4J 运行时
         return startPluginIfPossible(enabledTarget);
     }
@@ -465,14 +535,23 @@ public class PluginFileService {
 
         boolean exists = false;
 
+        // 尽量解析出 pluginId 并先停用卸载，避免“删文件但类仍在内存”
+        String pluginId = null;
         if (enabled.exists()) {
-            // 删除前先停用运行时插件
-            stopPluginIfPossible(jarFileName);
+            pluginId = tryResolvePluginIdFromJar(enabled);
+        } else if (disabled.exists()) {
+            pluginId = tryResolvePluginIdFromJar(disabled);
+        }
+        if (pluginId != null) {
+            stopPluginIfPossible(pluginId);
+        }
+
+        if (enabled.exists()) {
             Files.delete(enabled.toPath());
             exists = true;
         }
         if (disabled.exists()) {
-            ;
+            Files.delete(disabled.toPath());
             exists = true;
         }
 
