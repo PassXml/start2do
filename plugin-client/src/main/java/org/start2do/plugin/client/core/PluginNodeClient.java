@@ -4,13 +4,17 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -84,13 +88,17 @@ public class PluginNodeClient {
             body.put("tags", new HashMap<String, String>());
             body.put("plugins", localPlugins);
             body.put("pluginErrors", new HashMap<String, String>(lastSyncErrors));
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            HttpEntity<Map<String, Object>> request = new HttpEntity<Map<String, Object>>(body, headers);
             restTemplate.postForObject(
                 properties.getServerBaseUrl() + "/api/nodes/register",
-                body,
+                request,
                 Map.class
             );
             ResponseEntity<ApiResponse<PluginSnapshot>> resp = restTemplate.exchange(
-                properties.getServerBaseUrl() + "/api/plugins/snapshot",
+                properties.getServerBaseUrl() + "/api/plugins/server/snapshot",
                 HttpMethod.GET,
                 null,
                 new ParameterizedTypeReference<ApiResponse<PluginSnapshot>>() {
@@ -237,7 +245,7 @@ public class PluginNodeClient {
      */
     private void downloadAndActivate(String pluginId, String version) throws Exception {
         String url = properties.getServerBaseUrl()
-            + "/api/plugins/download?pluginId=" + pluginId + "&version=" + version;
+            + "/api/plugins/server/download?pluginId=" + pluginId + "&version=" + version;
         log.info("开始从管理端同步插件: pluginId={}, version={}, url={}", pluginId, version, url);
 
         ResponseEntity<byte[]> resp = restTemplate.getForEntity(url, byte[].class);
