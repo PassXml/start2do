@@ -10,7 +10,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 import org.start2do.plugin.client.config.PluginClientProperties;
 import org.start2do.plugin.client.core.PluginNodeClient;
+import org.start2do.plugin.client.http.AuthTokenInterceptor;
 import org.start2do.plugin.service.PluginFileService;
+
+import java.util.Collections;
 
 /**
  * 插件客户端自动配置
@@ -28,12 +31,23 @@ public class PluginClientAutoConfiguration {
     private final PluginClientProperties properties;
 
     /**
-     * 默认 RestTemplate
+     * 认证令牌拦截器
      */
     @Bean
     @ConditionalOnMissingBean
-    public RestTemplate pluginRestTemplate() {
-        return new RestTemplate();
+    public AuthTokenInterceptor authTokenInterceptor() {
+        return new AuthTokenInterceptor(properties);
+    }
+
+    /**
+     * 默认 RestTemplate，配置认证拦截器
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public RestTemplate pluginRestTemplate(AuthTokenInterceptor authTokenInterceptor) {
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setInterceptors(Collections.singletonList(authTokenInterceptor));
+        return restTemplate;
     }
 
     /**

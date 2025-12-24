@@ -51,4 +51,11 @@ public class PluginClientProperties {
      * - nodeId 未显式配置时，会使用 appName@ip 作为默认值。
      */
     private String ip;
+
+    /**
+     * 认证令牌
+     * <p>
+     * 用于与 plugin-server 进行认证，必须与服务端配置的 token 一致
+     */
+    private String authToken;
 }

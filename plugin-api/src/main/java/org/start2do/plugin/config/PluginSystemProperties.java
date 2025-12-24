@@ -66,6 +66,28 @@ public class PluginSystemProperties {
          * - cluster/nodes/：节点注册与心跳信息
          */
         private String storagePath = "./plugins/server";
+
+        /**
+         * 认证配置
+         */
+        private Auth auth = new Auth();
+    }
+
+    @Setter
+    @Getter
+    @Accessors(chain = true)
+    @NoArgsConstructor
+    public static class Auth {
+
+        /**
+         * 是否启用认证
+         */
+        private boolean enabled = false;
+
+        /**
+         * 认证令牌
+         */
+        private String token;
     }
 }
 
