@@ -15,7 +15,8 @@ gradlePlugin {
         }
     }
 }
-
+java { toolchain { languageVersion = JavaLanguageVersion.of(11) } }
+tasks.withType(JavaCompile).configureEach { options.release = 11 }
 dependencies {
     // ASM 库
     implementation 'org.ow2.asm:asm:9.7'
@@ -50,12 +51,10 @@ tasks.withType(Jar) {
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
-        attributes(
-            'Premain-Class': 'org.start2do.ebean.fix.QueryBeanAgent',
-            'Agent-Class': 'org.start2do.ebean.fix.QueryBeanAgent',
-            'Can-Redefine-Classes': 'true',
-            'Can-Retransform-Classes': 'true',
-            'Main-Class': 'org.start2do.ebean.fix.QueryBeanTransformer'
-        )
+        attributes('Premain-Class': 'org.start2do.ebean.fix.QueryBeanAgent',
+                'Agent-Class': 'org.start2do.ebean.fix.QueryBeanAgent',
+                'Can-Redefine-Classes': 'true',
+                'Can-Retransform-Classes': 'true',
+                'Main-Class': 'org.start2do.ebean.fix.QueryBeanTransformer')
     }
 }
