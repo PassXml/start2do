@@ -1,12 +1,16 @@
 package org.start2do.plugin.api.spring;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContext;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ApplicationEventMulticaster;
@@ -26,16 +30,21 @@ import org.springframework.util.ReflectionUtils;
  *   <li>由调用方注入日志函数，避免在 API 模块中直接依赖具体日志框架。</li>
  * </ul>
  */
+@Slf4j
 @UtilityClass
 public class PluginSpringBeanUtils {
 
     private static final String PLUGIN_EVENT_LISTENER_BEAN_NAME_INFIX = "_eventListener_";
+    private static final String EVENT_EXPRESSION_EVALUATOR_CLASS_NAME =
+        "org.springframework.context.event.EventExpressionEvaluator";
+
+    private static volatile Method applicationListenerMethodAdapterInitMethod;
+    private static volatile Object eventExpressionEvaluator;
 
     /**
      * 构造插件 Bean 在 Spring 容器中的名称。
      * <p>
-     * 统一命名约定：
-     * plugin_{pluginId}_{beanClassFqn}
+     * 统一命名约定： plugin_{pluginId}_{beanClassFqn}
      *
      * @param pluginId  插件 ID
      * @param beanClass Bean 类型
@@ -67,14 +76,14 @@ public class PluginSpringBeanUtils {
     /**
      * 为插件注册一个单例 Bean（并额外补齐动态 @EventListener 的监听器注册）。
      * <p>
-     * 背景：Spring 的 {@link EventListener} 方法通常在容器 refresh 阶段由 {@code EventListenerMethodProcessor}
-     * 扫描并注册为监听器；插件在运行期动态注册 Bean 时，该扫描不会再次触发，导致后注册的 @EventListener 不生效。
+     * 背景：Spring 的 {@link EventListener} 方法通常在容器 refresh 阶段由 {@code EventListenerMethodProcessor} 扫描并注册为监听器；插件在运行期动态注册
+     * Bean 时，该扫描不会再次触发，导致后注册的 @EventListener 不生效。
      *
-     * @param pluginId        插件 ID
-     * @param beanName        Bean 名称
-     * @param bean            Bean 实例
+     * @param pluginId           插件 ID
+     * @param beanName           Bean 名称
+     * @param bean               Bean 实例
      * @param applicationContext Spring ApplicationContext
-     * @param pluginBeanNames 插件 -> Bean 名称列表映射
+     * @param pluginBeanNames    插件 -> Bean 名称列表映射
      */
     public void registerPluginBean(String pluginId,
         String beanName,
@@ -87,6 +96,22 @@ public class PluginSpringBeanUtils {
         registerEventListenerAdaptersIfNecessary(pluginId, beanName, bean, applicationContext, pluginBeanNames);
     }
 
+    /**
+     * 为“已存在于容器中的插件 Bean”补齐动态 {@link EventListener} 的监听器注册。
+     * <p>
+     * 典型场景：插件使用 BeanDefinitionRegistry 动态注册 BeanDefinition 并由 Spring 负责实例化，
+     * 此时不会走 {@link #registerPluginBean(String, String, Object, ConfigurableApplicationContext, Map)}，
+     * 需要显式调用本方法以保证 @EventListener 生效。
+     */
+    public void registerEventListenerAdaptersForExistingBeanIfNecessary(String pluginId,
+        String sourceBeanName,
+        Object sourceBean,
+        ConfigurableApplicationContext applicationContext,
+        Map<String, List<String>> pluginBeanNames) {
+        registerEventListenerAdaptersIfNecessary(pluginId, sourceBeanName, sourceBean, applicationContext,
+            pluginBeanNames);
+    }
+
     private void registerEventListenerAdaptersIfNecessary(String pluginId,
         String sourceBeanName,
         Object sourceBean,
@@ -95,7 +120,6 @@ public class PluginSpringBeanUtils {
 
         Class<?> userClass = ClassUtils.getUserClass(sourceBean);
         List<Method> eventListenerMethods = new ArrayList<>();
-
         ReflectionUtils.doWithMethods(userClass,
             method -> {
                 if (AnnotatedElementUtils.hasAnnotation(method, EventListener.class)) {
@@ -107,24 +131,84 @@ public class PluginSpringBeanUtils {
             return;
         }
 
+        log.info("插件 {} 检测到 @EventListener: sourceBeanName={}, class={}, methods={}", pluginId, sourceBeanName,
+            userClass.getName(), eventListenerMethods.size());
+
         ApplicationEventMulticaster multicaster;
         try {
             multicaster = applicationContext.getBean(ApplicationEventMulticaster.class);
         } catch (Exception ex) {
+            log.error(ex.getMessage(), ex);
             // 极端情况：容器中没有 multicaster，无法保证动态监听器注册可生效；此时选择静默跳过，避免影响插件其它能力。
             return;
         }
 
         for (Method method : eventListenerMethods) {
             String listenerBeanName = buildPluginEventListenerBeanName(pluginId, sourceBeanName, method);
+            if (applicationContext.containsBean(listenerBeanName)) {
+                continue;
+            }
             ApplicationListenerMethodAdapter adapter =
                 new ApplicationListenerMethodAdapter(sourceBeanName, userClass, method);
+            if (!initApplicationListenerMethodAdapter(adapter, applicationContext)) {
+                log.error("插件 {} 初始化 @EventListener 适配器失败: sourceBeanName={}, listenerBeanName={}, method={}",
+                    pluginId, sourceBeanName, listenerBeanName, method.toGenericString());
+                continue;
+            }
             Object initialized = applicationContext.getAutowireCapableBeanFactory()
                 .initializeBean(adapter, listenerBeanName);
 
             applicationContext.getBeanFactory().registerSingleton(listenerBeanName, initialized);
             pluginBeanNames.computeIfAbsent(pluginId, k -> new ArrayList<String>()).add(listenerBeanName);
             multicaster.addApplicationListenerBean(listenerBeanName);
+            log.info("插件 {} 注册 @EventListener 适配器: listenerBeanName={}, method={}", pluginId, listenerBeanName,
+                method.getName());
+        }
+    }
+
+    /**
+     * Spring 5.3.x 中 {@link ApplicationListenerMethodAdapter} 的 {@code init(ApplicationContext, EventExpressionEvaluator)}
+     * 为包级可见；若不调用，适配器内部 {@code applicationContext} 将为 null，事件触发时会抛出
+     * {@link IllegalArgumentException}（ApplicationContext must not be null）。
+     */
+    private boolean initApplicationListenerMethodAdapter(ApplicationListenerMethodAdapter adapter,
+        ConfigurableApplicationContext applicationContext) {
+        try {
+            Method initMethod = applicationListenerMethodAdapterInitMethod;
+            Object evaluator = eventExpressionEvaluator;
+
+            if (initMethod == null || evaluator == null) {
+                synchronized (PluginSpringBeanUtils.class) {
+                    initMethod = applicationListenerMethodAdapterInitMethod;
+                    evaluator = eventExpressionEvaluator;
+                    if (initMethod == null || evaluator == null) {
+                        ClassLoader classLoader = ApplicationListenerMethodAdapter.class.getClassLoader();
+                        Class<?> evaluatorClass = Class.forName(EVENT_EXPRESSION_EVALUATOR_CLASS_NAME, true,
+                            classLoader);
+                        Constructor<?> ctor = evaluatorClass.getDeclaredConstructor();
+                        ReflectionUtils.makeAccessible(ctor);
+                        evaluator = ctor.newInstance();
+                        Method candidate = ReflectionUtils.findMethod(ApplicationListenerMethodAdapter.class, "init",
+                            ApplicationContext.class, evaluatorClass);
+                        if (candidate == null) {
+                            return false;
+                        }
+                        ReflectionUtils.makeAccessible(candidate);
+                        applicationListenerMethodAdapterInitMethod = candidate;
+                        eventExpressionEvaluator = evaluator;
+                        initMethod = candidate;
+                    }
+                }
+            }
+
+            if (!Modifier.isPublic(initMethod.getModifiers())) {
+                ReflectionUtils.makeAccessible(initMethod);
+            }
+            initMethod.invoke(adapter, applicationContext, evaluator);
+            return true;
+        } catch (Exception ex) {
+            log.error(ex.getMessage(), ex);
+            return false;
         }
     }
 
@@ -194,14 +278,14 @@ public class PluginSpringBeanUtils {
     }
 
     /**
-     * 销毁指定插件动态注册的所有 Bean（并同步清理通过 {@link #registerPluginBean(String, String, Object, ConfigurableApplicationContext, Map)}
-     * 注册的动态事件监听器）。
+     * 销毁指定插件动态注册的所有 Bean（并同步清理通过
+     * {@link #registerPluginBean(String, String, Object, ConfigurableApplicationContext, Map)} 注册的动态事件监听器）。
      *
-     * @param pluginId        插件 ID
+     * @param pluginId           插件 ID
      * @param applicationContext Spring ApplicationContext
-     * @param pluginBeanNames 插件 -> Bean 名称列表映射（方法内部会移除对应插件的记录）
-     * @param infoLogger      信息日志回调，可为 null
-     * @param warnLogger      告警日志回调，可为 null
+     * @param pluginBeanNames    插件 -> Bean 名称列表映射（方法内部会移除对应插件的记录）
+     * @param infoLogger         信息日志回调，可为 null
+     * @param warnLogger         告警日志回调，可为 null
      */
     public void destroyPluginBeans(String pluginId,
         ConfigurableApplicationContext applicationContext,

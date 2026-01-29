@@ -121,109 +121,117 @@ public class Pf4jSpringMvcBridge implements Pf4jBridge {
                 log.info("插件 {} 绑定 ClassLoader: pluginCl={}, autoProxyCreators={}", pluginId,
                     pluginClassLoader.getClass().getName(), oldAutoProxyCreators.size());
             } catch (Exception ex) {
-                log.warn("插件 {} 切换 AutoProxyCreator ClassLoader 失败(忽略继续，可能仍会触发 CGLIB 代理问题)", pluginId, ex);
+                log.warn("插件 {} 切换 AutoProxyCreator ClassLoader 失败(忽略继续，可能仍会触发 CGLIB 代理问题)",
+                    pluginId, ex);
             }
         }
 
         try {
-        // 方案2：先注册所有 BeanDefinition，再触发实例化，让 Spring 按依赖图解析实例化顺序
-        if (!(beanFactory instanceof BeanDefinitionRegistry)) {
-            log.warn("当前 BeanFactory 不支持 BeanDefinitionRegistry，将回退到旧的 createBean + registerSingleton 方式: {}",
-                beanFactory.getClass().getName());
-            registerPluginControllersLegacy(pluginId, handlerMapping, acf, beanFactory);
-            return;
-        }
-        BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
-
-        List<String> springBeanNames = new ArrayList<>();
-        Set<String> pluginBeanClassNames = new LinkedHashSet<>();
-        List<RequestMappingInfo> mappings = new ArrayList<>();
-
-        // 1) 收集并注册插件普通 Bean 的 BeanDefinition
-        List<SpringPluginBeansExtension> beanExtensions =
-            pluginManager.getExtensions(SpringPluginBeansExtension.class, pluginId);
-        for (SpringPluginBeansExtension be : beanExtensions) {
-            for (Class<?> beanClass : be.getBeanClasses()) {
-                String beanName = PluginSpringBeanUtils.buildPluginBeanName(pluginId, beanClass);
-                if (!registerOrReplaceBeanDefinition(registry, beanName, beanClass)) {
-                    unloadAndCleanup(pluginId);
-                    return;
-                }
-                springBeanNames.add(beanName);
-                pluginBeanClassNames.add(beanClass.getName());
-                pluginBeanNames.computeIfAbsent(pluginId, k -> new ArrayList<String>()).add(beanName);
+            // 方案2：先注册所有 BeanDefinition，再触发实例化，让 Spring 按依赖图解析实例化顺序
+            if (!(beanFactory instanceof BeanDefinitionRegistry)) {
+                log.warn(
+                    "当前 BeanFactory 不支持 BeanDefinitionRegistry，将回退到旧的 createBean + registerSingleton 方式: {}",
+                    beanFactory.getClass().getName());
+                registerPluginControllersLegacy(pluginId, handlerMapping, acf, beanFactory);
+                return;
             }
-        }
+            BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 
-        // 2) 收集并注册插件 Controller 的 BeanDefinition（先注册后实例化，保证依赖可解析）
-        List<SpringMvcControllerExtension> controllerExts =
-            pluginManager.getExtensions(SpringMvcControllerExtension.class, pluginId);
-        for (SpringMvcControllerExtension ext : controllerExts) {
-            for (Class<?> controllerClass : ext.getControllerClasses()) {
-                String beanName = PluginSpringBeanUtils.buildPluginBeanName(pluginId, controllerClass);
-                if (!registerOrReplaceBeanDefinition(registry, beanName, controllerClass)) {
-                    unloadAndCleanup(pluginId);
-                    return;
+            List<String> springBeanNames = new ArrayList<>();
+            Set<String> pluginBeanClassNames = new LinkedHashSet<>();
+            List<RequestMappingInfo> mappings = new ArrayList<>();
+
+            // 1) 收集并注册插件普通 Bean 的 BeanDefinition
+            List<SpringPluginBeansExtension> beanExtensions =
+                pluginManager.getExtensions(SpringPluginBeansExtension.class, pluginId);
+            for (SpringPluginBeansExtension be : beanExtensions) {
+                for (Class<?> beanClass : be.getBeanClasses()) {
+                    String beanName = PluginSpringBeanUtils.buildPluginBeanName(pluginId, beanClass);
+                    if (!registerOrReplaceBeanDefinition(registry, beanName, beanClass)) {
+                        unloadAndCleanup(pluginId);
+                        return;
+                    }
+                    springBeanNames.add(beanName);
+                    pluginBeanClassNames.add(beanClass.getName());
+                    pluginBeanNames.computeIfAbsent(pluginId, k -> new ArrayList<String>()).add(beanName);
                 }
-                pluginBeanNames.computeIfAbsent(pluginId, k -> new ArrayList<String>()).add(beanName);
             }
-        }
 
-        // 3) 触发普通 Bean 实例化（可选：保持原行为，提前暴露问题）
-        if (!instantiatePluginBeansWithRetry(pluginId, springBeanNames, pluginBeanClassNames)) {
-            return;
-        }
-
-        // 4) 触发 Controller 实例化并注册 RequestMapping（实例化失败会直接中止插件启动）
-        for (SpringMvcControllerExtension ext : controllerExts) {
-            for (Class<?> controllerClass : ext.getControllerClasses()) {
-                String beanName = PluginSpringBeanUtils.buildPluginBeanName(pluginId, controllerClass);
-
-                try {
-                    validateControllerMappingConflicts(controllerClass, handlerMapping, pluginId);
-                } catch (IllegalStateException conflict) {
-                    log.error("插件 {} 注册 Controller 失败，检测到路径冲突: class={}, msg={}", pluginId,
-                        controllerClass.getName(), conflict.getMessage());
-                    unloadAndCleanup(pluginId);
-                    return;
+            // 2) 收集并注册插件 Controller 的 BeanDefinition（先注册后实例化，保证依赖可解析）
+            List<SpringMvcControllerExtension> controllerExts =
+                pluginManager.getExtensions(SpringMvcControllerExtension.class, pluginId);
+            for (SpringMvcControllerExtension ext : controllerExts) {
+                for (Class<?> controllerClass : ext.getControllerClasses()) {
+                    String beanName = PluginSpringBeanUtils.buildPluginBeanName(pluginId, controllerClass);
+                    if (!registerOrReplaceBeanDefinition(registry, beanName, controllerClass)) {
+                        unloadAndCleanup(pluginId);
+                        return;
+                    }
+                    pluginBeanNames.computeIfAbsent(pluginId, k -> new ArrayList<String>()).add(beanName);
                 }
+            }
 
-                try {
-                    // 确保在插件 ClassLoader 上下文中实例化 Bean，避免 LocalVariableTableParameterNameDiscoverer 无法解析方法签名中的插件类
-                    ClassLoader currentTccl = Thread.currentThread().getContextClassLoader();
-                    if (pluginClassLoader != null && !pluginClassLoader.equals(currentTccl)) {
-                        log.warn("插件 {} 实例化 Controller 时 TCCL 不一致，当前={}, 插件={}, 将重新设置",
-                            pluginId, currentTccl, pluginClassLoader);
-                        Thread.currentThread().setContextClassLoader(pluginClassLoader);
+            // 3) 触发普通 Bean 实例化（可选：保持原行为，提前暴露问题）
+            if (!instantiatePluginBeansWithRetry(pluginId, springBeanNames, pluginBeanClassNames)) {
+                return;
+            }
+            // 3.1) 补齐动态 @EventListener（BeanDefinitionRegistry 注册场景下，Spring 不会再次触发 EventListenerMethodProcessor 扫描）
+            registerEventListenersForExistingBeans(pluginId, springBeanNames);
+
+            // 4) 触发 Controller 实例化并注册 RequestMapping（实例化失败会直接中止插件启动）
+            for (SpringMvcControllerExtension ext : controllerExts) {
+                for (Class<?> controllerClass : ext.getControllerClasses()) {
+                    String beanName = PluginSpringBeanUtils.buildPluginBeanName(pluginId, controllerClass);
+
+                    try {
+                        validateControllerMappingConflicts(controllerClass, handlerMapping, pluginId);
+                    } catch (IllegalStateException conflict) {
+                        log.error("插件 {} 注册 Controller 失败，检测到路径冲突: class={}, msg={}", pluginId,
+                            controllerClass.getName(), conflict.getMessage());
+                        unloadAndCleanup(pluginId);
+                        return;
                     }
 
-                    applicationContext.getBean(beanName);
-                    registerRequestMappingsForController(pluginId, handlerMapping, beanName, controllerClass, mappings);
-                } catch (Exception e) {
-                    // 增强错误诊断：检查是否是 LocalVariableTableParameterNameDiscoverer 导致的类加载问题
-                    String errorMsg = e.getMessage();
-                    if (errorMsg != null && errorMsg.contains("cannot be resolved in the class object")) {
-                        logControllerClassDiagnostics(pluginId, controllerClass);
-                        log.error("插件 {} 注册 Controller 失败: class={}. " +
-                                "检测到方法解析失败，可能原因: " +
-                                "1) Controller 方法签名中的参数/返回值类型在插件 ClassLoader 中不可见; " +
-                                "2) 请确保所有依赖类都包含在插件的 dependencies.txt 或正确配置了类加载策略; " +
-                                "3) 建议插件编译开启 -parameters；或在 Controller 构造函数上添加 @ConstructorProperties / @Autowired 明确标注；" +
-                                "4) 检查是否存在同名类多份（.class 资源与已加载 Class 不一致）",
-                            pluginId, controllerClass.getName(), e);
-                    } else {
-                        log.error("插件 {} 注册 Controller 失败: class={}", pluginId, controllerClass.getName(), e);
+                    try {
+                        // 确保在插件 ClassLoader 上下文中实例化 Bean，避免 LocalVariableTableParameterNameDiscoverer 无法解析方法签名中的插件类
+                        ClassLoader currentTccl = Thread.currentThread().getContextClassLoader();
+                        if (pluginClassLoader != null && !pluginClassLoader.equals(currentTccl)) {
+                            log.warn("插件 {} 实例化 Controller 时 TCCL 不一致，当前={}, 插件={}, 将重新设置",
+                                pluginId, currentTccl, pluginClassLoader);
+                            Thread.currentThread().setContextClassLoader(pluginClassLoader);
+                        }
+
+                        Object controllerBean = applicationContext.getBean(beanName);
+                        PluginSpringBeanUtils.registerEventListenerAdaptersForExistingBeanIfNecessary(pluginId, beanName,
+                            controllerBean, applicationContext, pluginBeanNames);
+                        registerRequestMappingsForController(pluginId, handlerMapping, beanName, controllerClass,
+                            mappings);
+                    } catch (Exception e) {
+                        // 增强错误诊断：检查是否是 LocalVariableTableParameterNameDiscoverer 导致的类加载问题
+                        String errorMsg = e.getMessage();
+                        if (errorMsg != null && errorMsg.contains("cannot be resolved in the class object")) {
+                            logControllerClassDiagnostics(pluginId, controllerClass);
+                            log.error("插件 {} 注册 Controller 失败: class={}. " +
+                                    "检测到方法解析失败，可能原因: " +
+                                    "1) Controller 方法签名中的参数/返回值类型在插件 ClassLoader 中不可见; " +
+                                    "2) 请确保所有依赖类都包含在插件的 dependencies.txt 或正确配置了类加载策略; " +
+                                    "3) 建议插件编译开启 -parameters；或在 Controller 构造函数上添加 @ConstructorProperties / @Autowired 明确标注；"
+                                    +
+                                    "4) 检查是否存在同名类多份（.class 资源与已加载 Class 不一致）",
+                                pluginId, controllerClass.getName(), e);
+                        } else {
+                            log.error("插件 {} 注册 Controller 失败: class={}", pluginId, controllerClass.getName(), e);
+                        }
+                        unloadAndCleanup(pluginId);
+                        return;
                     }
-                    unloadAndCleanup(pluginId);
-                    return;
                 }
             }
-        }
 
-        // 3. 统一记录插件级别的 RequestMapping，方便卸载时集中清理
-        if (!mappings.isEmpty()) {
-            pluginMappings.put(pluginId, mappings);
-        }
+            // 3. 统一记录插件级别的 RequestMapping，方便卸载时集中清理
+            if (!mappings.isEmpty()) {
+                pluginMappings.put(pluginId, mappings);
+            }
         } finally {
             if (pluginClassLoader != null) {
                 // 恢复现场，避免影响宿主后续逻辑
@@ -245,9 +253,9 @@ public class Pf4jSpringMvcBridge implements Pf4jBridge {
     /**
      * 实例化插件普通 Bean：对“插件内部 Bean 之间的依赖”做一次或多次重试。
      * <p>
-     * 背景：插件 BeanDefinition 是动态注册的，部分 Spring 版本/场景下，按类型解析依赖时可能暂时无法从 BeanDefinition 中预测出候选类型；
-     * 此时若先实例化依赖方（例如 ScheduledTask），会抛 NoSuchBeanDefinitionException。通过“先尽量实例化其他 Bean，再回头重试”的方式，
-     * 可以在不改变插件声明顺序的情况下，让依赖方在依赖 Bean 已作为单例存在后成功注入。
+     * 背景：插件 BeanDefinition 是动态注册的，部分 Spring 版本/场景下，按类型解析依赖时可能暂时无法从 BeanDefinition 中预测出候选类型； 此时若先实例化依赖方（例如
+     * ScheduledTask），会抛 NoSuchBeanDefinitionException。通过“先尽量实例化其他 Bean，再回头重试”的方式， 可以在不改变插件声明顺序的情况下，让依赖方在依赖 Bean
+     * 已作为单例存在后成功注入。
      */
     private boolean instantiatePluginBeansWithRetry(String pluginId, List<String> beanNames,
         Set<String> pluginBeanClassNames) {
@@ -262,7 +270,7 @@ public class Pf4jSpringMvcBridge implements Pf4jBridge {
         int maxPasses = pending.size();
         for (int pass = 1; pass <= maxPasses; pass++) {
             boolean progressed = false;
-            for (java.util.Iterator<String> it = pending.iterator(); it.hasNext();) {
+            for (java.util.Iterator<String> it = pending.iterator(); it.hasNext(); ) {
                 String beanName = it.next();
                 try {
                     applicationContext.getBean(beanName);
@@ -289,12 +297,29 @@ public class Pf4jSpringMvcBridge implements Pf4jBridge {
             }
         }
 
-        log.error("插件 {} 创建普通 Bean 失败: 仍有 {} 个 Bean 依赖未满足，将卸载插件; pending={}", pluginId, pending.size(), pending);
+        log.error("插件 {} 创建普通 Bean 失败: 仍有 {} 个 Bean 依赖未满足，将卸载插件; pending={}", pluginId,
+            pending.size(), pending);
         if (!lastMissingTypeByBeanName.isEmpty()) {
             log.error("插件 {} 普通 Bean 依赖缺失详情(仅插件内依赖会重试): {}", pluginId, lastMissingTypeByBeanName);
         }
         unloadAndCleanup(pluginId);
         return false;
+    }
+
+    private void registerEventListenersForExistingBeans(String pluginId, List<String> beanNames) {
+        if (beanNames == null || beanNames.isEmpty()) {
+            return;
+        }
+        log.info("插件 {} 动态补齐 @EventListener: beans={}", pluginId, beanNames.size());
+        for (String beanName : beanNames) {
+            try {
+                Object bean = applicationContext.getBean(beanName);
+                PluginSpringBeanUtils.registerEventListenerAdaptersForExistingBeanIfNecessary(pluginId, beanName, bean,
+                    applicationContext, pluginBeanNames);
+            } catch (Exception ex) {
+                log.warn("插件 {} 动态补齐 @EventListener 失败(忽略继续): beanName={}", pluginId, beanName, ex);
+            }
+        }
     }
 
     private String findMissingBeanTypeName(Throwable ex) {
@@ -337,7 +362,8 @@ public class Pf4jSpringMvcBridge implements Pf4jBridge {
         }
     }
 
-    private boolean registerOrReplaceBeanDefinition(BeanDefinitionRegistry registry, String beanName, Class<?> beanClass) {
+    private boolean registerOrReplaceBeanDefinition(BeanDefinitionRegistry registry, String beanName,
+        Class<?> beanClass) {
         try {
             if (registry.containsBeanDefinition(beanName)) {
                 registry.removeBeanDefinition(beanName);
@@ -428,6 +454,7 @@ public class Pf4jSpringMvcBridge implements Pf4jBridge {
         // 这些 Bean 可能会被 Controller 注入，所以必须先于 Controller 创建
         List<SpringPluginBeansExtension> beanExtensions = pluginManager.getExtensions(SpringPluginBeansExtension.class,
             pluginId);
+        log.info("插件 注册BeanSize： {}", beanExtensions.size());
         for (SpringPluginBeansExtension be : beanExtensions) {
             for (Class<?> beanClass : be.getBeanClasses()) {
                 String beanName = PluginSpringBeanUtils.buildPluginBeanName(pluginId, beanClass);
