@@ -433,7 +433,8 @@ public class Pf4jSpringMvcBridge implements Pf4jBridge {
                 String beanName = PluginSpringBeanUtils.buildPluginBeanName(pluginId, beanClass);
                 try {
                     Object bean = acf.createBean(beanClass);
-                    PluginSpringBeanUtils.registerPluginBean(pluginId, beanName, bean, beanFactory, pluginBeanNames);
+                    PluginSpringBeanUtils.registerPluginBean(pluginId, beanName, bean, applicationContext,
+                        pluginBeanNames);
                     log.info("插件 {} 注册 Bean 成功: beanName={}, class={}", pluginId, beanName, beanClass.getName());
                 } catch (Exception e) {
                     log.error("插件 {} 注册 Bean 失败: class={}, 卸载插件", pluginId, beanClass.getName(), e);
@@ -481,7 +482,7 @@ public class Pf4jSpringMvcBridge implements Pf4jBridge {
                 // 2.2 真正注册 Controller Bean 及其 RequestMapping
                 try {
                     Object controllerBean = acf.createBean(controllerClass);
-                    PluginSpringBeanUtils.registerPluginBean(pluginId, beanName, controllerBean, beanFactory,
+                    PluginSpringBeanUtils.registerPluginBean(pluginId, beanName, controllerBean, applicationContext,
                         pluginBeanNames);
 
                     registerRequestMappingsForController(pluginId, handlerMapping, beanName, controllerClass, mappings);
@@ -538,7 +539,7 @@ public class Pf4jSpringMvcBridge implements Pf4jBridge {
         List<String> beanNames = pluginBeanNames.get(pluginId);
         List<String> copy = beanNames == null ? Collections.emptyList() : new ArrayList<>(beanNames);
 
-        PluginSpringBeanUtils.destroyPluginBeans(pluginId, beanFactory, pluginBeanNames,
+        PluginSpringBeanUtils.destroyPluginBeans(pluginId, applicationContext, pluginBeanNames,
             beanName -> log.info("插件 {} 销毁插件 Bean: {}", pluginId, beanName),
             (beanName, ex) -> log.warn("插件 {} 销毁插件 Bean 失败(忽略继续): beanName={}", pluginId, beanName, ex));
 
