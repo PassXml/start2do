@@ -3,7 +3,6 @@ package org.start2do.script.impl.nashornl;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.io.ByteArrayOutputStream;
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -30,9 +29,7 @@ import org.start2do.script.ScriptRunnerConfiguration.Type;
 import org.start2do.script.dto.BindingDto;
 import org.start2do.script.dto.ScriptRunnerInput;
 import org.start2do.script.dto.ScriptRunnerResult;
-import org.start2do.script.util.impl.functions.DBOperateFunction;
-import org.start2do.script.util.impl.functions.HttpUtil;
-import org.start2do.script.util.impl.functions.JacksonOperateFunction;
+import org.start2do.script.util.ScriptWhiteList;
 import org.start2do.util.Md5Util;
 import org.start2do.util.StringUtils;
 
@@ -143,9 +140,6 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
         executorService = new ThreadPoolExecutor(2, MAX_POOL_SIZE, 0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>());
         set.add("okhttp3.OkHttpClient.Builder");
-        set.add("org.start2do.script.util.impl.functions.HttpUtil");
-        set.add("org.start2do.script.util.impl.functions.JacksonOperateFunction");
-        set.add("org.start2do.script.util.impl.functions.DBOperateFunction");
         set.add("org.openjdk.nashorn.api.linker.NashornLinkerExporter");
         set.add("org.start2do.script.util.impl.functions.CustomConsole");
         this.engine = new NashornScriptEngineFactory().getScriptEngine(new String[]{"--language=es6"},
@@ -165,19 +159,11 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
     }
 
     public ScriptJsNashornImpl() {
-        HashSet<String> whiteList = new HashSet<>();
-        whiteList.add(HttpUtil.class.getName());
-        whiteList.add(DBOperateFunction.class.getName());
-        whiteList.add(JacksonOperateFunction.class.getName());
-        whiteList.add(String.class.getName());
-        whiteList.add(Integer.class.getName());
-        whiteList.add(Long.class.getName());
-        whiteList.add(Double.class.getName());
-        whiteList.add(BigDecimal.class.getName());
         maxMemory = 100 * 1024 * 1024;
         maxCPUTime = 60 * 1000 * 3;
         this.MAX_POOL_SIZE = 20;
-        init(whiteList, Caffeine.newBuilder().expireAfterAccess(Duration.ofMinutes(15)).build(), null);
+        init(new HashSet<>(ScriptWhiteList.defaultWhiteList()),
+            Caffeine.newBuilder().expireAfterAccess(Duration.ofMinutes(15)).build(), null);
     }
 
     @Override

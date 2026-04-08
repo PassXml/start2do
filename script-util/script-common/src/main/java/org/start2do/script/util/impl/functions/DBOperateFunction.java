@@ -34,7 +34,7 @@ public class DBOperateFunction {
                         ((Connection) value).close();
                     }
                 } catch (SQLException e) {
-                    log.error("关闭连接失败", e);
+                    log.error("DB操作失败, action=closeCachedConnection, cacheKey={}", key, e);
                 }
 
             }
@@ -49,6 +49,17 @@ public class DBOperateFunction {
             }).build();
     }
 
+    private static Cache<String, HikariDataSource> getOrInitDataSourceCache() {
+        if (dataSourceCaffeine == null) {
+            synchronized (DBOperateFunction.class) {
+                if (dataSourceCaffeine == null) {
+                    EnableHikariDataSource();
+                }
+            }
+        }
+        return dataSourceCaffeine;
+    }
+
     /**
      * 注入数据源,查询sql,并且通过Map返回结果
      *
@@ -58,10 +69,14 @@ public class DBOperateFunction {
      * @return
      */
     public static List<Object> query(DataSource dataSource, String sql, List<Object> params) {
-        try {
-            return query(dataSource.getConnection(), sql, params);
+        if (dataSource == null) {
+            log.warn("dataSource为空,查询失败");
+            return new ArrayList<>();
+        }
+        try (Connection connection = dataSource.getConnection()) {
+            return query(connection, sql, params);
         } catch (SQLException e) {
-            log.error(e.getMessage(), e);
+            log.error("DB操作失败, action=queryByDataSource, sql={}, params={}", sql, params, e);
         }
         return new ArrayList<>();
     }
@@ -77,32 +92,24 @@ public class DBOperateFunction {
      */
     public static List<Object> query(Connection connection, String sql, List<Object> params) {
         List<Object> result = new ArrayList<>();
-        if (StringUtils.isEmpty(sql)) {
+        if (connection == null || StringUtils.isEmpty(sql)) {
             return result;
         }
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            if (params != null) {
-                for (int i = 0; i < params.size(); i++) {
-                    preparedStatement.setObject(i + 1, params.get(i));
-                }
-            }
+            bindParams(preparedStatement, params);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 ResultSetMetaData metaData = resultSet.getMetaData();
                 int columnCount = metaData.getColumnCount();
                 while (resultSet.next()) {
                     if (columnCount > 1) {
-                        Map<String, Object> map = new HashMap<>();
-                        for (int i = 1; i <= columnCount; i++) {
-                            map.put(metaData.getColumnName(i), resultSet.getObject(i));
-                        }
-                        result.add(map);
+                        result.add(toRowMap(resultSet, metaData, columnCount));
                     } else {
                         result.add(resultSet.getObject(1));
                     }
                 }
             }
         } catch (SQLException e) {
-            log.error("查询失败,{}", e.getMessage());
+            log.error("DB操作失败, action=queryByConnection, sql={}, params={}", sql, params, e);
         }
         return result;
     }
@@ -116,15 +123,14 @@ public class DBOperateFunction {
      * @return
      */
     public static int execute(Connection connection, String sql, Object... params) {
+        if (connection == null || StringUtils.isEmpty(sql)) {
+            return 0;
+        }
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            if (params != null) {
-                for (int i = 0; i < params.length; i++) {
-                    preparedStatement.setObject(i + 1, params[i]);
-                }
-            }
+            bindParams(preparedStatement, params);
             return preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            log.error(e.getMessage(), e);
+            log.error("DB操作失败, action=executeByConnection, sql={}, params={}", sql, params, e);
         }
         return 0;
     }
@@ -139,10 +145,14 @@ public class DBOperateFunction {
      * @return 受影响的行数
      */
     public static int execute(DataSource dataSource, String sql, Object... params) {
-        try {
-            return execute(dataSource.getConnection(), sql, params);
+        if (dataSource == null) {
+            log.warn("dataSource为空,执行失败");
+            return 0;
+        }
+        try (Connection connection = dataSource.getConnection()) {
+            return execute(connection, sql, params);
         } catch (SQLException e) {
-            log.error(e.getMessage(), e);
+            log.error("DB操作失败, action=executeByDataSource, sql={}, params={}", sql, params, e);
         }
         return 0;
     }
@@ -156,12 +166,7 @@ public class DBOperateFunction {
      * @return 受影响的行数
      */
     public static int update(DataSource dataSource, String sql, Object... params) {
-        try {
-            return execute(dataSource.getConnection(), sql, params);
-        } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-        }
-        return 0;
+        return execute(dataSource, sql, params);
     }
 
     /**
@@ -170,10 +175,11 @@ public class DBOperateFunction {
     public static Connection getConn(String clazz, String jdbcUrl, String username, String password) {
         return connectCache.get(String.join(",", clazz, jdbcUrl, username, password), s -> {
             try {
-                Class<?> aClass = Class.forName(clazz);
+                Class.forName(clazz);
                 return DriverManager.getConnection(jdbcUrl, username, password);
             } catch (Exception e) {
-                log.error("获取连接发生错误,{}", e.getMessage());
+                log.error("DB操作失败, action=getJdbcConnection, driver={}, jdbcUrl={}, username={}",
+                    clazz, jdbcUrl, username, e);
             }
             return null;
         });
@@ -188,7 +194,7 @@ public class DBOperateFunction {
      * @return
      */
     public static DataSource createDataSource(String jdbcUrl, String username, String password) {
-        return dataSourceCaffeine.get(String.join(",", jdbcUrl, username, password), s -> {
+        return getOrInitDataSourceCache().get(String.join(",", jdbcUrl, username, password), s -> {
             HikariConfig config = new HikariConfig();
             //最大连接数2个
             config.setMaximumPoolSize(2);
@@ -210,7 +216,7 @@ public class DBOperateFunction {
                 connection.close();
             }
         } catch (SQLException e) {
-            log.error("关闭连接失败,{}", e.getMessage());
+            log.error("DB操作失败, action=closeConnection", e);
         }
     }
 
@@ -228,8 +234,110 @@ public class DBOperateFunction {
         try {
             return dataSource.getConnection();
         } catch (SQLException e) {
-            log.error("获取连接失败,{}", e.getMessage());
+            log.error("DB操作失败, action=getConnectionByDataSource", e);
         }
         return null;
+    }
+
+    public static List<Map<String, Object>> queryRows(DataSource dataSource, String sql, Object... params) {
+        if (dataSource == null) {
+            log.warn("dataSource为空,查询失败");
+            return new ArrayList<>();
+        }
+        try (Connection connection = dataSource.getConnection()) {
+            return queryRows(connection, sql, params);
+        } catch (SQLException e) {
+            log.error("DB操作失败, action=queryRowsByDataSource, sql={}, params={}", sql, params, e);
+        }
+        return new ArrayList<>();
+    }
+
+    public static List<Map<String, Object>> queryRows(Connection connection, String sql, Object... params) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        if (connection == null || StringUtils.isEmpty(sql)) {
+            return result;
+        }
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            bindParams(preparedStatement, params);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                ResultSetMetaData metaData = resultSet.getMetaData();
+                int columnCount = metaData.getColumnCount();
+                while (resultSet.next()) {
+                    result.add(toRowMap(resultSet, metaData, columnCount));
+                }
+            }
+        } catch (SQLException e) {
+            log.error("DB操作失败, action=queryRowsByConnection, sql={}, params={}", sql, params, e);
+        }
+        return result;
+    }
+
+    public static Map<String, Object> queryOne(DataSource dataSource, String sql, Object... params) {
+        List<Map<String, Object>> rows = queryRows(dataSource, sql, params);
+        if (rows.isEmpty()) {
+            return new HashMap<>();
+        }
+        return rows.get(0);
+    }
+
+    public static Object queryValue(DataSource dataSource, String sql, Object... params) {
+        if (dataSource == null) {
+            log.warn("dataSource为空,查询失败");
+            return null;
+        }
+        try (Connection connection = dataSource.getConnection()) {
+            return queryValue(connection, sql, params);
+        } catch (SQLException e) {
+            log.error("DB操作失败, action=queryValueByDataSource, sql={}, params={}", sql, params, e);
+        }
+        return null;
+    }
+
+    public static Object queryValue(Connection connection, String sql, Object... params) {
+        if (connection == null || StringUtils.isEmpty(sql)) {
+            return null;
+        }
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            bindParams(preparedStatement, params);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getObject(1);
+                }
+            }
+        } catch (SQLException e) {
+            log.error("DB操作失败, action=queryValueByConnection, sql={}, params={}", sql, params, e);
+        }
+        return null;
+    }
+
+    public static boolean exists(DataSource dataSource, String sql, Object... params) {
+        return queryValue(dataSource, sql, params) != null;
+    }
+
+    private static void bindParams(PreparedStatement preparedStatement, List<Object> params) throws SQLException {
+        if (params == null) {
+            return;
+        }
+        for (int i = 0; i < params.size(); i++) {
+            preparedStatement.setObject(i + 1, params.get(i));
+        }
+    }
+
+    private static void bindParams(PreparedStatement preparedStatement, Object... params) throws SQLException {
+        if (params == null) {
+            return;
+        }
+        for (int i = 0; i < params.length; i++) {
+            preparedStatement.setObject(i + 1, params[i]);
+        }
+    }
+
+    private static Map<String, Object> toRowMap(ResultSet resultSet, ResultSetMetaData metaData, int columnCount)
+        throws SQLException {
+        Map<String, Object> map = new HashMap<>();
+        for (int i = 1; i <= columnCount; i++) {
+            map.put(metaData.getColumnLabel(i), resultSet.getObject(i));
+        }
+        return map;
     }
 }

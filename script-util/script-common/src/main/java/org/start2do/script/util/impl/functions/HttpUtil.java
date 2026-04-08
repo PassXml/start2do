@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.CookieJar;
+import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
@@ -47,6 +48,26 @@ public class HttpUtil {
         return executor(builder.get().url(url).build());
     }
 
+    public String getString(String url) {
+        return getString(url, null);
+    }
+
+    public String getString(String url, Map<String, String> header) {
+        return bodyString(get(url, header));
+    }
+
+    public Response postForm(String url, Map<String, String> header, Map<String, String> formData) {
+        Builder builder = new Builder();
+        if (header != null) {
+            header.forEach(builder::header);
+        }
+        FormBody.Builder formBodyBuilder = new FormBody.Builder();
+        if (formData != null) {
+            formData.forEach((key, value) -> formBodyBuilder.add(key, Objects.requireNonNullElse(value, "")));
+        }
+        return executor(builder.post(formBodyBuilder.build()).url(url).build());
+    }
+
     public Response postForm(String url, Map<String, String> header, String data) {
         Builder builder = new Builder();
         if (header != null) {
@@ -57,10 +78,13 @@ public class HttpUtil {
     }
 
     public String bodyString(Response response) {
-        try {
-            return response.body().string();
+        if (response == null || response.body() == null) {
+            return null;
+        }
+        try (Response res = response) {
+            return res.body().string();
         } catch (IOException e) {
-            log.error("转化body.string()失败,{}", e.getMessage());
+            log.error("HTTP操作失败, action=readResponseBody", e);
         }
         return null;
     }
@@ -73,7 +97,8 @@ public class HttpUtil {
         try {
             return client.newCall(request).execute();
         } catch (IOException e) {
-            log.error("请求失败:{}", e.getMessage());
+            log.error("HTTP操作失败, action=executeRequest, method={}, url={}",
+                request.method(), request.url(), e);
         }
         return null;
     }
@@ -86,6 +111,10 @@ public class HttpUtil {
         MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
         return executor(
             builder.post(RequestBody.create(Objects.requireNonNullElse(data, ""), mediaType)).url(url).build());
+    }
+
+    public String postJsonString(String url, Map<String, String> header, String data) {
+        return bodyString(postJson(url, header, data));
     }
 
     /**
@@ -118,7 +147,8 @@ public class HttpUtil {
         Request request = builder.get().url(url).build();
         Response response = executor(request);
         if (response == null || !response.isSuccessful() || response.body() == null) {
-            log.error("文件下载失败,url:{}, code:{}", url, response == null ? null : response.code());
+            log.error("HTTP操作失败, action=downloadFile, url={}, statusCode={}, destFilePath={}",
+                url, response == null ? null : response.code(), destFilePath);
             return null;
         }
         File targetFile = null;
@@ -145,7 +175,7 @@ public class HttpUtil {
                 }
             }
         } catch (IOException e) {
-            log.error("文件下载异常,url:{}, msg:{}", url, e.getMessage());
+            log.error("HTTP操作失败, action=downloadFile, url={}, destFilePath={}", url, destFilePath, e);
             return null;
         }
         return targetFile;
@@ -178,7 +208,8 @@ public class HttpUtil {
     public Response uploadFile(String url, Map<String, String> header, Map<String, String> formParams, File file,
         String fileFieldName) {
         if (file == null || !file.exists()) {
-            log.error("文件上传失败, 文件不存在");
+            log.error("HTTP操作失败, action=uploadFile, url={}, fileFieldName={}, reason=fileNotFound, file={}",
+                url, fileFieldName, file);
             return null;
         }
         MultipartBody.Builder multipartBuilder = new MultipartBody.Builder().setType(MultipartBody.FORM)
