@@ -40,6 +40,23 @@ public interface IScriptRunner<T> {
 
     Type getKey();
 
+    default void addWhiteList(String... classNames) {
+    }
+
+    default void addWhiteList(Class<?>... classes) {
+        if (classes == null || classes.length == 0) {
+            return;
+        }
+        String[] classNames = new String[classes.length];
+        for (int i = 0; i < classes.length; i++) {
+            classNames[i] = classes[i] == null ? null : classes[i].getName();
+        }
+        addWhiteList(classNames);
+    }
+
+    default void addFunction(Class<?>... functionClasses) {
+    }
+
     default Map<String, Object> objectsToMap(Object... params) {
         Map<String, Object> map = new HashMap<>();
         if (params.length % 2 != 0) {

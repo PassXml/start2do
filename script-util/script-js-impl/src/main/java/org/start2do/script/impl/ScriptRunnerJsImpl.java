@@ -7,11 +7,10 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Predicate;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +36,7 @@ public class ScriptRunnerJsImpl implements IScriptRunner<ScriptJsCache> {
     private static ScriptRunnerJsImpl INSTANCE;
     private static Cache<String, ScriptJsCache> SCRIPT_CACHE;
     @Getter
-    private static Set<String> WHITE_LIST = new HashSet<>();
+    private static final Set<String> WHITE_LIST = new CopyOnWriteArraySet<>();
     private static Predicate<String> PREDICATE;
     private static String GLOBAL_SCRIPT;
     private static String SYSTEM_GLOBAL_SCRIPT = new StringBuilder().append(
@@ -93,15 +92,10 @@ public class ScriptRunnerJsImpl implements IScriptRunner<ScriptJsCache> {
     }
 
     private void initWhiteList(List<Class<?>> whiteList) {
-        for (Class<?> aClass : Arrays.asList(BigDecimal.class, String.class, Long.class, Integer.class, Math.class,
-            Short.class, Byte.class, Character.class, Double.class, Float.class, Boolean.class, HashMap.class,
-            ArrayList.class)) {
-            WHITE_LIST.add(aClass.getName());
-        }
+        addWhiteList(BigDecimal.class, String.class, Long.class, Integer.class, Math.class, Short.class, Byte.class,
+            Character.class, Double.class, Float.class, Boolean.class, HashMap.class, ArrayList.class);
         if (whiteList != null) {
-            for (Class<?> aClass : whiteList) {
-                WHITE_LIST.add(aClass.getName());
-            }
+            addWhiteList(whiteList.toArray(new Class<?>[0]));
         }
     }
 
@@ -199,6 +193,18 @@ public class ScriptRunnerJsImpl implements IScriptRunner<ScriptJsCache> {
     @Override
     public Type getKey() {
         return Type.GraalJS;
+    }
+
+    @Override
+    public void addWhiteList(String... classNames) {
+        if (classNames == null || classNames.length == 0) {
+            return;
+        }
+        for (String className : classNames) {
+            if (StringUtils.isNotEmpty(className)) {
+                WHITE_LIST.add(className);
+            }
+        }
     }
 
     @Override

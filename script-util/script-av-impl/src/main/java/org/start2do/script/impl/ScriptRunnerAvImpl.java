@@ -156,4 +156,23 @@ public class ScriptRunnerAvImpl implements IScriptRunner<Expression> {
         return cache;
     }
 
+    @Override
+    public void addFunction(Class<?>... functionClasses) {
+        if (functionClasses == null || functionClasses.length == 0) {
+            return;
+        }
+        for (Class<?> functionClass : functionClasses) {
+            if (functionClass == null || !AbstractFunction.class.isAssignableFrom(functionClass)) {
+                continue;
+            }
+            try {
+                Constructor<?> constructor = functionClass.getDeclaredConstructor();
+                AbstractFunction instance = (AbstractFunction) constructor.newInstance();
+                INSTANCE.addFunction(instance);
+            } catch (Exception e) {
+                log.error("动态注册函数失败,{},{}", functionClass.getName(), e.getMessage());
+            }
+        }
+    }
+
 }

@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -14,6 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.script.Bindings;
@@ -50,6 +52,7 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
     // 设置池的最大大小
     private int MAX_POOL_SIZE;
     private ExecutorService executorService;
+    private RestrictedClassLoader restrictedClassLoader;
 
     // 添加获取 Bindings 的方法
     private BindingDto getBindings() {
@@ -139,11 +142,16 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
         SCRIPT_CACHE = caffeine;
         executorService = new ThreadPoolExecutor(2, MAX_POOL_SIZE, 0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>());
-        set.add("okhttp3.OkHttpClient.Builder");
-        set.add("org.openjdk.nashorn.api.linker.NashornLinkerExporter");
-        set.add("org.start2do.script.util.impl.functions.CustomConsole");
+        Set<String> mergedWhiteList = new LinkedHashSet<>(ScriptWhiteList.defaultWhiteList());
+        if (set != null) {
+            mergedWhiteList.addAll(set);
+        }
+        mergedWhiteList.add("okhttp3.OkHttpClient.Builder");
+        mergedWhiteList.add("org.openjdk.nashorn.api.linker.NashornLinkerExporter");
+        mergedWhiteList.add("org.start2do.script.util.impl.functions.CustomConsole");
+        restrictedClassLoader = new RestrictedClassLoader(new CopyOnWriteArraySet<>(mergedWhiteList));
         this.engine = new NashornScriptEngineFactory().getScriptEngine(new String[]{"--language=es6"},
-            new RestrictedClassLoader(set));
+            restrictedClassLoader);
         // 初始化 Bindings 池
         poolLock.lock();
         try {
@@ -286,6 +294,18 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
     @Override
     public Type getKey() {
         return Type.Nashorn;
+    }
+
+    @Override
+    public void addWhiteList(String... classNames) {
+        if (restrictedClassLoader == null || classNames == null || classNames.length == 0) {
+            return;
+        }
+        for (String className : classNames) {
+            if (StringUtils.isNotEmpty(className)) {
+                restrictedClassLoader.getWHITE_LIST().add(className);
+            }
+        }
     }
 
     @Slf4j
