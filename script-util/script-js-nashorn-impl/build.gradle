@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.start2do"
-version = "2.0.9.2.13-SNAPSHOT"
+version = "2.0.9.2.14-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -16,7 +16,12 @@ dependencies {
     compileOnly("org.slf4j:slf4j-api")
     compileOnly("com.github.ben-manes.caffeine:caffeine")
     api("org.openjdk.nashorn:nashorn-core:15.6")
-
+    testImplementation(platform("org.junit:junit-bom:5.10.0"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation(project(":common-util"))
+    testImplementation(project(":script-util:script-common"))
+    testImplementation("com.github.ben-manes.caffeine:caffeine")
+    testImplementation("org.slf4j:slf4j-api")
 }
 
 tasks.test {

@@ -9,7 +9,9 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Predicate;
 import lombok.Getter;
@@ -43,6 +45,8 @@ public class ScriptRunnerJsImpl implements IScriptRunner<ScriptJsCache> {
             "var JString = Java.type('java.lang.String');").append("var JInteger = Java.type('java.lang.Integer');")
         .append("var JLong = Java.type('java.lang.Long');").append("var JDouble = Java.type('java.lang.Double');")
         .append("var JBigDecimal = Java.type('java.math.BigDecimal');").toString();
+
+    private final Map<String, String> libraryRegistry = new ConcurrentHashMap<>();
 
     public ScriptRunnerJsImpl(List<Class<?>> whiteList, Cache<String, ScriptJsCache> caffeine, String globalScript) {
         ScriptRunnerJsImpl.INSTANCE = this;
@@ -119,6 +123,7 @@ public class ScriptRunnerJsImpl implements IScriptRunner<ScriptJsCache> {
 
     @Override
     public ScriptRunnerResult eval(String script, Object... params) {
+        script = resolveImports(script);
         String md5 = Md5Util.md5(script);
         return evalMain(md5, script, true, params);
     }
@@ -187,6 +192,7 @@ public class ScriptRunnerJsImpl implements IScriptRunner<ScriptJsCache> {
 
     @Override
     public ScriptRunnerResult evalNoCache(String script, Object[] objects) {
+        script = resolveImports(script);
         return evalMain(null, script, false, objects);
     }
 
@@ -209,12 +215,47 @@ public class ScriptRunnerJsImpl implements IScriptRunner<ScriptJsCache> {
 
     @Override
     public ScriptJsCache preLoad(String script) {
+        script = resolveImports(script);
         return initScript(Md5Util.md5(script), script);
     }
 
     @Override
     public ScriptJsCache preLoad(String id, String script) {
+        script = resolveImports(script);
         return initScript(id, script);
     }
 
+    @Override
+    public void registerLibrary(String name, String script) {
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Library name must not be empty");
+        }
+        libraryRegistry.put(name, script);
+        log.info("Registered library: {}", name);
+    }
+
+    @Override
+    public void registerLibraries(Map<String, String> libraries) {
+        if (libraries != null) {
+            libraryRegistry.putAll(libraries);
+            log.info("Registered {} libraries", libraries.size());
+        }
+    }
+
+    @Override
+    public void removeLibrary(String name) {
+        libraryRegistry.remove(name);
+    }
+
+    @Override
+    public Set<String> getLibraryNames() {
+        return new CopyOnWriteArraySet<>(libraryRegistry.keySet());
+    }
+
+    /**
+     * 解析脚本中的 import 语句，将其替换为对应函数库的源码。
+     */
+    protected String resolveImports(String script) {
+        return IScriptRunner.resolveImports(script, libraryRegistry);
+    }
 }

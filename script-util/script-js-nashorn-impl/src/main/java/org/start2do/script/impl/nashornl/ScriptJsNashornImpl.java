@@ -11,11 +11,12 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.script.Bindings;
@@ -53,6 +54,8 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
     private int MAX_POOL_SIZE;
     private ExecutorService executorService;
     private RestrictedClassLoader restrictedClassLoader;
+
+    private final Map<String, String> libraryRegistry = new ConcurrentHashMap<>();
 
     // 添加获取 Bindings 的方法
     private BindingDto getBindings() {
@@ -176,11 +179,13 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
 
     @Override
     public ScriptRunnerResult eval(ScriptRunnerInput input) {
-        return evalMain(input.getId(), input.getScript(), true, input.getParams());
+        String script = resolveImports(input.getScript());
+        return evalMain(input.getId(), script, true, input.getParams());
     }
 
     @Override
     public ScriptRunnerResult eval(String script, Object... params) {
+        script = resolveImports(script);
         return evalMain(null, script, true, params);
     }
 
@@ -191,13 +196,15 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
 
     @Override
     public CompiledScript preLoad(String script) {
+        script = resolveImports(script);
         return preLoad(Md5Util.md5(script), script);
     }
 
     @Override
     public CompiledScript preLoad(String id, String script) {
+        script = resolveImports(script);
         try {
-            // 为避免 ES6 的 const/let 在同一引擎全局环境下二次执行报“已声明”错误，
+            // 为避免 ES6 的 const/let 在同一引擎全局环境下二次执行报"已声明"错误，
             // 将脚本包装到 IIFE（立即执行函数）中，保证每次执行拥有独立词法作用域。
             String toCompile = StringUtils.isNotEmpty(GLOBAL_SCRIPT) ? GLOBAL_SCRIPT + script : script;
             CompiledScript compile = ((Compilable) engine).compile(wrapInIIFE(toCompile));
@@ -287,8 +294,9 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
     }
 
     @Override
-    public ScriptRunnerResult evalNoCache(String scirpt, Object[] objects) {
-        return evalMain(Md5Util.md5(scirpt), scirpt, false, objects);
+    public ScriptRunnerResult evalNoCache(String script, Object[] objects) {
+        script = resolveImports(script);
+        return evalMain(Md5Util.md5(script), script, false, objects);
     }
 
     @Override
@@ -306,6 +314,40 @@ public class ScriptJsNashornImpl implements IScriptRunner<CompiledScript> {
                 restrictedClassLoader.getWHITE_LIST().add(className);
             }
         }
+    }
+
+    @Override
+    public void registerLibrary(String name, String script) {
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Library name must not be empty");
+        }
+        libraryRegistry.put(name, script);
+        log.info("Registered library: {}", name);
+    }
+
+    @Override
+    public void registerLibraries(Map<String, String> libraries) {
+        if (libraries != null) {
+            libraryRegistry.putAll(libraries);
+            log.info("Registered {} libraries", libraries.size());
+        }
+    }
+
+    @Override
+    public void removeLibrary(String name) {
+        libraryRegistry.remove(name);
+    }
+
+    @Override
+    public Set<String> getLibraryNames() {
+        return new CopyOnWriteArraySet<>(libraryRegistry.keySet());
+    }
+
+    /**
+     * 解析脚本中的 import('libName') 语句，将其替换为对应函数库的源码。
+     */
+    String resolveImports(String script) {
+        return IScriptRunner.resolveImports(script, libraryRegistry);
     }
 
     @Slf4j
