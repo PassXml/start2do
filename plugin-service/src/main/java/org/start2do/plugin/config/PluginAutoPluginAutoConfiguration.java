@@ -2,6 +2,7 @@ package org.start2do.plugin.config;
 
 import java.nio.file.Paths;
 import org.pf4j.PluginManager;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -24,8 +25,10 @@ public class PluginAutoPluginAutoConfiguration {
      * PF4J 插件管理器，使用 plugin.runtime.storage-path 作为插件目录
      */
     @Bean
-    public PluginManager pluginManager(PluginSystemProperties configuration) {
-        return new PropertiesOnlyJarPluginManager(Paths.get(configuration.getRuntime().getStoragePath()));
+    public PluginManager pluginManager(PluginSystemProperties configuration,
+        AutowireCapableBeanFactory beanFactory) {
+        return new PropertiesOnlyJarPluginManager(Paths.get(configuration.getRuntime().getStoragePath()),
+            beanFactory);
     }
 
     @Bean
