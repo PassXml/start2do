@@ -3,6 +3,7 @@ package org.start2do.ebean.fix.gradle
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
 import org.start2do.ebean.fix.QueryBeanGradlePlugin
 
@@ -12,6 +13,7 @@ import org.start2do.ebean.fix.QueryBeanGradlePlugin
 abstract class EbeanFixTask extends DefaultTask {
 
     @InputDirectory
+    @Optional
     abstract DirectoryProperty getClassesDir()
 
     EbeanFixTask() {

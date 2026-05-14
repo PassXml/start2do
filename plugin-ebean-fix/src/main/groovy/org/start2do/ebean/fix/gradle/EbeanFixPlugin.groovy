@@ -24,6 +24,14 @@ class EbeanFixPlugin implements Plugin<Project> {
 
             // 为每个 JavaCompile 任务创建对应的转换任务
             compileTasks.each { JavaCompile compileTask ->
+                // 跳过没有源文件的编译任务（如 compileTestJava 但项目无测试代码）
+                if (compileTask.source == null || compileTask.source.isEmpty()) {
+                    if (extension.verbose) {
+                        println "[Ebean Fix Plugin] 跳过 ${compileTask.name}：无源文件"
+                    }
+                    return
+                }
+
                 // 创建转换任务
                 def taskName = "ebeanFix${compileTask.name.capitalize()}"
 
