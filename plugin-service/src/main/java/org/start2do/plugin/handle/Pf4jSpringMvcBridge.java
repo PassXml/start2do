@@ -369,6 +369,7 @@ public class Pf4jSpringMvcBridge implements Pf4jBridge {
                 registry.removeBeanDefinition(beanName);
             }
             RootBeanDefinition bd = new RootBeanDefinition(beanClass);
+            PluginSpringBeanUtils.applyLifecycleMetadata(bd, beanClass);
 
             // 关键修复：设置 BeanDefinition 使用当前的 BeanClassLoader（即插件 ClassLoader），
             // 确保 LocalVariableTableParameterNameDiscoverer 在解析方法签名时能够正确加载插件类

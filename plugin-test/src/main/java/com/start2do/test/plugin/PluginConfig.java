@@ -38,4 +38,8 @@ import org.start2do.plugin.api.spring.annotation.PluginDescriptor;
 )
 public class PluginConfig extends Plugin {
 
+    @Override
+    public void start() {
+
+    }
 }

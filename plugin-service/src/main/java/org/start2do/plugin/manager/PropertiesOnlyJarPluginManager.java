@@ -5,16 +5,11 @@ import org.pf4j.CompoundPluginDescriptorFinder;
 import org.pf4j.JarPluginManager;
 import org.pf4j.PluginDescriptorFinder;
 import org.pf4j.PropertiesPluginDescriptorFinder;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 public class PropertiesOnlyJarPluginManager extends JarPluginManager {
 
-    private final AutowireCapableBeanFactory beanFactory;
-
-    public PropertiesOnlyJarPluginManager(Path pluginsRoot, AutowireCapableBeanFactory beanFactory) {
+    public PropertiesOnlyJarPluginManager(Path pluginsRoot) {
         super(pluginsRoot);
-        this.beanFactory = beanFactory;
-        this.extensionFactory = new SpringLifecycleExtensionFactory(this, beanFactory);
     }
 
     @Override

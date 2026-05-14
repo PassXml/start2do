@@ -3,15 +3,19 @@ package org.start2do.plugin.api.spring;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Constructor;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ApplicationEventMulticaster;
 import org.springframework.context.event.ApplicationListenerMethodAdapter;
@@ -52,6 +56,24 @@ public class PluginSpringBeanUtils {
      */
     public String buildPluginBeanName(String pluginId, Class<?> beanClass) {
         return "plugin_" + pluginId + "_" + beanClass.getName();
+    }
+
+    /**
+     * 为动态注册的 BeanDefinition 显式补齐 JSR-250 生命周期方法。
+     * <p>
+     * 背景：插件 Bean 通过运行期注册 BeanDefinition 进入容器，显式写入 init/destroy 元数据后，
+     * 可以避免不同注册路径或后处理器时机差异导致的 {@link PostConstruct}/{@link PreDestroy} 漏执行。
+     */
+    public void applyLifecycleMetadata(RootBeanDefinition beanDefinition, Class<?> beanClass) {
+        String initMethodName = findLifecycleMethodName(beanClass, PostConstruct.class);
+        if (initMethodName != null) {
+            beanDefinition.setInitMethodName(initMethodName);
+        }
+
+        String destroyMethodName = findLifecycleMethodName(beanClass, PreDestroy.class);
+        if (destroyMethodName != null) {
+            beanDefinition.setDestroyMethodName(destroyMethodName);
+        }
     }
 
     /**
@@ -215,6 +237,22 @@ public class PluginSpringBeanUtils {
     private String buildPluginEventListenerBeanName(String pluginId, String sourceBeanName, Method method) {
         String key = sourceBeanName + "#" + method.toGenericString();
         return "plugin_" + pluginId + PLUGIN_EVENT_LISTENER_BEAN_NAME_INFIX + Integer.toHexString(key.hashCode());
+    }
+
+    private String findLifecycleMethodName(Class<?> beanClass, Class<? extends Annotation> annotationClass) {
+        Class<?> userClass = ClassUtils.getUserClass(beanClass);
+        final Method[] found = new Method[1];
+        ReflectionUtils.doWithMethods(userClass, method -> {
+            if (found[0] != null) {
+                return;
+            }
+            if (AnnotatedElementUtils.hasAnnotation(method, annotationClass)
+                && method.getParameterCount() == 0
+                && !Modifier.isStatic(method.getModifiers())) {
+                found[0] = method;
+            }
+        });
+        return found[0] == null ? null : found[0].getName();
     }
 
     /**
