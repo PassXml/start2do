@@ -17,6 +17,7 @@ import java.util.UUID;
 import org.start2do.script.util.impl.functions.DBOperateFunction;
 import org.start2do.script.util.impl.functions.HttpUtil;
 import org.start2do.script.util.impl.functions.JacksonOperateFunction;
+import org.start2do.script.util.impl.functions.SqlOperateFunction;
 
 public final class ScriptWhiteList {
 
@@ -43,7 +44,8 @@ public final class ScriptWhiteList {
         DateTimeFormatter.class.getName(),
         HttpUtil.class.getName(),
         JacksonOperateFunction.class.getName(),
-        DBOperateFunction.class.getName()
+        DBOperateFunction.class.getName(),
+        SqlOperateFunction.class.getName()
     ));
 
     private ScriptWhiteList() {

@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import org.pf4j.CompoundPluginLoader;
 import org.pf4j.CompoundPluginDescriptorFinder;
 import org.pf4j.DevelopmentPluginLoader;
+import org.pf4j.JarPluginLoader;
 import org.pf4j.JarPluginManager;
 import org.pf4j.PluginDescriptorFinder;
 import org.pf4j.PluginLoader;
@@ -26,6 +27,7 @@ public class PropertiesOnlyJarPluginManager extends JarPluginManager {
     protected PluginLoader createPluginLoader() {
         return new CompoundPluginLoader()
             .add(new DevelopmentPluginLoader(this), this::isDevelopment)
+            .add(new JarPluginLoader(this), this::isNotDevelopment)
             .add(new SpringBootAwarePluginLoader(this), this::isNotDevelopment);
     }
 

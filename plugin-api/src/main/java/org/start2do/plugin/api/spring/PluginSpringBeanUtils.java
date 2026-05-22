@@ -3,14 +3,12 @@ package org.start2do.plugin.api.spring;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Constructor;
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
@@ -41,6 +39,14 @@ public class PluginSpringBeanUtils {
     private static final String PLUGIN_EVENT_LISTENER_BEAN_NAME_INFIX = "_eventListener_";
     private static final String EVENT_EXPRESSION_EVALUATOR_CLASS_NAME =
         "org.springframework.context.event.EventExpressionEvaluator";
+    private static final List<String> POST_CONSTRUCT_ANNOTATION_NAMES = Arrays.asList(
+        "javax.annotation.PostConstruct",
+        "jakarta.annotation.PostConstruct"
+    );
+    private static final List<String> PRE_DESTROY_ANNOTATION_NAMES = Arrays.asList(
+        "javax.annotation.PreDestroy",
+        "jakarta.annotation.PreDestroy"
+    );
 
     private static volatile Method applicationListenerMethodAdapterInitMethod;
     private static volatile Object eventExpressionEvaluator;
@@ -65,12 +71,12 @@ public class PluginSpringBeanUtils {
      * 可以避免不同注册路径或后处理器时机差异导致的 {@link PostConstruct}/{@link PreDestroy} 漏执行。
      */
     public void applyLifecycleMetadata(RootBeanDefinition beanDefinition, Class<?> beanClass) {
-        String initMethodName = findLifecycleMethodName(beanClass, PostConstruct.class);
+        String initMethodName = findLifecycleMethodName(beanClass, POST_CONSTRUCT_ANNOTATION_NAMES);
         if (initMethodName != null) {
             beanDefinition.setInitMethodName(initMethodName);
         }
 
-        String destroyMethodName = findLifecycleMethodName(beanClass, PreDestroy.class);
+        String destroyMethodName = findLifecycleMethodName(beanClass, PRE_DESTROY_ANNOTATION_NAMES);
         if (destroyMethodName != null) {
             beanDefinition.setDestroyMethodName(destroyMethodName);
         }
@@ -91,7 +97,8 @@ public class PluginSpringBeanUtils {
         ConfigurableListableBeanFactory beanFactory,
         Map<String, List<String>> pluginBeanNames) {
 
-        beanFactory.registerSingleton(beanName, bean);
+        Object initialized = beanFactory.initializeBean(bean, beanName);
+        beanFactory.registerSingleton(beanName, initialized);
         pluginBeanNames.computeIfAbsent(pluginId, k -> new ArrayList<String>()).add(beanName);
     }
 
@@ -239,20 +246,26 @@ public class PluginSpringBeanUtils {
         return "plugin_" + pluginId + PLUGIN_EVENT_LISTENER_BEAN_NAME_INFIX + Integer.toHexString(key.hashCode());
     }
 
-    private String findLifecycleMethodName(Class<?> beanClass, Class<? extends Annotation> annotationClass) {
+    private String findLifecycleMethodName(Class<?> beanClass, List<String> annotationClassNames) {
         Class<?> userClass = ClassUtils.getUserClass(beanClass);
         final Method[] found = new Method[1];
         ReflectionUtils.doWithMethods(userClass, method -> {
             if (found[0] != null) {
                 return;
             }
-            if (AnnotatedElementUtils.hasAnnotation(method, annotationClass)
+            if (hasAnyAnnotation(method, annotationClassNames)
                 && method.getParameterCount() == 0
                 && !Modifier.isStatic(method.getModifiers())) {
                 found[0] = method;
             }
         });
         return found[0] == null ? null : found[0].getName();
+    }
+
+    private boolean hasAnyAnnotation(Method method, List<String> annotationClassNames) {
+        return Arrays.stream(method.getDeclaredAnnotations())
+            .map(annotation -> annotation.annotationType().getName())
+            .anyMatch(annotationClassNames::contains);
     }
 
     /**
@@ -286,23 +299,23 @@ public class PluginSpringBeanUtils {
                 continue;
             }
             try {
-                // 优先尝试 destroySingleton(String)
-                Method destroySingleton =
-                    ReflectionUtils.findMethod(beanFactory.getClass(), "destroySingleton", String.class);
-                if (destroySingleton != null) {
-                    ReflectionUtils.makeAccessible(destroySingleton);
-                    destroySingleton.invoke(beanFactory, beanName);
-                } else {
-                    // 回退方案：按常规方式销毁 Bean，再尝试 removeSingleton(String)
-                    Object bean = beanFactory.getBean(beanName);
-                    beanFactory.destroyBean(bean);
+                Object bean = beanFactory.getBean(beanName);
+                boolean hasBeanDefinition = beanFactory.containsBeanDefinition(beanName);
 
-                    Method removeSingleton =
-                        ReflectionUtils.findMethod(beanFactory.getClass(), "removeSingleton", String.class);
-                    if (removeSingleton != null) {
-                        ReflectionUtils.makeAccessible(removeSingleton);
-                        removeSingleton.invoke(beanFactory, beanName);
+                // BeanDefinition 路径交给 Spring 正常销毁；手工 registerSingleton 路径则显式补齐销毁回调。
+                if (hasBeanDefinition) {
+                    Method destroySingleton =
+                        ReflectionUtils.findMethod(beanFactory.getClass(), "destroySingleton", String.class);
+                    if (destroySingleton != null) {
+                        ReflectionUtils.makeAccessible(destroySingleton);
+                        destroySingleton.invoke(beanFactory, beanName);
+                    } else {
+                        beanFactory.destroyBean(bean);
+                        removeSingleton(beanFactory, beanName);
                     }
+                } else {
+                    invokeDestroyBean(beanFactory, beanName, bean);
+                    removeSingleton(beanFactory, beanName);
                 }
                 if (infoLogger != null) {
                     infoLogger.accept(beanName);
@@ -312,6 +325,25 @@ public class PluginSpringBeanUtils {
                     warnLogger.accept(beanName, ex);
                 }
             }
+        }
+    }
+
+    private void invokeDestroyBean(ConfigurableListableBeanFactory beanFactory, String beanName, Object bean) {
+        Method namedDestroy = ReflectionUtils.findMethod(beanFactory.getClass(), "destroyBean", String.class,
+            Object.class);
+        if (namedDestroy != null) {
+            ReflectionUtils.makeAccessible(namedDestroy);
+            ReflectionUtils.invokeMethod(namedDestroy, beanFactory, beanName, bean);
+            return;
+        }
+        beanFactory.destroyBean(bean);
+    }
+
+    private void removeSingleton(ConfigurableListableBeanFactory beanFactory, String beanName) {
+        Method removeSingleton = ReflectionUtils.findMethod(beanFactory.getClass(), "removeSingleton", String.class);
+        if (removeSingleton != null) {
+            ReflectionUtils.makeAccessible(removeSingleton);
+            ReflectionUtils.invokeMethod(removeSingleton, beanFactory, beanName);
         }
     }
 

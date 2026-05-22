@@ -11,6 +11,9 @@ repositories {
 }
 
 dependencies {
+    testImplementation(platform("org.junit:junit-bom:5.10.0"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+
     compileOnly("com.github.ben-manes.caffeine:caffeine:3.1.8")
     compileOnly("org.slf4j:slf4j-api:2.0.5")
     compileOnly("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
